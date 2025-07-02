@@ -35,7 +35,7 @@ public partial class AudioManager : Node2D
         _player = new AudioStreamPlayer();
         AddChild(_player);
         _player.Stream = _generator;
-        _player.VolumeLinear = 0.1f;
+        _player.VolumeLinear = 0.5f;
         _player.Play();
 
         _playback = (AudioStreamGeneratorPlayback)_player.GetStreamPlayback();
@@ -69,10 +69,10 @@ public partial class AudioManager : Node2D
         GD.Print($"_samples.Length: {_samples.Length}");
 
         // 1323000 für 30s 44100kHz
-        _audioThreadRunning = true;
-        _audioThread = new Thread(AudioThreadLoop);
-        _audioThread.Priority = ThreadPriority.Highest;
-        _audioThread.Start();
+        // _audioThreadRunning = true;
+        // _audioThread = new Thread(AudioThreadLoop);
+        // _audioThread.Priority = ThreadPriority.Highest;
+        // _audioThread.Start();
     }
 
     private void AudioThreadLoop()
@@ -107,8 +107,14 @@ public partial class AudioManager : Node2D
 
             _playback.PushFrame(sample); // Stereo!
 
-            if (!_hold && _sampleIndex < _samples.Length)
+            if (!_hold)
+            {
                 _sampleIndex += (int)_speed;
+                if (_sampleIndex < 0)
+                    _sampleIndex = 0;
+                if (_sampleIndex >= _samples.Length)
+                    _sampleIndex = _samples.Length - 1;
+            }
         }
         QueueRedraw();
     }
@@ -147,8 +153,8 @@ public partial class AudioManager : Node2D
         }
 
         // Text für Sample-Länge und aktuellen Index zeichnen
-        string info = $"Sample Length: {_samples?.Length ?? 0} | Index: {_sampleIndex} | Frames Available: {_playback.GetFramesAvailable()}";
-        DrawString(_defaultFont, new Vector2(100, plotBaseY + 30), info, HorizontalAlignment.Center);
+        string info = $"Sample Length: {_samples?.Length ?? 0} | Index: {_sampleIndex} | Frames Available: {_playback.GetFramesAvailable()} | Skips: {_playback.GetSkips()} | Speed: {_speed}";
+        DrawString(_defaultFont, new Vector2(100, 30), info, HorizontalAlignment.Center);
     }
 
     // Methoden für Interaktivität
@@ -156,20 +162,19 @@ public partial class AudioManager : Node2D
     public void Hold(bool hold) => _hold = hold;         // Für Halten
     public void SetPosition(float percent)
     {
+        GD.Print(_sampleIndex - (int)(percent * _samples.Length));
         _sampleIndex = (int)(percent * _samples.Length);
     }
 
     // Play/Pause-Methoden
     public void Play()
     {
-        GD.Print($"{_sampleIndex} {_speed} {_player.Playing} {_playback.GetFramesAvailable()}");
         if (!_player.Playing)
             _player.StreamPaused = false;
     }
 
     public void Pause()
     {
-        GD.Print($"{_sampleIndex} {_speed} {_player.Playing} {_playback.GetFramesAvailable()}");
         if (_player.Playing)
             _player.StreamPaused = true;
     }
