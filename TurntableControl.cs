@@ -9,7 +9,6 @@ public partial class TurntableControl : Node2D
     private Node2D needle;
     private Node2D record;
 
-    private Vector2 _lastMousePos;
     private float _rightClickStartIndex;
     private bool _isLeftHolding = false;
     private bool _isRightHolding = false;
@@ -21,6 +20,17 @@ public partial class TurntableControl : Node2D
 
     private bool motorRunning = true;
     private const float motorSpeed = 45f;
+
+    private float currentSpeed = 0f;
+    private float targetSpeed = 0f;
+    private const float acceleration = 1.0f; // Umdrehungen pro Sekunde^2, anpassen nach Gefühl
+    private const float drag = 0.5f;
+    private float rightDragLastY = 0f;
+    private Vector2 rightDragLastMousePos;
+    private float rightDragLastLoop;
+    private float rightDragLastSpeed;
+    private Vector2 _rightDragLastMousePos = Vector2.Zero;
+    private float _rightDragLastLoop = 0f;
 
     public override void _Ready()
     {
@@ -43,8 +53,8 @@ public partial class TurntableControl : Node2D
             if (btn.ButtonIndex == MouseButton.Left && btn.Pressed && !_isLeftHolding)
             {
                 _isLeftHolding = true;
-                _lastMousePos = btn.Position;
                 _leftMoved = false;
+                targetSpeed = 0f; // Sofort abbremsen
             }
             if (btn.ButtonIndex == MouseButton.Left && !btn.Pressed)
             {
@@ -56,15 +66,20 @@ public partial class TurntableControl : Node2D
                     else
                         StopMotor();
                 }
+                // Zielgeschwindigkeit auf 0 setzen, damit er langsam ausrollt
+                targetSpeed = 0f;
             }
             if (btn.ButtonIndex == MouseButton.Right && btn.Pressed && !_isRightHolding)
             {
                 _isRightHolding = true;
                 _rightClickStartIndex = loop;
+                _rightDragLastMousePos = btn.Position;
+                _rightDragLastLoop = loop;
             }
             if (btn.ButtonIndex == MouseButton.Right && !btn.Pressed)
             {
                 _isRightHolding = false;
+                // Nach Loslassen bleibt die aktuelle Geschwindigkeit erhalten (Schwung)
             }
         }
     }
@@ -83,13 +98,42 @@ public partial class TurntableControl : Node2D
 
     public override void _Process(double delta)
     {
+        // Drag
+        currentSpeed -= currentSpeed * drag * (float)delta;
 
-        if (motorRunning)
+        // Inertia-Modell: Geschwindigkeit an Zielgeschwindigkeit angleichen
+        if (Mathf.Abs(currentSpeed - targetSpeed) > 0.001f)
         {
-            loop += (float)(motorSpeed / 60.0 * delta);
-            record.Rotation = loop % 1 * Mathf.Pi * 2;
-            needle.Position = new Vector2((1 - (loop / maxLoops)) * 125 + 60, -12); // 60 - 185
-            if (loop == maxLoops)
+            float sign = MathF.Sign(targetSpeed - currentSpeed);
+            currentSpeed += sign * acceleration * (float)delta;
+            // Nicht überschießen
+            if (sign != MathF.Sign(targetSpeed - currentSpeed))
+                currentSpeed = targetSpeed;
+        }
+
+        if (motorRunning && !_isLeftHolding && !_isRightHolding)
+        {
+            targetSpeed = motorSpeed / 60.0f; // Ziel: normale Motor-Geschwindigkeit
+        }
+
+        if (_isRightHolding)
+        {
+            Vector2 mousePos = GetViewport().GetMousePosition();
+            Vector2 center = record.GlobalPosition;
+            float lastAngle = (_rightDragLastMousePos - center).Angle();
+            float newAngle = (mousePos - center).Angle();
+            float angleDelta = Mathf.Wrap(newAngle - lastAngle, -Mathf.Pi, Mathf.Pi);
+            float loopDelta = angleDelta / (Mathf.Pi * 2);
+            loop += loopDelta;
+            currentSpeed = (loop - _rightDragLastLoop) / (float)delta;
+            _rightDragLastMousePos = mousePos;
+            _rightDragLastLoop = loop;
+            QueueRedraw();
+        }
+        else if (motorRunning || MathF.Abs(currentSpeed) > 0.0001f)
+        {
+            loop += currentSpeed * (float)delta;
+            if (loop >= maxLoops)
             {
                 StopMotor();
             }
@@ -106,50 +150,29 @@ public partial class TurntableControl : Node2D
                 loop = (int)((1 - (localMousePos - 60) / 125) * maxLoops);
                 loop += offset;
             }
-            if ((mousePos - _lastMousePos).Length() > 1.0f)
+            if (Math.Abs(loop - _lastLoop) > 0.5f)
                 _leftMoved = true;
-            _lastMousePos = mousePos;
+            // Setze targetSpeed auf 0, damit er beim Loslassen ausrollt
+            targetSpeed = 0f;
             QueueRedraw();
         }
 
-        if (_isRightHolding)
-        {
-            Vector2 mousePos = GetViewport().GetMousePosition();
-            float windowCenter = GetViewportRect().Size.Y / 2.0f;
-            float dist = mousePos.Y - windowCenter;
-            loop = _rightClickStartIndex + (dist * 0.002f);
-            QueueRedraw();
-        }
-        /*
-        Calculations:
-        maxLoops = motorSpeed/60 * AudioManager.SampleLength / 44100;
-        loop - _lastLoop = motorSpeed / 60.0 * delta;
-        (motorSpeed / 60.0 * delta) / delta = motorSpeed / 60.0
-        (motorSpeed / 60.0) / maxLoops = (motorSpeed / 60.0)/(motorSpeed/60 * AudioManager.SampleLength / 44100)
-        = 1/(AudioManager.SampleLength / 44100) = 44100/AudioManager.SampleLength
+        // Geschwindigkeit in Songdurchläufe pro Sekunde umrechnen
+        AudioManager.FillBuffer((float)delta, currentSpeed / maxLoops, loop / maxLoops);
 
-        That can't be right
-        We want to have a samples/second speed
-        loop - _lastLoop => circleRotations
-        (loop - _lastLoop)/delta => circleRotations per second
-
-
-        */
-        AudioManager.FillBuffer((float)delta, (float)((loop - _lastLoop)/maxLoops/delta),loop / maxLoops);
-        if (Mathf.Abs(loop - _lastLoop) < 0.001f)
-        {
+        if (Mathf.Abs(currentSpeed) < 0.001f)
             AudioManager.Pause();
-        }
         else
-        {
             AudioManager.Play();
-        }
+
         _lastLoop = loop;
     }
 
     private Font _defaultFont = ThemeDB.FallbackFont;
     public override void _Draw()
     {
+        record.Rotation = loop % 1 * Mathf.Pi * 2;
+        needle.Position = new Vector2((1 - (loop / maxLoops)) * 125 + 60, -12);
         // Text für Sample-Länge und aktuellen Index zeichnen
         string info = $"Max Loop: {maxLoops} | Loop: {loop}";
         DrawString(_defaultFont, new Vector2(-120, 240), info, HorizontalAlignment.Center);

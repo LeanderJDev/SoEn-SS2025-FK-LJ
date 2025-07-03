@@ -131,7 +131,7 @@ public partial class AudioManager : Node2D
         }
 
         // Text für Sample-Länge und aktuellen Index zeichnen
-        string info = $"Sample Length: {_samples?.Length ?? 0} | Index: {_sampleIndex} | Frames Available: {_playback.GetFramesAvailable()} | Skips: {_playback.GetSkips()} | Speed: {_speed}";
+        string info = $"Sample Length: {_samples?.Length ?? 0} | Index: {_sampleIndex:F3} | Frames Available: {_playback.GetFramesAvailable()} | Skips: {_playback.GetSkips()} | Speed: {_speed:F3}";
         DrawString(_defaultFont, new Vector2(100, 30), info, HorizontalAlignment.Center);
     }
 
