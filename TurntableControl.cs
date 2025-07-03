@@ -120,8 +120,22 @@ public partial class TurntableControl : Node2D
             loop = _rightClickStartIndex + (dist * 0.002f);
             QueueRedraw();
         }
-        
-        AudioManager.FillBuffer((float)delta, _lastLoop < loop ? 1 : -1,loop / maxLoops);
+        /*
+        Calculations:
+        maxLoops = motorSpeed/60 * AudioManager.SampleLength / 44100;
+        loop - _lastLoop = motorSpeed / 60.0 * delta;
+        (motorSpeed / 60.0 * delta) / delta = motorSpeed / 60.0
+        (motorSpeed / 60.0) / maxLoops = (motorSpeed / 60.0)/(motorSpeed/60 * AudioManager.SampleLength / 44100)
+        = 1/(AudioManager.SampleLength / 44100) = 44100/AudioManager.SampleLength
+
+        That can't be right
+        We want to have a samples/second speed
+        loop - _lastLoop => circleRotations
+        (loop - _lastLoop)/delta => circleRotations per second
+
+
+        */
+        AudioManager.FillBuffer((float)delta, (float)((loop - _lastLoop)/maxLoops/delta),loop / maxLoops);
         if (Mathf.Abs(loop - _lastLoop) < 0.001f)
         {
             AudioManager.Pause();

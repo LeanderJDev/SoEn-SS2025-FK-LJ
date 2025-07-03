@@ -8,7 +8,7 @@ public partial class AudioManager : Node2D
     private AudioStreamPlayer _player;
     private Vector2[] _samples; // Stereo: X = links, Y = rechts
     private const int sampleRate = 44100;
-    private int _sampleIndex = 0;
+    private float _sampleIndex = 0;
     private float _speed = 1;
     private int samplesToWrite = 0;
 
@@ -69,7 +69,7 @@ public partial class AudioManager : Node2D
         // Nach dem Pushen der Samples:
         while (_playback.GetFramesAvailable() > 0 && samplesToWrite > 0)
         {
-            Vector2 sample = _samples[Math.Clamp(_sampleIndex, 0, _samples.Length - 1)];
+            Vector2 sample = _samples[Math.Clamp((int)_sampleIndex, 0, _samples.Length - 1)];
 
             // Ringpuffer für die Wellenform (Mono-Mix für Visualisierung)
             _waveformBuffer[_waveformIndex] = (sample.X + sample.Y) * 0.5f;
@@ -78,7 +78,7 @@ public partial class AudioManager : Node2D
             _playback.PushFrame(sample); // Stereo!
 
             // Move through sample while Turntable waits for next frame
-            _sampleIndex += (int)_speed;
+            _sampleIndex += _speed;
             samplesToWrite -= 1;
         }
         QueueRedraw();
@@ -86,12 +86,13 @@ public partial class AudioManager : Node2D
 
     public void FillBuffer(float delta, float turntableSpeed, float turntablePos)
     {
+        _speed = turntableSpeed*SampleLength/sampleRate;
         // Berechne Menge an zu schreibenden Samples aus Daten des Turntables
-        samplesToWrite = (int)(delta * sampleRate * Math.Abs(turntableSpeed));
-        _indexDifferencePlot[_indexDifferenceIndex] = _sampleIndex - (int)(turntablePos * _samples.Length);
+        samplesToWrite = (int)(delta * sampleRate * Math.Abs(_speed));
+        _indexDifferencePlot[_indexDifferenceIndex] = (int)(_sampleIndex - turntablePos * _samples.Length);
         _indexDifferenceIndex = (_indexDifferenceIndex + 1) % indexDifferenceLength;
-        _sampleIndex = (int)(turntablePos * _samples.Length);
-        _speed = turntableSpeed;
+        _sampleIndex = turntablePos * _samples.Length;
+        
     }
 
     private Font _defaultFont = ThemeDB.FallbackFont;
@@ -130,7 +131,7 @@ public partial class AudioManager : Node2D
         }
 
         // Text für Sample-Länge und aktuellen Index zeichnen
-        string info = $"Sample Length: {_samples?.Length ?? 0} | Index: {_sampleIndex} | Frames Available: {_playback.GetFramesAvailable()} | Skips: {_playback.GetSkips()}";
+        string info = $"Sample Length: {_samples?.Length ?? 0} | Index: {_sampleIndex} | Frames Available: {_playback.GetFramesAvailable()} | Skips: {_playback.GetSkips()} | Speed: {_speed}";
         DrawString(_defaultFont, new Vector2(100, 30), info, HorizontalAlignment.Center);
     }
 
@@ -153,10 +154,5 @@ public partial class AudioManager : Node2D
             _player.StreamPaused = true;
         else
             _player.StreamPaused = false;
-    }
-
-    public int GetSampleIndex()
-    {
-        return _sampleIndex;
     }
 }
