@@ -6,38 +6,37 @@ public partial class TurntableControl : Node2D
 {
     [Export] public AudioManager AudioManager;
 
-    private Polygon2D needle;
-    private Sprite2D record;
+    private Node2D needle;
+    private Node2D record;
 
     private Vector2 _lastMousePos;
     private float _rightClickStartIndex;
     private bool _isLeftHolding = false;
     private bool _isRightHolding = false;
-    private bool _isPlaying = true;
     private bool _leftMoved = false;
 
     private float maxLoops = 670;
-
     private float loop = 0;
-
     private float _lastLoop = 0;
 
     private bool motorRunning = true;
-
     private const float motorSpeed = 45f;
 
     public override void _Ready()
     {
         needle = GetNode<Polygon2D>("Needle");
         record = GetNode<Sprite2D>("Record");
+
+        if (AudioManager == null)
+            return;
+
+        maxLoops = motorSpeed/60 * AudioManager.SampleLength / 44100;
     }
 
     public override void _Input(InputEvent @event)
     {
         if (AudioManager == null)
             return;
-        
-        maxLoops = motorSpeed/60 * AudioManager.SampleLength / 44100;
 
         if (@event is InputEventMouseButton btn)
         {
@@ -52,8 +51,7 @@ public partial class TurntableControl : Node2D
                 _isLeftHolding = false;
                 if (!_leftMoved)
                 {
-                    _isPlaying = !_isPlaying;
-                    if (_isPlaying)
+                    if (!motorRunning)
                         StartMotor();
                     else
                         StopMotor();
@@ -85,10 +83,11 @@ public partial class TurntableControl : Node2D
 
     public override void _Process(double delta)
     {
+
         if (motorRunning)
         {
             loop += (float)(motorSpeed / 60.0 * delta);
-            record.Rotation = loop%1 * Mathf.Pi * 2;
+            record.Rotation = loop % 1 * Mathf.Pi * 2;
             needle.Position = new Vector2((1 - (loop / maxLoops)) * 125 + 60, -12); // 60 - 185
             if (loop == maxLoops)
             {
@@ -96,6 +95,7 @@ public partial class TurntableControl : Node2D
             }
             QueueRedraw();
         }
+
         if (_isLeftHolding)
         {
             Vector2 mousePos = GetViewport().GetMousePosition();
@@ -120,11 +120,14 @@ public partial class TurntableControl : Node2D
             loop = _rightClickStartIndex + (dist * 0.002f);
             QueueRedraw();
         }
-        AudioManager.SetPosition(loop / maxLoops);
-        if(Mathf.Abs(loop - _lastLoop) < 0.001f){
+        
+        AudioManager.FillBuffer((float)delta, _lastLoop < loop ? 1 : -1,loop / maxLoops);
+        if (Mathf.Abs(loop - _lastLoop) < 0.001f)
+        {
             AudioManager.Pause();
         }
-        else{
+        else
+        {
             AudioManager.Play();
         }
         _lastLoop = loop;
