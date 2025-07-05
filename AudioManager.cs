@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Threading;
 public partial class AudioManager : Node2D
 {
     [Export] public AudioStream Sample; // Typ geändert!
@@ -8,9 +9,9 @@ public partial class AudioManager : Node2D
     private AudioStreamPlayer _player;
     private Vector2[] _samples; // Stereo: X = links, Y = rechts
     private const int sampleRate = 44100;
-    private float _sampleIndex = 0;
-    private float _speed = 1;
-    private int samplesToWrite = 0;
+    private volatile float _sampleIndex = 0;
+    private volatile float _speed = 1;
+    private volatile int samplesToWrite = 0;
 
     private const int WaveformLength = 200;
     private float[] _waveformBuffer = new float[WaveformLength];
@@ -20,6 +21,10 @@ public partial class AudioManager : Node2D
     private int[] _indexDifferencePlot = new int[indexDifferenceLength];
     private int _indexDifferenceIndex = 0;
     public int SampleLength => _samples.Length;
+
+    private Thread _audioThread;
+    private volatile bool _audioThreadRunning = false;
+    private readonly object _audioLock = new object();
 
     public override void _Ready()
     {
@@ -63,24 +68,44 @@ public partial class AudioManager : Node2D
         }
         GD.Print($"_samples.Length: {_samples.Length}");
 
+        _audioThreadRunning = true;
+        _audioThread = new Thread(AudioThreadLoop);
+        _audioThread.Start();
     }
+
+    public override void _ExitTree()
+    {
+        _audioThreadRunning = false;
+        _audioThread?.Join();
+    }
+
+    private void AudioThreadLoop()
+    {
+        var sw = new System.Diagnostics.Stopwatch();
+        sw.Start();
+        double lastTime = sw.Elapsed.TotalSeconds;
+        while (_audioThreadRunning)
+        {
+            double now = sw.Elapsed.TotalSeconds;
+            double delta = now - lastTime;
+            lastTime = now;
+            while (_playback.GetFramesAvailable() > 0 && samplesToWrite > 0)
+            {
+                Vector2 sample = _samples[Math.Clamp((int)_sampleIndex, 0, _samples.Length - 1)];
+                // Ringpuffer für die Wellenform (Mono-Mix für Visualisierung)
+                _waveformBuffer[_waveformIndex] = (sample.X + sample.Y) * 0.5f;
+                _waveformIndex = (_waveformIndex + 1) % WaveformLength;
+                _playback.PushFrame(sample); // Stereo!
+                _sampleIndex += _speed;
+                samplesToWrite -= 1;
+            }
+            Thread.Sleep(2); // ca. 500 Hz
+        }
+    }
+
     public override void _PhysicsProcess(double delta)
     {
-        // Nach dem Pushen der Samples:
-        while (_playback.GetFramesAvailable() > 0 && samplesToWrite > 0)
-        {
-            Vector2 sample = _samples[Math.Clamp((int)_sampleIndex, 0, _samples.Length - 1)];
-
-            // Ringpuffer für die Wellenform (Mono-Mix für Visualisierung)
-            _waveformBuffer[_waveformIndex] = (sample.X + sample.Y) * 0.5f;
-            _waveformIndex = (_waveformIndex + 1) % WaveformLength;
-
-            _playback.PushFrame(sample); // Stereo!
-
-            // Move through sample while Turntable waits for next frame
-            _sampleIndex += _speed;
-            samplesToWrite -= 1;
-        }
+        // Nur noch Visualisierung/Debugging!
         QueueRedraw();
     }
 
@@ -105,12 +130,15 @@ public partial class AudioManager : Node2D
         float scaleX = 2.0f; // Abstand zwischen Linien
         float scaleY = 60.0f; // Amplitude-Skalierung
 
+        Vector2 p1;
+        Vector2 p2;
+
         for (int i = 0; i < WaveformLength - 1; i++)
         {
             int idx1 = (_waveformIndex + i) % WaveformLength;
             int idx2 = (_waveformIndex + i + 1) % WaveformLength;
-            Vector2 p1 = new Vector2(100 + i * scaleX, midY - _waveformBuffer[idx1] * scaleY);
-            Vector2 p2 = new Vector2(100 + (i + 1) * scaleX, midY - _waveformBuffer[idx2] * scaleY);
+            p1 = new Vector2(100 + i * scaleX, midY - _waveformBuffer[idx1] * scaleY);
+            p2 = new Vector2(100 + (i + 1) * scaleX, midY - _waveformBuffer[idx2] * scaleY);
             DrawLine(p1, p2, Colors.Red, 2);
         }
 
@@ -125,10 +153,14 @@ public partial class AudioManager : Node2D
             int idx2 = (_indexDifferenceIndex + i + 1) % indexDifferenceLength;
             float y1 = plotBaseY - _indexDifferencePlot[idx1] * plotScaleY;
             float y2 = plotBaseY - _indexDifferencePlot[idx2] * plotScaleY;
-            Vector2 p1 = new Vector2(100 + i * plotScaleX, y1);
-            Vector2 p2 = new Vector2(100 + (i + 1) * plotScaleX, y2);
-            DrawLine(p1, p2, new Color(0, 1, 0, 0.2f), 2);
+            p1 = new Vector2(100 + i * plotScaleX, y1);
+            p2 = new Vector2(100 + (i + 1) * plotScaleX, y2);
+            DrawLine(p1, p2, new Color(0, 1, 0, 0.2f), 3);
         }
+
+        p1 = new Vector2(100 + plotScaleX, plotBaseY);
+        p2 = new Vector2(100 + indexDifferenceLength*plotScaleX, plotBaseY);
+        DrawLine(p1, p2, new Color(1, 1, 1, 0.2f), 2);
 
         // Text für Sample-Länge und aktuellen Index zeichnen
         string info = $"Sample Length: {_samples?.Length ?? 0} | Index: {_sampleIndex:F3} | Frames Available: {_playback.GetFramesAvailable()} | Skips: {_playback.GetSkips()} | Speed: {_speed:F3}";

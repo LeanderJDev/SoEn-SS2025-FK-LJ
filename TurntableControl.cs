@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Data;
+using System.Threading;
 
 public partial class TurntableControl : Node2D
 {
@@ -15,22 +16,25 @@ public partial class TurntableControl : Node2D
     private bool _leftMoved = false;
 
     private float maxLoops = 670;
-    private float loop = 0;
+    private volatile float loop = 0;
     private float _lastLoop = 0;
 
     private bool motorRunning = true;
     private const float motorSpeed = 45f;
 
-    private float currentSpeed = 0f;
-    private float targetSpeed = 0f;
+    private volatile float currentSpeed = 0f;
+    private volatile float targetSpeed = 0f;
     private const float acceleration = 1.0f; // Umdrehungen pro Sekunde^2, anpassen nach Gefühl
-    private const float drag = 0.5f;
+    private const float drag = 0.9f;
     private float rightDragLastY = 0f;
     private Vector2 rightDragLastMousePos;
     private float rightDragLastLoop;
     private float rightDragLastSpeed;
     private Vector2 _rightDragLastMousePos = Vector2.Zero;
     private float _rightDragLastLoop = 0f;
+
+    private Thread _turntableThread;
+    private volatile bool _threadRunning = false;
 
     public override void _Ready()
     {
@@ -41,33 +45,84 @@ public partial class TurntableControl : Node2D
             return;
 
         maxLoops = motorSpeed/60 * AudioManager.SampleLength / 44100;
+
+        _threadRunning = true;
+        _turntableThread = new Thread(TurntableThreadLoop);
+        _turntableThread.Start();
+    }
+
+    public override void _ExitTree()
+    {
+        _threadRunning = false;
+        _turntableThread?.Join();
+    }
+
+    private void TurntableThreadLoop()
+    {
+        var sw = new System.Diagnostics.Stopwatch();
+        sw.Start();
+        double lastTime = sw.Elapsed.TotalSeconds;
+        while (_threadRunning)
+        {
+            double now = sw.Elapsed.TotalSeconds;
+            double delta = now - lastTime;
+            lastTime = now;
+            // Drag
+            currentSpeed -= currentSpeed * drag * (float)delta;
+            // Inertia
+            if (MathF.Abs(currentSpeed - targetSpeed) > 0.001f)
+            {
+                float sign = MathF.Sign(targetSpeed - currentSpeed);
+                currentSpeed += sign * acceleration * (float)delta;
+                // Stabilisieren der Zielgeschwindigkeit
+                if (sign != MathF.Sign(targetSpeed - currentSpeed))
+                    currentSpeed = targetSpeed;
+            }
+            if (motorRunning)
+            {
+                targetSpeed = motorSpeed / 60.0f;
+            }
+
+            if (MathF.Abs(currentSpeed) > 0.0001f && !_isRightHolding)
+            {
+                loop += currentSpeed * (float)delta;
+                if (loop >= maxLoops)
+                {
+                    targetSpeed = 0;
+                }
+            }
+                    
+            // Werte an AudioManager übergeben (thread-sicher)
+            if (AudioManager != null)
+            {
+                AudioManager.FillBuffer((float)delta, currentSpeed / maxLoops, loop / maxLoops);
+            }
+            Thread.Sleep(2); // ca. 500 Hz
+        }
+        sw.Stop();
     }
 
     public override void _Input(InputEvent @event)
     {
-        if (AudioManager == null)
-            return;
-
         if (@event is InputEventMouseButton btn)
         {
             if (btn.ButtonIndex == MouseButton.Left && btn.Pressed && !_isLeftHolding)
             {
                 _isLeftHolding = true;
                 _leftMoved = false;
-                targetSpeed = 0f; // Sofort abbremsen
             }
             if (btn.ButtonIndex == MouseButton.Left && !btn.Pressed)
             {
                 _isLeftHolding = false;
+                GD.Print(_leftMoved, motorRunning);
                 if (!_leftMoved)
                 {
-                    if (!motorRunning)
-                        StartMotor();
+                    if (motorRunning)
+                        targetSpeed = 0f;
                     else
-                        StopMotor();
+                        targetSpeed = motorSpeed / 60.0f;
+                    motorRunning = !motorRunning;
                 }
-                // Zielgeschwindigkeit auf 0 setzen, damit er langsam ausrollt
-                targetSpeed = 0f;
             }
             if (btn.ButtonIndex == MouseButton.Right && btn.Pressed && !_isRightHolding)
             {
@@ -98,23 +153,23 @@ public partial class TurntableControl : Node2D
 
     public override void _Process(double delta)
     {
-        // Drag
-        currentSpeed -= currentSpeed * drag * (float)delta;
-
-        // Inertia-Modell: Geschwindigkeit an Zielgeschwindigkeit angleichen
-        if (Mathf.Abs(currentSpeed - targetSpeed) > 0.001f)
+        if (Mathf.Abs(currentSpeed) < 0.001f)
         {
-            float sign = MathF.Sign(targetSpeed - currentSpeed);
-            currentSpeed += sign * acceleration * (float)delta;
-            // Nicht überschießen
-            if (sign != MathF.Sign(targetSpeed - currentSpeed))
-                currentSpeed = targetSpeed;
+            if (targetSpeed == 0)
+            {
+                StopMotor();
+            }
+            else if (Math.Abs(targetSpeed) > 0)
+            {
+                StartMotor();
+            }
+        }
+        else
+        {
+            QueueRedraw();
         }
 
-        if (motorRunning && !_isLeftHolding && !_isRightHolding)
-        {
-            targetSpeed = motorSpeed / 60.0f; // Ziel: normale Motor-Geschwindigkeit
-        }
+        _lastLoop = loop;
 
         if (_isRightHolding)
         {
@@ -128,15 +183,6 @@ public partial class TurntableControl : Node2D
             currentSpeed = (loop - _rightDragLastLoop) / (float)delta;
             _rightDragLastMousePos = mousePos;
             _rightDragLastLoop = loop;
-            QueueRedraw();
-        }
-        else if (motorRunning || MathF.Abs(currentSpeed) > 0.0001f)
-        {
-            loop += currentSpeed * (float)delta;
-            if (loop >= maxLoops)
-            {
-                StopMotor();
-            }
             QueueRedraw();
         }
 
@@ -156,16 +202,6 @@ public partial class TurntableControl : Node2D
             targetSpeed = 0f;
             QueueRedraw();
         }
-
-        // Geschwindigkeit in Songdurchläufe pro Sekunde umrechnen
-        AudioManager.FillBuffer((float)delta, currentSpeed / maxLoops, loop / maxLoops);
-
-        if (Mathf.Abs(currentSpeed) < 0.001f)
-            AudioManager.Pause();
-        else
-            AudioManager.Play();
-
-        _lastLoop = loop;
     }
 
     private Font _defaultFont = ThemeDB.FallbackFont;
@@ -174,7 +210,7 @@ public partial class TurntableControl : Node2D
         record.Rotation = loop % 1 * Mathf.Pi * 2;
         needle.Position = new Vector2((1 - (loop / maxLoops)) * 125 + 60, -12);
         // Text für Sample-Länge und aktuellen Index zeichnen
-        string info = $"Max Loop: {maxLoops} | Loop: {loop}";
-        DrawString(_defaultFont, new Vector2(-120, 240), info, HorizontalAlignment.Center);
+        string info = $"Max Loop: {maxLoops} | Loop: {loop} | Speed: {currentSpeed} | Target Speed: {targetSpeed}";
+        DrawString(_defaultFont, new Vector2(-240, 240), info, HorizontalAlignment.Center);
     }
 }
