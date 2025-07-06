@@ -1,0 +1,9 @@
+[gd_scene load_steps=3 format=3 uid="uid://bdqvk4d58dwfp"]
+
+[ext_resource type="ArrayMesh" uid="uid://cya1nj57oytfv" path="res://3D Assets/RecordPackage.res" id="1_hrhyi"]
+[ext_resource type="Script" uid="uid://uwunfei352ir" path="res://RecordPackage.cs" id="2_dtd1r"]
+
+[node name="MeshInstance3D" type="MeshInstance3D"]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 0, 0, 0)
+mesh = ExtResource("1_hrhyi")
+script = ExtResource("2_dtd1r")

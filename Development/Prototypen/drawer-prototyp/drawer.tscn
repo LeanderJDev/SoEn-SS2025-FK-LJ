@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3 uid="uid://cjvhtxeif2s2t"]
+
+[ext_resource type="ArrayMesh" uid="uid://c10ko7k8uuuau" path="res://3D Assets/Drawer.res" id="1_71w65"]
+[ext_resource type="PackedScene" uid="uid://bl7n0osduvcfv" path="res://record_view_new.tscn" id="2_kj86r"]
+
+[node name="Drawer" type="Node3D"]
+
+[node name="DrawerMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(-8.74228e-06, 200, 8.74228e-06, 0, -8.74228e-06, 200, 200, 8.74228e-06, 3.82137e-13, 0, 1.08396, -2.9062)
+mesh = ExtResource("1_71w65")
+skeleton = NodePath("../..")
+
+[node name="RecordView" parent="." instance=ExtResource("2_kj86r")]
+transform = Transform3D(-1, 0, 1.50996e-07, 0, 1, 0, -1.50996e-07, 0, -1, 0, 0, 0)
