@@ -15,7 +15,7 @@ uniform vec4 fade_color : source_color;
 
 varying vec4 world_pos;
 
-void vertex() 
+void vertex()
 {
     world_pos = (MODEL_MATRIX * vec4(VERTEX, 1.0));
 }
@@ -23,11 +23,11 @@ void vertex()
 void fragment()
 {
 	vec3 local_pos = (inverse(box_transform) * world_pos).xyz;
-	
+
 	//vec3 half_box_size = box_size * 0.5;
-	
+
 	float transition_width = 0.1;
-	
+
 	vec3 dst_to_edge = -(1. / transition_width) * (abs(local_pos) - (0.5 * box_size));
 	float fade = clamp(min(dst_to_edge.x, min(dst_to_edge.y, dst_to_edge.z)), 0., 1.);
 	/*
@@ -42,7 +42,7 @@ void fragment()
 	{
 		discard;
 	}
-	
+
 	ALBEDO = mix(fade_color.rgb, albedo.rgb, fade);
 	METALLIC = metallic;
 	SPECULAR = specular;
