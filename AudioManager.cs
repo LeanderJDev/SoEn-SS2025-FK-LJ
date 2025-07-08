@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Threading;
+
 public partial class AudioManager : Node2D
 {
     [Export] public AudioStream Sample; // Typ geändert!
@@ -24,7 +25,6 @@ public partial class AudioManager : Node2D
 
     private Thread _audioThread;
     private volatile bool _audioThreadRunning = false;
-    private readonly object _audioLock = new object();
 
     public override void _Ready()
     {
@@ -111,13 +111,13 @@ public partial class AudioManager : Node2D
 
     public void FillBuffer(float delta, float turntableSpeed, float turntablePos)
     {
-        _speed = turntableSpeed*SampleLength/sampleRate;
+        _speed = turntableSpeed * SampleLength / sampleRate;
         // Berechne Menge an zu schreibenden Samples aus Daten des Turntables
         samplesToWrite = (int)(delta * sampleRate * Math.Abs(_speed));
         _indexDifferencePlot[_indexDifferenceIndex] = (int)(_sampleIndex - turntablePos * _samples.Length);
         _indexDifferenceIndex = (_indexDifferenceIndex + 1) % indexDifferenceLength;
         _sampleIndex = turntablePos * _samples.Length;
-        
+
     }
 
     private Font _defaultFont = ThemeDB.FallbackFont;
@@ -159,7 +159,7 @@ public partial class AudioManager : Node2D
         }
 
         p1 = new Vector2(100 + plotScaleX, plotBaseY);
-        p2 = new Vector2(100 + indexDifferenceLength*plotScaleX, plotBaseY);
+        p2 = new Vector2(100 + indexDifferenceLength * plotScaleX, plotBaseY);
         DrawLine(p1, p2, new Color(1, 1, 1, 0.2f), 2);
 
         // Text für Sample-Länge und aktuellen Index zeichnen
@@ -178,13 +178,5 @@ public partial class AudioManager : Node2D
     {
         if (_player.Playing)
             _player.StreamPaused = true;
-    }
-
-    public void TogglePlayPause()
-    {
-        if (_player.Playing)
-            _player.StreamPaused = true;
-        else
-            _player.StreamPaused = false;
     }
 }
