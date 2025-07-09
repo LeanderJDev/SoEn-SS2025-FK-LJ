@@ -192,7 +192,7 @@ public partial class RecordView : Node3D
     private void UpdatePackageTransformTargets(RecordPackageSlot packageSlot, Vector2? mousePos, out float mouseDst)
     {
         float maxYAngle = Mathf.DegToRad(6);
-        float maxXAngle = -Mathf.DegToRad(50);
+        float maxXAngle = -Mathf.DegToRad(30);
 
         float xRotation; 
         float yRotation;
@@ -219,15 +219,18 @@ public partial class RecordView : Node3D
             xRotation = -0.5f * (Mathf.Cos(Mathf.Pi / gapWidth * mouseDst) + 1) * Mathf.Sign(mouseDst) * maxXAngle;
             */
             //neues kippen
-            xRotation = mouseDst < 0 ? maxXAngle * -0.4f : maxXAngle;
+            // xRotation = mouseDst < 0 ? maxXAngle * -2.0f : maxXAngle;
+            xRotation = mouseDst < 0 ? Mathf.DegToRad(30) : Mathf.DegToRad(-10);
 
             yRotation = Mathf.Min(Mathf.Abs(packageToMouseNormalized.X) / (100 * Mathf.Max(packageToMouse.Length(), 0.3f)), maxYAngle) * Mathf.Sign(packageToMouseNormalized.Y * packageToMouseNormalized.X);
             mouseDst = packageToMouse.Y;
         }
         else
         {
-            xRotation = 0;
-            yRotation = 0;
+            // xRotation = 0;
+            // yRotation = 0;
+            xRotation = packageSlot.packageObject.targetRotation.X;
+            yRotation = packageSlot.packageObject.targetRotation.Y;
             mouseDst = float.NaN;
         }
 

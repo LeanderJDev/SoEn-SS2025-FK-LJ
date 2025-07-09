@@ -12,7 +12,7 @@ size = Vector3(30, 0.1, 30)
 [node name="Node3D" type="Node3D"]
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(-0.523917, 0.789285, -0.32022, 0.0487011, 0.40309, 0.913863, 0.850376, 0.463193, -0.249625, -2.11541, 7.13309, -2.09558)
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 10, 0)
 fov = 57.9
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
