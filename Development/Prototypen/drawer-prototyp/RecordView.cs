@@ -192,7 +192,7 @@ public partial class RecordView : Node3D
     private void UpdatePackageTransformTargets(RecordPackageSlot packageSlot, Vector2? mousePos, out float mouseDst)
     {
         float maxYAngle = Mathf.DegToRad(6);
-        float maxXAngle = Mathf.DegToRad(50);
+        float maxXAngle = -Mathf.DegToRad(50);
 
         float xRotation; 
         float yRotation;
@@ -213,9 +213,14 @@ public partial class RecordView : Node3D
             Vector2 packageToMouse = mousePos.Value - new Vector2(packageSlot.packageObject.Position.X, packageSlot.packageObject.Position.Z);
             Vector2 packageToMouseNormalized = packageToMouse.Normalized();
             mouseDst = packageToMouse.Y;
+            /* altes kippen
             if (mouseDst < 0) mouseDst -= backSideOffset;
             mouseDst = Mathf.Clamp(mouseDst, -gapWidth, gapWidth);
             xRotation = -0.5f * (Mathf.Cos(Mathf.Pi / gapWidth * mouseDst) + 1) * Mathf.Sign(mouseDst) * maxXAngle;
+            */
+            //neues kippen
+            xRotation = mouseDst < 0 ? maxXAngle * -0.4f : maxXAngle;
+
             yRotation = Mathf.Min(Mathf.Abs(packageToMouseNormalized.X) / (100 * Mathf.Max(packageToMouse.Length(), 0.3f)), maxYAngle) * Mathf.Sign(packageToMouseNormalized.Y * packageToMouseNormalized.X);
             mouseDst = packageToMouse.Y;
         }
@@ -232,6 +237,30 @@ public partial class RecordView : Node3D
 	public override void _Process(double delta)
 	{
 		Vector2? mousePos = GetRelativeMousePos();
+
+        const float scrollAreaSize = 0.3f;
+        float autoScrollSensitivity = 40f;
+
+        if (mousePos.HasValue)
+        {
+            //transorm space
+            Vector2 size = new Vector2(((BoxShape3D)recordViewBounds.Shape).Size.X, ((BoxShape3D)recordViewBounds.Shape).Size.Y) * 2f;
+
+            Vector3 globalPos = mousePlane.GlobalTransform * new Vector3(mousePos.Value.X, 0, mousePos.Value.Y - ((BoxShape3D)mousePlane.Shape).Size.Z * 0.5f);
+            Vector3 localPos = recordViewBounds.GlobalTransform.AffineInverse() * globalPos;
+            Vector2 newMousePos = new Vector2(localPos.X, localPos.Z) / size;
+
+            if (newMousePos.Y < -0.5f + scrollAreaSize || newMousePos.Y > 0.5f - scrollAreaSize)
+            {
+                GD.Print(newMousePos);
+                unconsumedScrollDelta += autoScrollSensitivity * (float)delta * (newMousePos.Y - Mathf.Sign(newMousePos.Y) * (0.5f - scrollAreaSize));
+                newMousePos = new Vector2(newMousePos.X, Mathf.Clamp(newMousePos.Y, -0.5f + scrollAreaSize, 0.5f - scrollAreaSize)) * size;
+
+                globalPos = recordViewBounds.GlobalTransform * new Vector3(newMousePos.X, 0, newMousePos.Y);
+                localPos = mousePlane.GlobalTransform.AffineInverse() * globalPos;
+                mousePos = new Vector2(localPos.X, localPos.Z + ((BoxShape3D)mousePlane.Shape).Size.Z * 0.5f);
+            }
+        }
 
         gapIndex = -10;
         float minDstToMouse = float.MaxValue;
