@@ -11,8 +11,7 @@ public partial class AudioManager : Node2D
     private Vector2[] _samples; // Stereo: X = links, Y = rechts
     private const int sampleRate = 44100;
     private volatile float _sampleIndex = 0;
-    private volatile float _speed = 1;
-    private volatile int samplesToWrite = 0;
+    private volatile float _speed = 0;
 
     private const int WaveformLength = 200;
     private float[] _waveformBuffer = new float[WaveformLength];
@@ -89,17 +88,15 @@ public partial class AudioManager : Node2D
             double now = sw.Elapsed.TotalSeconds;
             double delta = now - lastTime;
             lastTime = now;
-            while (_playback.GetFramesAvailable() > 0 && samplesToWrite > 0)
+            while (_playback.GetFramesAvailable() > 0)
             {
                 Vector2 sample = _samples[Math.Clamp((int)_sampleIndex, 0, _samples.Length - 1)];
                 // Ringpuffer für die Wellenform (Mono-Mix für Visualisierung)
                 _waveformBuffer[_waveformIndex] = (sample.X + sample.Y) * 0.5f;
                 _waveformIndex = (_waveformIndex + 1) % WaveformLength;
-                _playback.PushFrame(sample); // Stereo!
+                _playback.PushFrame(sample);
                 _sampleIndex += _speed;
-                samplesToWrite -= 1;
             }
-            Thread.Sleep(2); // ca. 500 Hz
         }
     }
 
@@ -109,15 +106,33 @@ public partial class AudioManager : Node2D
         QueueRedraw();
     }
 
+    //turntableSpeed ist hier nur, weil wenn wir eh springen, können wir auch gleich die Geschwindigkeiten syncen, das fällt ja dann nicht auf
+    public void JumpTo(float turntablePos, float turntableSpeed)
+    {
+        _sampleIndex = turntablePos * SampleLength;
+        _speed = turntableSpeed * (SampleLength / sampleRate);
+    }
+
+    float turntableSpeed = 0;
+
     public void FillBuffer(float delta, float turntableSpeed, float turntablePos)
     {
-        _speed = turntableSpeed * SampleLength / sampleRate;
-        // Berechne Menge an zu schreibenden Samples aus Daten des Turntables
-        samplesToWrite = (int)(delta * sampleRate * Math.Abs(_speed));
-        _indexDifferencePlot[_indexDifferenceIndex] = (int)(_sampleIndex - turntablePos * _samples.Length);
-        _indexDifferenceIndex = (_indexDifferenceIndex + 1) % indexDifferenceLength;
-        _sampleIndex = turntablePos * _samples.Length;
+        float currentPos = _sampleIndex / SampleLength;
+        float turntableStep = turntableSpeed * delta;
+        float targetPos = turntablePos + turntableStep;
+        float targetStep = targetPos - currentPos;
+        float newSpeed = targetStep * (SampleLength / (float)sampleRate);
 
+        //versuchen, aufzuholen bzw. weich zu syncronisieren
+        _speed = newSpeed;
+        this.turntableSpeed = turntableSpeed;
+
+        //_speed = turntableSpeed * (SampleLength / sampleRate);
+        // Berechne Menge an zu schreibenden Samples aus Daten des Turntables
+        //samplesToWrite = (int)(delta * sampleRate * Math.Abs(_speed));
+        _indexDifferencePlot[_indexDifferenceIndex] = (int)(_sampleIndex - turntablePos * SampleLength);
+        _indexDifferenceIndex = (_indexDifferenceIndex + 1) % indexDifferenceLength;
+        //_sampleIndex = turntablePos * SampleLength;
     }
 
     private Font _defaultFont = ThemeDB.FallbackFont;
@@ -163,7 +178,7 @@ public partial class AudioManager : Node2D
         DrawLine(p1, p2, new Color(1, 1, 1, 0.2f), 2);
 
         // Text für Sample-Länge und aktuellen Index zeichnen
-        string info = $"Sample Length: {_samples?.Length ?? 0} | Index: {_sampleIndex:F3} | Frames Available: {_playback.GetFramesAvailable()} | Skips: {_playback.GetSkips()} | Speed: {_speed:F3}";
+        string info = $"Sample Length: {_samples?.Length ?? 0:D7} | Index: {(int)_sampleIndex:D7} | Frames Available: {_playback.GetFramesAvailable():D5} | Skips: {_playback.GetSkips():D6} | Speed: {_speed:F3} | TSpeed: {turntableSpeed}";
         DrawString(_defaultFont, new Vector2(100, 30), info, HorizontalAlignment.Center);
     }
 

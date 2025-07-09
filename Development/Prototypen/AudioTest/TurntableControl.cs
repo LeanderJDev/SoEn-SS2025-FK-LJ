@@ -10,7 +10,7 @@ public partial class TurntableControl : Node2D
 	private Node2D needle;
 	private Node2D record;
 
-	private bool _isLeftHolding = false;
+	private volatile bool _isLeftHolding = false;
 	private bool _isRightHolding = false;
 	private bool _leftMoved = false;
 
@@ -39,7 +39,7 @@ public partial class TurntableControl : Node2D
 		if (AudioManager == null)
 			return;
 
-		maxLoops = motorSpeed/60 * AudioManager.SampleLength / 44100;
+		maxLoops = motorSpeed / 60 * AudioManager.SampleLength / 44100;
 
 		_threadRunning = true;
 		_turntableThread = new Thread(TurntableThreadLoop);
@@ -88,7 +88,7 @@ public partial class TurntableControl : Node2D
 			}
 					
 			// Werte an AudioManager übergeben (thread-sicher)
-			if (AudioManager != null)
+			if (AudioManager != null && !_isLeftHolding)
 			{
 				AudioManager.FillBuffer((float)delta, currentSpeed / maxLoops, loop / maxLoops);
 			}
@@ -174,7 +174,7 @@ public partial class TurntableControl : Node2D
 			float angleDelta = Mathf.Wrap(newAngle - lastAngle, -Mathf.Pi, Mathf.Pi);
 			float loopDelta = angleDelta / (Mathf.Pi * 2);
 			loop += loopDelta;
-			currentSpeed = (loop - _rightDragLastLoop) / (float)delta;
+            currentSpeed = (loop - _rightDragLastLoop) / (float)delta;
 			_rightDragLastMousePos = mousePos;
 			_rightDragLastLoop = loop;
 			QueueRedraw();
@@ -189,7 +189,8 @@ public partial class TurntableControl : Node2D
 				float offset = loop % 1;
 				loop = (int)((1 - (localMousePos - 60) / 125) * maxLoops);
 				loop += offset;
-			}
+                AudioManager.JumpTo(loop / maxLoops, currentSpeed / maxLoops);
+            }
 			if (Math.Abs(loop - _lastLoop) > 0.5f)
 				_leftMoved = true;
 			// Setze targetSpeed auf 0, damit er beim Loslassen ausrollt
