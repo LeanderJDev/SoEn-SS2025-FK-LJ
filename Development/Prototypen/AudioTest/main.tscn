@@ -7,20 +7,20 @@
 
 [node name="Node2D" type="Node2D"]
 
-[node name="Node" type="Node2D" parent="."]
+[node name="AudioManager" type="Node2D" parent="."]
 script = ExtResource("1_ig7tw")
 Sample = ExtResource("2_1bvp3")
 
-[node name="Node2D" type="Node2D" parent="." node_paths=PackedStringArray("AudioManager")]
+[node name="TurntableControl" type="Node2D" parent="." node_paths=PackedStringArray("AudioManager")]
 position = Vector2(800, 300)
 script = ExtResource("3_h2yge")
-AudioManager = NodePath("../Node")
+AudioManager = NodePath("../AudioManager")
 
-[node name="Record" type="Sprite2D" parent="Node2D"]
+[node name="Record" type="Sprite2D" parent="TurntableControl"]
 scale = Vector2(3, 3)
 texture = ExtResource("4_1bvp3")
 
-[node name="Needle" type="Polygon2D" parent="Node2D"]
+[node name="Needle" type="Polygon2D" parent="TurntableControl"]
 position = Vector2(185, -12)
 scale = Vector2(3, 3)
 color = Color(0.137255, 0.839216, 0.207843, 1)
