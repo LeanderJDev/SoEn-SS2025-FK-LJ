@@ -21,12 +21,20 @@ public partial class AudioManager : Node2D
     private const int indexDifferenceLength = 200;
     private int[] _indexDifferencePlot = new int[indexDifferenceLength];
     private int _indexDifferenceIndex = 0;
+
+    private const int deltaLength = 200;
+    private float[] _deltaPlot = new float[deltaLength];
+    private int _deltaIndex = 0;
+
+
     public int SampleLength => _samples.Length;
 
     private Thread _thread;
     private volatile bool _threadRunning = false;
 
     public Turntable turntable;
+
+    private float indexDelta = 0;
 
     public override void _Ready()
     {
@@ -88,29 +96,27 @@ public partial class AudioManager : Node2D
         var sw = new System.Diagnostics.Stopwatch();
         sw.Start();
         double lastTime = sw.Elapsed.TotalSeconds;
+        int delay = 0;
         while (_threadRunning)
         {
-            double now = sw.Elapsed.TotalSeconds;
-            double delta = now - lastTime;
-            lastTime = now;
-            turntable.ThreadStep(delta);
-            float prevIndex = _sampleIndex;
-            _sampleIndex = (turntable.loop / turntable.maxLoops) * SampleLength;
-            _speed = turntable.currentSpeed / turntable.maxLoops * (SampleLength / sampleRate);
-            _indexDifferencePlot[_indexDifferenceIndex] = (int)(prevIndex - _sampleIndex);
-            _indexDifferenceIndex = (_indexDifferenceIndex + 1) % indexDifferenceLength;
-            int samplesToWrite = (int)(delta * sampleRate * Math.Abs(_speed));
+            int samplesToWrite = ((delay * sampleRate)/1000)+1;
             while (_playback.GetFramesAvailable() > 0 && samplesToWrite > 0)
             {
+                float prevIndex = _sampleIndex;
+                turntable.ThreadStep(1.0f/sampleRate);
+                _sampleIndex = (turntable.loop / turntable.maxLoops) * SampleLength;
                 Vector2 sample = _samples[Math.Clamp((int)_sampleIndex, 0, _samples.Length - 1)];
                 // Ringpuffer für die Wellenform (Mono-Mix für Visualisierung)
                 _waveformBuffer[_waveformIndex] = (sample.X + sample.Y) * 0.5f;
                 _waveformIndex = (_waveformIndex + 1) % WaveformLength;
                 _playback.PushFrame(sample);
-                _sampleIndex += _speed;
-                samplesToWrite -= 1;
+                _speed = (float)((prevIndex - _sampleIndex) * sampleRate);
+                samplesToWrite--;
+                indexDelta = prevIndex - _sampleIndex;
             }
-            Thread.Sleep(1);
+            _indexDifferencePlot[_indexDifferenceIndex] = (int)(_speed - sampleRate);
+            _indexDifferenceIndex = (_indexDifferenceIndex + 1) % indexDifferenceLength;
+            Thread.Sleep(delay);
         }
     }
 
@@ -162,8 +168,19 @@ public partial class AudioManager : Node2D
         p2 = new Vector2(100 + indexDifferenceLength * plotScaleX, plotBaseY);
         DrawLine(p1, p2, new Color(1, 1, 1, 0.2f), 2);
 
+        for (int i = 0; i < deltaLength - 1; i++)
+        {
+            int idx1 = (_deltaIndex + i) % deltaLength;
+            int idx2 = (_deltaIndex + i + 1) % deltaLength;
+            float y1 = plotBaseY - _deltaPlot[idx1] * plotScaleY;
+            float y2 = plotBaseY - _deltaPlot[idx2] * plotScaleY;
+            p1 = new Vector2(100 + i * plotScaleX, y1);
+            p2 = new Vector2(100 + (i + 1) * plotScaleX, y2);
+            DrawLine(p1, p2, new Color(0, 1, 1, 0.2f), 3);
+        }
+
         // Text für Sample-Länge und aktuellen Index zeichnen
-        string info = $"Sample Length: {_samples?.Length ?? 0:D7} | Index: {(int)_sampleIndex:D7} | Frames Available: {_playback.GetFramesAvailable():D5} | Skips: {_playback.GetSkips():D6} | Speed: {_speed:F3}";
+        string info = $"Sample Length: {_samples?.Length ?? 0:D7} | Index: {(int)_sampleIndex:D7} | Frames Available: {_playback.GetFramesAvailable():D5} | Skips: {_playback.GetSkips():D6} | Speed: {_speed:F3} | delta: {indexDelta:F5}";
         DrawString(_defaultFont, new Vector2(100, 30), info, HorizontalAlignment.Center);
     }
 
@@ -204,7 +221,7 @@ namespace Simulation
         public volatile float currentSpeed = 0f;
         public volatile float targetSpeed = 0f;
         private const float acceleration = 1.0f; // Umdrehungen pro Sekunde^2, anpassen nach Gefühl
-        private const float drag = 0.9f;
+        private const float drag = 0.8f;
 
         public Turntable(float songLength)
         {
@@ -224,17 +241,13 @@ namespace Simulation
                 if (sign != MathF.Sign(targetSpeed - currentSpeed))
                     currentSpeed = targetSpeed;
             }
-            if (motorRunning)
-            {
-                targetSpeed = motorSpeed / 60.0f;
-            }
 
-            if (MathF.Abs(currentSpeed) > 0.0001f)
+            if (MathF.Abs(currentSpeed) > 0.00001f && motorRunning)
             {
                 loop += currentSpeed * (float)delta;
                 if (loop >= maxLoops)
                 {
-                    targetSpeed = 0;
+                    StopMotor();
                 }
             }
 
@@ -242,24 +255,22 @@ namespace Simulation
             {
                 if (targetSpeed == 0)
                 {
-                    StopMotor();
+                    motorRunning = false;
                 }
                 else if (Math.Abs(targetSpeed) > 0)
                 {
-                    StartMotor();
+                    motorRunning = true;
                 }
             }
         }
 
         public void StartMotor()
         {
-            motorRunning = true;
             targetSpeed = targetRunningSpeed;
         }
 
         public void StopMotor()
         {
-            motorRunning = false;
             targetSpeed = 0f;
         }
 
@@ -269,6 +280,12 @@ namespace Simulation
                 StopMotor();
             else
                 StartMotor();
+        }
+
+        public void Rotate(float angle)
+        {
+            float loopDelta = angle / (Mathf.Pi * 2);
+            loop += loopDelta;
         }
     }
 }

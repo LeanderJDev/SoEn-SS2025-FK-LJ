@@ -11,7 +11,6 @@ public partial class TurntableControl : Node2D
 	private volatile bool _isLeftHolding = false;
 	private bool _isRightHolding = false;
 	private bool _leftMoved = false;
-	private volatile float loop = 0;
 	private float _lastLoop = 0;
 
 	private Vector2 _rightDragLastMousePos = Vector2.Zero;
@@ -47,12 +46,15 @@ public partial class TurntableControl : Node2D
 			{
 				_isRightHolding = true;
 				_rightDragLastMousePos = btn.Position;
-				_rightDragLastLoop = loop;
+				_rightDragLastLoop = AudioManager.turntable.loop;
+				AudioManager.turntable.StopMotor();
+				AudioManager.turntable.motorRunning = false;
 			}
 			if (btn.ButtonIndex == MouseButton.Right && !btn.Pressed)
 			{
 				_isRightHolding = false;
-				// Nach Loslassen bleibt die aktuelle Geschwindigkeit erhalten (Schwung)
+				AudioManager.turntable.StartMotor();
+				AudioManager.turntable.motorRunning = true;
 			}
 		}
 	}
@@ -64,8 +66,6 @@ public partial class TurntableControl : Node2D
 			QueueRedraw();
 		}
 
-		loop = AudioManager.turntable.loop;
-
 		if (_isRightHolding)
 		{
 			Vector2 mousePos = GetViewport().GetMousePosition();
@@ -73,11 +73,11 @@ public partial class TurntableControl : Node2D
 			float lastAngle = (_rightDragLastMousePos - center).Angle();
 			float newAngle = (mousePos - center).Angle();
 			float angleDelta = Mathf.Wrap(newAngle - lastAngle, -Mathf.Pi, Mathf.Pi);
-			float loopDelta = angleDelta / (Mathf.Pi * 2);
-			loop += loopDelta;
-			AudioManager.turntable.currentSpeed = (loop - _rightDragLastLoop) / (float)delta;
+
+			AudioManager.turntable.Rotate(angleDelta);
+			AudioManager.turntable.currentSpeed = (AudioManager.turntable.loop - _rightDragLastLoop) / (float)delta;
 			_rightDragLastMousePos = mousePos;
-			_rightDragLastLoop = loop;
+			_rightDragLastLoop = AudioManager.turntable.loop;
 			QueueRedraw();
 		}
 
@@ -87,25 +87,26 @@ public partial class TurntableControl : Node2D
 			float localMousePos = mousePos.X - Position.X;
 			if (localMousePos > 60 && localMousePos < 185)
 			{
-				float offset = loop % 1;
-				loop = (int)((1 - (localMousePos - 60) / 125) * AudioManager.turntable.maxLoops);
-				loop += offset;
-				AudioManager.JumpTo(loop);
+				float offset = AudioManager.turntable.loop % 1;
+				AudioManager.turntable.loop = (int)((1 - (localMousePos - 60) / 125) * AudioManager.turntable.maxLoops);
+				AudioManager.turntable.loop += offset;
+				AudioManager.JumpTo(AudioManager.turntable.loop);
 			}
-			if (Math.Abs(loop - _lastLoop) > 0.5f)
+			if (Math.Abs(AudioManager.turntable.loop - _lastLoop) > 0.5f)
 				_leftMoved = true;
 			QueueRedraw();
 		}
-		_lastLoop = loop;
+
+		_lastLoop = AudioManager.turntable.loop;
 	}
 
 	private Font _defaultFont = ThemeDB.FallbackFont;
 	public override void _Draw()
 	{
-		record.Rotation = loop % 1 * Mathf.Pi * 2;
-		needle.Position = new Vector2((1 - (loop / AudioManager.turntable.maxLoops)) * 125 + 60, -12);
+		record.Rotation = AudioManager.turntable.loop % 1 * Mathf.Pi * 2;
+		needle.Position = new Vector2((1 - (AudioManager.turntable.loop / AudioManager.turntable.maxLoops)) * 125 + 60, -12);
 		// Text für Sample-Länge und aktuellen Index zeichnen
-		string info = $"Max Loop: {AudioManager.turntable.maxLoops} | Loop: {loop} | Speed: {AudioManager.turntable.currentSpeed} | Target Speed: {AudioManager.turntable.targetSpeed}";
+		string info = $"Max Loop: {AudioManager.turntable.maxLoops} | Loop: {AudioManager.turntable.loop:F7} | Speed: {AudioManager.turntable.currentSpeed:F5} | Target Speed: {AudioManager.turntable.targetSpeed:F3}";
 		DrawString(_defaultFont, new Vector2(-240, 240), info, HorizontalAlignment.Center);
 	}
 }
