@@ -6,37 +6,29 @@ using System.Linq;
 
 public partial class RecordView : Node3D
 {
-	public PackedScene recordPrefab = GD.Load<PackedScene>("res://record_package.tscn");
-
+    //just for testing
     private class Song(string name)
     {
         public readonly string name = name;
     }
 
     private float movableContainerVelocity;
-
     private float _movableContainerTarget;
     private float MovableContainerTarget
     {
         get => _movableContainerTarget;
         set
         {
-            float size = (((BoxShape3D)mousePlane.Shape).Size.Z - ((BoxShape3D)recordViewBounds.Shape).Size.Z) * 0.5f;      //da mousePlane sich anpasst
-            value = Math.Clamp(value, -size, size);
+            float halfSize = ContainerLength * 0.5f - Margin;      //da mousePlane sich anpasst
+            value = Math.Clamp(value, -halfSize, halfSize);
             _movableContainerTarget = value;
         }
     }
 
     private readonly List<RecordPackage> currentlyDraggedPackages = new();
-
-    private struct RecordPackageSlot
-    {
-        public int index;       //has to be updated if list changes
-        public RecordPackage packageObject; //can be null if outside the window! changes dynamically.
-        public Song song;   //muss eigentlich zu ReckordPackage verschoben werden
-    }
-
 	private readonly List<RecordPackageSlot> recordPackageObjects = [];
+
+    private int RecordCount => recordPackageObjects.Count;
 
     [Export] float gapWidth = 4.0f;
     [Export] float backSideOffset = 2.5f;
@@ -47,23 +39,30 @@ public partial class RecordView : Node3D
     [Export] ShaderMaterial BaseMaterial;
 
     private ShaderMaterial instancedMaterial;
-
-    private int lastGapIndex = -1;
-
+    private int lastPickupGapIndex = -1;
     private const float recordPackageWidth = 0.25f;
-
-    private int gapIndex;
-
+    private float gapIndex;
     private float unconsumedScrollDelta;
+
+    private float Margin => ((BoxShape3D)recordViewBounds.Shape).Size.Z * 0.5f;
+    private Vector3 Bounds => ((BoxShape3D)recordViewBounds.Shape).Size;
+    private float ContainerLength => ((BoxShape3D)mousePlane.Shape).Size.Z;
+
+    private struct RecordPackageSlot
+    {
+        public int index;       //has to be updated if list changes
+        public RecordPackage packageObject; //can be null if outside the window! changes dynamically.
+        public Song song;   //muss eigentlich zu ReckordPackage verschoben werden
+    }
 
     public override void _Ready()
     {
         base._Ready();
-		RequestReady();         //so that _ready() will be called again for the next instance of this class
-		Init();
+        RequestReady();         //so that _ready() will be called again for the next instance of this class
+        Init();
     }
 
-	private void Init()
+    private void Init()
     {
         //just for testing
         List<Song> playlistSongs = new(100);
@@ -76,6 +75,8 @@ public partial class RecordView : Node3D
             throw new Exception("no collision shape");
         if (recordsContainer == null)
             throw new Exception("no records container");
+
+        PackedScene recordPrefab = GD.Load<PackedScene>("res://record_package.tscn");
 
         for (int i = 0; i < playlistSongs.Count; i++)
 		{
@@ -107,9 +108,7 @@ public partial class RecordView : Node3D
     {
         const float clickPlaneWidth = 2.5f;
 
-        float margin = ((BoxShape3D)recordViewBounds.Shape).Size.Z;
-
-        float size = recordPackageWidth * recordPackageObjects.Count + margin;
+        float size = recordPackageWidth * recordPackageObjects.Count + Margin * 2;
         ((BoxShape3D)mousePlane.Shape).Size = new Vector3(clickPlaneWidth, 0.01f, size);
         recordsContainer.Position = new Vector3(0, 0, -size * 0.5f);
 
@@ -179,7 +178,7 @@ public partial class RecordView : Node3D
             Vector3 hitPos = (Vector3)result["position"];
 
             Vector3 localPos = mousePlane.GlobalTransform.AffineInverse() * hitPos;
-            return new Vector2(localPos.X, localPos.Z + ((BoxShape3D)mousePlane.Shape).Size.Z * 0.5f);
+            return new Vector2(localPos.X, localPos.Z + ContainerLength * 0.5f);
         }
         else return null;
     }
@@ -189,7 +188,7 @@ public partial class RecordView : Node3D
     /// <summary>
     /// Die Schallplatten-Packungen haben einen TranformTarget, also einen Zielzustand (Translation und Rotation) den sie erreichen sollen. Hier wird dieser Zustand neu gesetzt.
     /// </summary>
-    private void UpdatePackageTransformTargets(RecordPackageSlot packageSlot, Vector2? mousePos, out float mouseDst)
+    private void UpdatePackageTransformTargets(RecordPackageSlot packageSlot, float mousePosX) 
     {
         float maxYAngle = Mathf.DegToRad(6);
         float maxXAngle = -Mathf.DegToRad(50);
@@ -199,40 +198,31 @@ public partial class RecordView : Node3D
 
         if (currentlyDraggedPackages.Contains(packageSlot.packageObject))
         {
-            mouseDst = float.NaN;
             return;
         }
 
-        float startMargin = ((BoxShape3D)recordViewBounds.Shape).Size.Z * 0.5f;
-        packageSlot.packageObject.targetPosition = new(0, 0, startMargin + packageSlot.index * recordPackageWidth);
+        packageSlot.packageObject.targetPosition = new(0, 0, Margin + packageSlot.index * recordPackageWidth);
 
-        mousePos += new Vector2(0, 0.6f);
+        float gapIndexToZPos = gapIndex / RecordCount * (ContainerLength - Margin * 2) + Margin;
 
-        if (mousePos.HasValue)
-        {
-            Vector2 packageToMouse = mousePos.Value - new Vector2(packageSlot.packageObject.Position.X, packageSlot.packageObject.Position.Z);
-            Vector2 packageToMouseNormalized = packageToMouse.Normalized();
-            mouseDst = packageToMouse.Y;
-            /* altes kippen
-            if (mouseDst < 0) mouseDst -= backSideOffset;
-            mouseDst = Mathf.Clamp(mouseDst, -gapWidth, gapWidth);
-            xRotation = -0.5f * (Mathf.Cos(Mathf.Pi / gapWidth * mouseDst) + 1) * Mathf.Sign(mouseDst) * maxXAngle;
-            */
-            //neues kippen
-            xRotation = mouseDst < 0 ? maxXAngle * -0.4f : maxXAngle;
-
-            yRotation = Mathf.Min(Mathf.Abs(packageToMouseNormalized.X) / (100 * Mathf.Max(packageToMouse.Length(), 0.3f)), maxYAngle) * Mathf.Sign(packageToMouseNormalized.Y * packageToMouseNormalized.X);
-            mouseDst = packageToMouse.Y;
-        }
-        else
-        {
-            xRotation = 0;
-            yRotation = 0;
-            mouseDst = float.NaN;
-        }
-
+        Vector2 packageToMouse = new Vector2(mousePosX, gapIndexToZPos) - new Vector2(packageSlot.packageObject.Position.X, packageSlot.packageObject.Position.Z);
+        Vector2 packageToMouseNormalized = packageToMouse.Normalized();
+        float mouseDst = packageToMouse.Y;
+        /* altes kippen
+        float mouseDst = packageToMouse.Y;
+        if (mouseDst < 0) mouseDst -= backSideOffset;
+        mouseDst = Mathf.Clamp(mouseDst, -gapWidth, gapWidth);
+        xRotation = -0.5f * (Mathf.Cos(Mathf.Pi / gapWidth * mouseDst) + 1) * Mathf.Sign(mouseDst) * maxXAngle;
+        */
+        //neues kippen
+        xRotation = mouseDst < 0 ? maxXAngle * -0.4f : maxXAngle;
+        yRotation = Mathf.Min(Mathf.Abs(packageToMouseNormalized.X) / (100 * Mathf.Max(packageToMouse.Length(), 0.3f)), maxYAngle) * Mathf.Sign(packageToMouseNormalized.Y * packageToMouseNormalized.X);
         packageSlot.packageObject.targetRotation = new Vector3(xRotation, yRotation, 0);
     }
+
+    private float inertOffset = 0.5f;
+    private float lastMouseY = 0;
+    private float currentFlipOffset = 0;
 
 	public override void _Process(double delta)
 	{
@@ -241,6 +231,7 @@ public partial class RecordView : Node3D
         const float scrollAreaSize = 0.3f;
         float autoScrollSensitivity = 40f;
 
+        //mousePos so manipulieren, dass es nur bis zum rand der scroll-bereiche umblättert
         if (mousePos.HasValue)
         {
             //transorm space
@@ -252,7 +243,6 @@ public partial class RecordView : Node3D
 
             if (newMousePos.Y < -0.5f + scrollAreaSize || newMousePos.Y > 0.5f - scrollAreaSize)
             {
-                GD.Print(newMousePos);
                 unconsumedScrollDelta += autoScrollSensitivity * (float)delta * (newMousePos.Y - Mathf.Sign(newMousePos.Y) * (0.5f - scrollAreaSize));
                 newMousePos = new Vector2(newMousePos.X, Mathf.Clamp(newMousePos.Y, -0.5f + scrollAreaSize, 0.5f - scrollAreaSize)) * size;
 
@@ -262,28 +252,29 @@ public partial class RecordView : Node3D
             }
         }
 
-        gapIndex = -10;
-        float minDstToMouse = float.MaxValue;
-        for (int i = 0; i < recordPackageObjects.Count; i++)
+        if (mousePos.HasValue)
         {
-            UpdatePackageTransformTargets(recordPackageObjects[i], mousePos, out float mouseDst);
-            if (float.IsNaN(mouseDst))
-                continue;
-            if (mouseDst >= 0)
+            const float flipThreshhold = 1.7f;
+            float mouseZdelta = mousePos.Value.Y - lastMouseY;
+            currentFlipOffset = Mathf.Clamp(currentFlipOffset + mouseZdelta, -flipThreshhold * 0.5f, flipThreshhold * 0.5f);
+            lastMouseY = mousePos.Value.Y;
+
+            mousePos = new Vector2(mousePos.Value.X, mousePos.Value.Y - currentFlipOffset);
+
+            GD.Print($"mousePos: {mousePos.Value.Y}, currentOffset: {currentFlipOffset}");
+        }
+
+        //nur gapIndex anpassen, wenn die maus auch über den packages hovered
+        if (mousePos.HasValue)
+        {
+            gapIndex = (mousePos.Value.Y - Margin) / (ContainerLength - Margin * 2) * RecordCount;
+        }
+
+        if (mousePos.HasValue)
+        {
+            for (int i = 0; i < recordPackageObjects.Count; i++)
             {
-                if (minDstToMouse < 0 || (minDstToMouse > 0 && mouseDst < minDstToMouse))
-                {
-                    minDstToMouse = mouseDst;
-                    gapIndex = i;
-                }
-            }
-            else       //wenn vor dem gap nix mehr ist, finde die naheliegenste dahinterliegede packung
-            {
-                if (gapIndex == -10 || (minDstToMouse < 0 && mouseDst > minDstToMouse))
-                {
-                    minDstToMouse = mouseDst;
-                    gapIndex = i - 1;
-                }
+                UpdatePackageTransformTargets(recordPackageObjects[i], mousePos.Value.X);
             }
         }
 
@@ -353,11 +344,11 @@ public partial class RecordView : Node3D
                     if (gapIndex < 0)
                         return;
 
-                    lastGapIndex = gapIndex;
+                    lastPickupGapIndex = (int)gapIndex;
 
-                    var package = recordPackageObjects[gapIndex].packageObject;
+                    var package = recordPackageObjects[(int)gapIndex].packageObject;
                     currentlyDraggedPackages.Add(package);
-                    recordPackageObjects.RemoveAt(gapIndex);
+                    recordPackageObjects.RemoveAt((int)gapIndex);
                     package.Reparent(GetTree().Root, true);
                     package.Teleport(package.Position, package.Rotation);
                     package.MaterialOverride = BaseMaterial;
@@ -367,11 +358,11 @@ public partial class RecordView : Node3D
                     if (currentlyDraggedPackages.Count == 0)
                         return;
                     
-                    int gapIndex = this.gapIndex + 1;
+                    int gapIndex = (int)this.gapIndex + 1;
                     
                     if (gapIndex < 0)
                     {
-                        gapIndex = lastGapIndex;
+                        gapIndex = lastPickupGapIndex;
                     }
 
                     var package = currentlyDraggedPackages.First();
