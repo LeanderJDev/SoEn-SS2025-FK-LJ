@@ -33,7 +33,7 @@ collision_layer = 2
 collision_mask = 2
 
 [node name="MouseRayCollShape" type="CollisionShape3D" parent="MovableContainer"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.23052, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.792, 0)
 shape = SubResource("BoxShape3D_hr5et")
 
 [node name="RecordPackagesContainer" type="Node3D" parent="MovableContainer"]
