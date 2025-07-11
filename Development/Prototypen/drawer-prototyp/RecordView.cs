@@ -136,30 +136,26 @@ namespace Scripts
             if (recordsContainer == null)
                 throw new Exception("no records container");
 
+            // Material instanziieren
+            instancedMaterial = (ShaderMaterial)BaseMaterial.Duplicate();
+            GD.Print("A");
             PackedScene recordPrefab = GD.Load<PackedScene>("res://record_package.tscn");
-
+            GD.Print("B");
             for (int i = 0; i < playlistSongs.Count; i++)
             {
                 RecordPackage record = (RecordPackage)recordPrefab.Instantiate();
+                GD.Print("CC");
                 record.Name = $"RecordPackage_{i}";
+                GD.Print("CC");
                 recordsContainer.AddChild(record);       //adds the instantiated object to the scene, makes it visible
+                GD.Print("CC");
                 recordPackageObjects.Add(new RecordPackageSlot() { index = i, packageObject = record, song = playlistSongs[i] });
+                GD.Print("CC");
+                record.MeshInstance.MaterialOverride = instancedMaterial;
+                GD.Print("CC");
             }
 
             SetPlaylistSize();
-
-            // Material instanziieren
-            instancedMaterial = (ShaderMaterial)BaseMaterial.Duplicate();
-
-            var nodes = recordsContainer.GetChildren();
-
-            foreach (var node in nodes)
-            {
-                if (node is MeshInstance3D mesh)
-                {
-                    mesh.MaterialOverride = instancedMaterial;
-                }
-            }
 
             GD.Print($"Ich bin RecordView: {Name} / ID: {GetInstanceId()}");
         }
@@ -284,7 +280,7 @@ namespace Scripts
                 return;
             }
 
-            packageSlot.packageObject.TargetPosition = new(0, 0, Margin + packageSlot.index * recordPackageWidth);
+            packageSlot.packageObject.Position = new(0, 0, Margin + packageSlot.index * recordPackageWidth);
 
             //wieder zurück rechnen wirkt sinnlos, aber damit funktioniert es immer noch, wenn gapIndex mal von extern gesetzt wird
             float gapIndexToZPos = gapIndex / RecordCount * (ContainerLength - Margin * 2) + Margin;
@@ -295,7 +291,7 @@ namespace Scripts
             float xRotation = FlickThroughRotationXAnimation.AnimationFunction(packageToMouse);
             float yRotation = FlickThroughRotationYAnimation.AnimationFunction(packageToMouse);
 
-            packageSlot.packageObject.TargetRotation = new Vector3(xRotation, yRotation, 0);
+            packageSlot.packageObject.Rotation = new Vector3(xRotation, yRotation, 0);
         }
 
         public override void _Process(double delta)
@@ -363,7 +359,7 @@ namespace Scripts
 
                 foreach (var package in currentlyDraggedPackages)
                 {
-                    package.TargetPosition = globalMousePos.Value;
+                    package.Position = globalMousePos.Value;
                 }
             }
             instancedMaterial.SetShaderParameter("box_transform", recordViewBounds.GlobalTransform);
@@ -372,7 +368,7 @@ namespace Scripts
             if (pendingPackages.Count > 0)
             {
                 var package = pendingPackages[0];
-                if ((package.Position - package.TargetPosition).LengthSquared() < 0.4f)
+                if ((package.Position - package.Position).LengthSquared() < 0.4f)
                 {
                     pendingPackages.Remove(package);
                     package.MeshInstance.MaterialOverride = instancedMaterial;

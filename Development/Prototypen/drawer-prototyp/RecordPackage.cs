@@ -34,13 +34,36 @@ namespace Scripts
 
     public partial class SmoothMovingObject : Node3D
     {
-        public Vector3 TargetRotation { get; set; }
-        public Vector3 TargetPosition { get; set; }
+        //ausblenden, damit andere Klassen nicht wissen müssen, das das hier ein bewegungs-modifiziertes Objekt ist
+        public new Vector3 Position
+        {
+            get => MovementState.targetPosition;
+            set => MovementState.targetPosition = value;
+        }
 
-        private Vector3 _translationVelocity;
-        private Vector3 _rotationVelocity;
+        public new Vector3 Rotation 
+        {
+            get => MovementState.targetRotation;
+            set => MovementState.targetRotation = value;
+        }
 
-        protected SmoothDamp.SmoothMovementState MovementState { get; private set; }
+        public new Vector3 Scale
+        {
+            get => MovementState.targetScale;
+            set => MovementState.targetScale = value;
+        }
+
+        private SmoothDamp.SmoothMovementState _movementState;
+        protected SmoothDamp.SmoothMovementState MovementState
+        {
+            get => _movementState;
+            set
+            {
+                if (value != null)
+                    _movementState = value;
+            }
+        }
+
         protected SmoothDamp SmoothDamp { get; set; }
 
         public override void _Process(double delta)
@@ -52,10 +75,15 @@ namespace Scripts
 
         public void Teleport(Vector3 pos, Vector3 rot)
         {
-            TargetPosition = pos;
-            TargetRotation = rot;
             Position = pos;
             Rotation = rot;
+            base.Position = pos;
+            base.Rotation = rot;
+        }
+
+        public SmoothMovingObject()
+        {
+            _movementState = new(this);
         }
     }
 
@@ -110,6 +138,13 @@ namespace Scripts
 
             //smoothing pausieren per-object-basis
             public bool disableSmoothing;
+
+            public SmoothMovementState(Node3D transformToCopy)
+            {
+                targetRotation = transformToCopy.Rotation;
+                targetPosition = transformToCopy.Position;
+                targetScale = transformToCopy.Scale;
+            }
         }
 
         public void Step(Node3D node, SmoothMovementState state, float deltaTime)
