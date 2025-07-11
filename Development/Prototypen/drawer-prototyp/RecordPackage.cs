@@ -1,56 +1,154 @@
 using Godot;
 using System;
 using System.Linq;
-using Utilities;
 
-public partial class RecordPackage : MeshInstance3D
+namespace Scripts
 {
-    public Vector3 targetRotation;
-    public Vector3 targetPosition;
-
-    private Vector3 translationVelocity;
-    private Vector3 rotationVelocity;
-
-    public override void _Process(double delta)
+    public partial class RecordPackage : SmoothMovingObject
     {
-        base._Process(delta);
+        [Export] private MeshInstance3D _meshInstance;
+        public MeshInstance3D MeshInstance => _meshInstance;
 
-        const float rotationSmoothTime = 0.07f;
-        const float rotationMaxSpeed = 40f;
+        //Ausblenden ist sinnvoll hier, da, wenn ein Objekt alleine andere Parameter bekommt, die Parameter nicht mehr synchron angepasst werden, was der Sinn der statischen Variable ist.
+        public static readonly new SmoothDamp SmoothDamp;
 
-        const float translationSmoothTime = 0.10f;
-        const float translationMaxSpeed = 4000f;
+        static RecordPackage()
+        {
+            //statischer Konstruktor, um die Konstanten zu benennen, und kein "Magic Numbers" zu übergeben, und sie trotzdem nicht in der Klasse herumfliegen zu haben.
+            const float PositionSmoothTime = 0.10f;
+            const float PositionMaxSpeed = 4000f;
+            const float RotationSmoothTime = 0.07f;
+            const float RotationMaxSpeed = 40f;
+            const float ScaleSmoothTime = 0.10f;
+            const float ScaleMaxSpeed = 20f;
 
-        Rotation = SmoothDamp.Step(Rotation, targetRotation, ref rotationVelocity, rotationSmoothTime, rotationMaxSpeed, (float)delta);
-        Position = SmoothDamp.Step(Position, targetPosition, ref translationVelocity, translationSmoothTime, translationMaxSpeed, (float)delta);
+            SmoothDamp = new(PositionSmoothTime, PositionMaxSpeed, RotationSmoothTime, RotationMaxSpeed, ScaleSmoothTime, ScaleMaxSpeed);
+        }
+
+        //Im Gegensatz zu Unity kann in Godot mit Konstruktoren gearbeitet werden.
+        public RecordPackage()
+        {
+            base.SmoothDamp = SmoothDamp;
+        }
     }
 
-    public void Teleport(Vector3 pos, Vector3 rot)
+    public partial class SmoothMovingObject : Node3D
     {
-        targetPosition = pos;
-        targetRotation = rot;
-        Position = pos;
-        Rotation = rot;
-    }
-}
+        public Vector3 TargetRotation { get; set; }
+        public Vector3 TargetPosition { get; set; }
 
-namespace Utilities
-{
-    public static class SmoothDamp
+        private Vector3 _translationVelocity;
+        private Vector3 _rotationVelocity;
+
+        protected SmoothDamp.SmoothMovementState MovementState { get; private set; }
+        protected SmoothDamp SmoothDamp { get; set; }
+
+        public override void _Process(double delta)
+        {
+            base._Process(delta);
+
+            SmoothDamp.Step(this, MovementState, (float)delta);
+        }
+
+        public void Teleport(Vector3 pos, Vector3 rot)
+        {
+            TargetPosition = pos;
+            TargetRotation = rot;
+            Position = pos;
+            Rotation = rot;
+        }
+    }
+
+    /// <summary>
+    /// Klasse, die dei Parameter speichert, um SmoothDamp auf alles drei Transform3D-Komponenten auszuführen. Als Klasse (nicht struct),
+    /// damit mehrere Objekte die gleichen Parameter nutzen können, und Änderungen durch die Referenz sofort Effekt haben.
+    /// </summary>
+    public class SmoothDamp
     {
+        public SmoothMovementParameters RotationParameters;
+        public SmoothMovementParameters PositionParameters;
+        public SmoothMovementParameters ScaleParameters;
+
+        public SmoothDamp(SmoothMovementParameters rotationParameters, SmoothMovementParameters positionParameters, SmoothMovementParameters scaleParameters)
+        {
+            RotationParameters = rotationParameters;
+            PositionParameters = positionParameters;
+            ScaleParameters = scaleParameters;
+        }
+
+        public SmoothDamp(float positionSmoothTime, float positionMaxSpeed, float rotationSmoothTime, float rotationMaxSpeed, float scaleSmoothTime, float scaleMaxSpeed)
+        {
+            RotationParameters = new(positionSmoothTime, positionMaxSpeed);
+            PositionParameters = new(rotationSmoothTime, rotationMaxSpeed);
+            ScaleParameters = new(scaleSmoothTime, scaleMaxSpeed);
+        }
+
+        // Da SmoothMovementParameters so eng mit SmoothDamp "verwandt" ist, als lokale Klasse deklariert.
+        // Somit ist auch der Kontext klarer, und dass diese Klasse nur unter gleichzeitiger Verwendung eines SmoothDamp-Objektes benötigt wird.
+        public class SmoothMovementParameters
+        {
+            public float smoothTime = 0.1f;
+            public float maxSpeed = 10f;
+
+            public SmoothMovementParameters(float smoothTime, float maxSpeed)
+            {
+                this.smoothTime = smoothTime;
+                this.maxSpeed = maxSpeed;
+            }
+        }
+
+        //Klasse, da die Geschwindigkeiten per Referenz geändert werden müssen. Structs würden das verhindern.
+        public class SmoothMovementState
+        {
+            //nullable, sodass einzelne Objekte Smoothing Ausschließen können
+            public Vector3 targetRotation;
+            public Vector3 targetPosition;
+            public Vector3 targetScale;
+            public Vector3 rotationVelocity;
+            public Vector3 positionVelocity;
+            public Vector3 scaleVelocity;
+
+            //smoothing pausieren per-object-basis
+            public bool disableSmoothing;
+        }
+
+        public void Step(Node3D node, SmoothMovementState state, float deltaTime)
+        {
+            ArgumentNullException.ThrowIfNull(node);
+            ArgumentNullException.ThrowIfNull(state);
+
+            if (state.disableSmoothing)
+            {
+                node.Position = state.targetPosition;
+                node.Rotation = state.targetRotation;
+                node.Scale = state.targetScale;
+                return;
+            }
+
+            if (PositionParameters != null)
+                node.Position = Step(node.Position, state.targetPosition, ref state.positionVelocity, PositionParameters.smoothTime, PositionParameters.maxSpeed, deltaTime);
+
+            if (RotationParameters != null)
+                node.Rotation = Step(node.Rotation, state.targetRotation, ref state.rotationVelocity, RotationParameters.smoothTime, RotationParameters.maxSpeed, deltaTime);
+
+            if (ScaleParameters != null)
+                node.Scale = Step(node.Scale, state.targetScale, ref state.scaleVelocity, ScaleParameters.smoothTime, ScaleParameters.maxSpeed, deltaTime);
+        }
+
+
         /// <summary>
         /// Eine Glättungsfunktion, um eine Zielposition über Zeit mit glatter Bewegung zu erreichen.
         /// <para>
         /// Falls mehrere Achsen gleichzeitig bewegt werden, wird dringend empfohlen, die entsprechende Überladung zu verwenden, da bei diagonaler Bewegung sonst Geschwindigkeiten über der mit maxSpeed gesetzten Maximalgeschwindigkeiten entstehen können, bzw. unrealistisches Verhalten im allgemeinen.
         /// </para>
         /// </summary>
-        /// <param name="current">Die aktuelle Position</param>
+        /// <param name="current">Die aktuelle PositionParameters</param>
         /// <param name="target">Die Zielposition</param>
         /// <param name="currentVelocity">Die aktuelle Geschwindigkeit. Diese Variable sollte pro bewegtes Objekt spezifisch sein, und außerhalb dieser Funktion nicht geändert werden.</param>
         /// <param name="smoothTime">In welcher Zeit der Schritt passieren soll. Höhere Werte erzeugen eine höhere Beschleunigung.</param>
         /// <param name="maxSpeed">Maximale Geschwindigkeit der Bewegung.</param>
         /// <param name="deltaTime">In welcher Zeit die Bewegung passiert. Hier sollte immer die deltaTime des Update-Frames anliegen.</param>
-        /// <returns>Die veränderte neue Position.</returns>
+        /// <returns>Die veränderte neue PositionParameters.</returns>
         public static float Step(float current, float target, ref float currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
         {
             smoothTime = Mathf.Max(0.0001f, smoothTime);
@@ -73,13 +171,13 @@ namespace Utilities
         /// <summary>
         /// Eine Glättungsfunktion, um eine Zielposition über Zeit mit glatter Bewegung zu erreichen.
         /// </summary>
-        /// <param name="current">Die aktuelle Position</param>
+        /// <param name="current">Die aktuelle PositionParameters</param>
         /// <param name="target">Die Zielposition</param>
         /// <param name="currentVelocity">Die aktuelle Geschwindigkeit. Diese Variable sollte pro bewegtes Objekt spezifisch sein, und außerhalb dieser Funktion nicht geändert werden.</param>
         /// <param name="smoothTime">In welcher Zeit der Schritt passieren soll. Höhere Werte erzeugen eine höhere Beschleunigung.</param>
         /// <param name="maxSpeed">Maximale Geschwindigkeit der Bewegung.</param>
         /// <param name="deltaTime">In welcher Zeit die Bewegung passiert. Hier sollte immer die deltaTime des Update-Frames anliegen.</param>
-        /// <returns>Die veränderte neue Position.</returns>
+        /// <returns>Die veränderte neue PositionParameters.</returns>
         public static Vector2 Step(Vector2 current, Vector2 target, ref Vector2 currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
         {
             smoothTime = Mathf.Max(0.0001f, smoothTime);
@@ -104,13 +202,13 @@ namespace Utilities
         /// <summary>
         /// Eine Glättungsfunktion, um eine Zielposition über Zeit mit glatter Bewegung zu erreichen.
         /// </summary>
-        /// <param name="current">Die aktuelle Position</param>
+        /// <param name="current">Die aktuelle PositionParameters</param>
         /// <param name="target">Die Zielposition</param>
         /// <param name="currentVelocity">Die aktuelle Geschwindigkeit. Diese Variable sollte pro bewegtes Objekt spezifisch sein, und außerhalb dieser Funktion nicht geändert werden.</param>
         /// <param name="smoothTime">In welcher Zeit der Schritt passieren soll. Höhere Werte erzeugen eine höhere Beschleunigung.</param>
         /// <param name="maxSpeed">Maximale Geschwindigkeit der Bewegung.</param>
         /// <param name="deltaTime">In welcher Zeit die Bewegung passiert. Hier sollte immer die deltaTime des Update-Frames anliegen.</param>
-        /// <returns>Die veränderte neue Position.</returns>
+        /// <returns>Die veränderte neue PositionParameters.</returns>
         public static Vector3 Step(Vector3 current, Vector3 target, ref Vector3 currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
         {
             smoothTime = Mathf.Max(0.0001f, smoothTime);
