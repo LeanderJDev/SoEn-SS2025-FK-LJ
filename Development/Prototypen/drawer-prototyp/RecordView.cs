@@ -46,9 +46,9 @@ namespace Scripts
 
         /// <summary>
         /// Eine Interface, um die Blätter-Animation zu bestimmen.
+        /// </summary>
         /// Es wurde ein Interface einem Delegaten vorgezogen, damit die Animationen evtl. eigene Einstellungen speichern können, oder können interne Daten pro gerenderten Frame anpassen, z.B. für Physik-Modelle.
         /// Ein Interface ist wesentlich erweiterbarer.
-        /// </summary>
         public interface IAnimationFunction
         {
             public float AnimationFunction(Vector2 relativeMousePos);

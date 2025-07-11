@@ -25,7 +25,7 @@ namespace Scripts
             SmoothDamp = new(PositionSmoothTime, PositionMaxSpeed, RotationSmoothTime, RotationMaxSpeed, ScaleSmoothTime, ScaleMaxSpeed);
         }
 
-        //Im Gegensatz zu Unity kann in Godot mit Konstruktoren gearbeitet werden.
+        ///Im Gegensatz zu Unity kann in Godot mit Konstruktoren gearbeitet werden.
         public RecordPackage()
         {
             base.SmoothDamp = SmoothDamp;
@@ -88,9 +88,9 @@ namespace Scripts
     }
 
     /// <summary>
-    /// Klasse, die dei Parameter speichert, um SmoothDamp auf alles drei Transform3D-Komponenten auszuführen. Als Klasse (nicht struct),
-    /// damit mehrere Objekte die gleichen Parameter nutzen können, und Änderungen durch die Referenz sofort Effekt haben.
+    /// Klasse, die drei Parameter speichert, um SmoothDamp auf allen drei Transform3D-Komponenten auszuführen.
     /// </summary>
+    /// Als Klasse (nicht struct), damit mehrere Objekte die gleichen Parameter nutzen können, und Änderungen durch die Referenz sofort Effekt haben.
     public class SmoothDamp
     {
         public SmoothMovementParameters RotationParameters;
@@ -125,10 +125,9 @@ namespace Scripts
             }
         }
 
-        //Klasse, da die Geschwindigkeiten per Referenz geändert werden müssen. Structs würden das verhindern.
+        ///Klasse, da die Geschwindigkeiten per Referenz geändert werden müssen. Structs würden das verhindern.
         public class SmoothMovementState
         {
-            //nullable, sodass einzelne Objekte Smoothing Ausschließen können
             public Vector3 targetRotation;
             public Vector3 targetPosition;
             public Vector3 targetScale;
@@ -136,7 +135,9 @@ namespace Scripts
             public Vector3 positionVelocity;
             public Vector3 scaleVelocity;
 
-            //smoothing pausieren per-object-basis
+            /// <summary>
+            /// Um das Smoothing pausieren auf Per-Object-Basis.
+            /// </summary>
             public bool disableSmoothing;
 
             public SmoothMovementState(Node3D transformToCopy)
