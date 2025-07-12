@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Threading;
+using Simulation;
 
 public partial class AudioManager : Node2D
 {
@@ -11,8 +12,7 @@ public partial class AudioManager : Node2D
     private Vector2[] _samples; // Stereo: X = links, Y = rechts
     private const int sampleRate = 44100;
     private volatile float _sampleIndex = 0;
-    private volatile float _speed = 1;
-    private volatile int samplesToWrite = 0;
+    private volatile float _speed = 0;
 
     private const int WaveformLength = 200;
     private float[] _waveformBuffer = new float[WaveformLength];
@@ -21,10 +21,20 @@ public partial class AudioManager : Node2D
     private const int indexDifferenceLength = 200;
     private int[] _indexDifferencePlot = new int[indexDifferenceLength];
     private int _indexDifferenceIndex = 0;
+
+    private const int deltaLength = 200;
+    private float[] _deltaPlot = new float[deltaLength];
+    private int _deltaIndex = 0;
+
+
     public int SampleLength => _samples.Length;
 
-    private Thread _audioThread;
-    private volatile bool _audioThreadRunning = false;
+    private Thread _thread;
+    private volatile bool _threadRunning = false;
+
+    public Turntable turntable;
+
+    private float indexDelta = 0;
 
     public override void _Ready()
     {
@@ -68,38 +78,49 @@ public partial class AudioManager : Node2D
         }
         GD.Print($"_samples.Length: {_samples.Length}");
 
-        _audioThreadRunning = true;
-        _audioThread = new Thread(AudioThreadLoop);
-        _audioThread.Start();
+        turntable = new Turntable(SampleLength / 44100);
+
+        _threadRunning = true;
+        _thread = new Thread(ThreadLoop);
+        _thread.Start();
     }
 
     public override void _ExitTree()
     {
-        _audioThreadRunning = false;
-        _audioThread?.Join();
+        _threadRunning = false;
+        _thread?.Join();
     }
 
-    private void AudioThreadLoop()
+    private void ThreadLoop()
     {
         var sw = new System.Diagnostics.Stopwatch();
         sw.Start();
-        double lastTime = sw.Elapsed.TotalSeconds;
-        while (_audioThreadRunning)
+        double lastTime = sw.Elapsed.TotalMilliseconds;
+        int delay = 1;
+        while (_threadRunning)
         {
-            double now = sw.Elapsed.TotalSeconds;
-            double delta = now - lastTime;
-            lastTime = now;
+            double delta = sw.Elapsed.TotalMilliseconds - lastTime;
+            int samplesToWrite = (int)(((delay * sampleRate)/1000)*(1+(float)delta))+1;
+            Vector2 sample;
             while (_playback.GetFramesAvailable() > 0 && samplesToWrite > 0)
             {
-                Vector2 sample = _samples[Math.Clamp((int)_sampleIndex, 0, _samples.Length - 1)];
+                float prevIndex = _sampleIndex;
+                turntable.ThreadStep(1.0f / sampleRate);
+                _sampleIndex = (turntable.loop / turntable.maxLoops) * SampleLength;
+                sample = _samples[Math.Clamp((int)_sampleIndex, 0, _samples.Length - 1)];
                 // Ringpuffer für die Wellenform (Mono-Mix für Visualisierung)
-                _waveformBuffer[_waveformIndex] = (sample.X + sample.Y) * 0.5f;
-                _waveformIndex = (_waveformIndex + 1) % WaveformLength;
-                _playback.PushFrame(sample); // Stereo!
-                _sampleIndex += _speed;
-                samplesToWrite -= 1;
+                _playback.PushFrame(sample);
+                _speed = (float)((prevIndex - _sampleIndex) * sampleRate);
+                samplesToWrite--;
+                indexDelta = prevIndex - _sampleIndex;
             }
-            Thread.Sleep(2); // ca. 500 Hz
+            sample = _samples[Math.Clamp((int)_sampleIndex, 0, _samples.Length - 1)];
+            _waveformBuffer[_waveformIndex] = (sample.X + sample.Y) * 0.5f;
+            _waveformIndex = (_waveformIndex + 1) % WaveformLength;
+            _deltaPlot[_deltaIndex] = (turntable.currentSpeed*200);
+            _deltaIndex = (_deltaIndex + 1) % deltaLength;
+            lastTime = sw.Elapsed.TotalMilliseconds;
+            Thread.Sleep(delay);
         }
     }
 
@@ -107,17 +128,6 @@ public partial class AudioManager : Node2D
     {
         // Nur noch Visualisierung/Debugging!
         QueueRedraw();
-    }
-
-    public void FillBuffer(float delta, float turntableSpeed, float turntablePos)
-    {
-        _speed = turntableSpeed * SampleLength / sampleRate;
-        // Berechne Menge an zu schreibenden Samples aus Daten des Turntables
-        samplesToWrite = (int)(delta * sampleRate * Math.Abs(_speed));
-        _indexDifferencePlot[_indexDifferenceIndex] = (int)(_sampleIndex - turntablePos * _samples.Length);
-        _indexDifferenceIndex = (_indexDifferenceIndex + 1) % indexDifferenceLength;
-        _sampleIndex = turntablePos * _samples.Length;
-
     }
 
     private Font _defaultFont = ThemeDB.FallbackFont;
@@ -162,8 +172,19 @@ public partial class AudioManager : Node2D
         p2 = new Vector2(100 + indexDifferenceLength * plotScaleX, plotBaseY);
         DrawLine(p1, p2, new Color(1, 1, 1, 0.2f), 2);
 
+        for (int i = 0; i < deltaLength - 1; i++)
+        {
+            int idx1 = (_deltaIndex + i) % deltaLength;
+            int idx2 = (_deltaIndex + i + 1) % deltaLength;
+            float y1 = plotBaseY - _deltaPlot[idx1] * plotScaleY;
+            float y2 = plotBaseY - _deltaPlot[idx2] * plotScaleY;
+            p1 = new Vector2(100 + i * plotScaleX, y1);
+            p2 = new Vector2(100 + (i + 1) * plotScaleX, y2);
+            DrawLine(p1, p2, new Color(0, 1, 1, 0.2f), 3);
+        }
+
         // Text für Sample-Länge und aktuellen Index zeichnen
-        string info = $"Sample Length: {_samples?.Length ?? 0} | Index: {_sampleIndex:F3} | Frames Available: {_playback.GetFramesAvailable()} | Skips: {_playback.GetSkips()} | Speed: {_speed:F3}";
+        string info = $"Sample Length: {_samples?.Length ?? 0:D7} | Index: {(int)_sampleIndex:D7} | Frames Available: {_playback.GetFramesAvailable():D5} | Skips: {_playback.GetSkips():D6} | Speed: {_speed:F3} | state: {turntable.state:D0} | MotorSpeed: {turntable.motorSpeed}";
         DrawString(_defaultFont, new Vector2(100, 30), info, HorizontalAlignment.Center);
     }
 
@@ -178,5 +199,110 @@ public partial class AudioManager : Node2D
     {
         if (_player.Playing)
             _player.StreamPaused = true;
+    }
+
+    public void JumpTo(float loop)
+    {
+        turntable.loop = loop;
+        _sampleIndex = turntable.loop * turntable.maxLoops;
+        _speed = turntable.currentSpeed / turntable.maxLoops * (SampleLength / sampleRate);
+    }
+}
+
+// ----- TURNTABLE SIM -----
+
+namespace Simulation
+{
+    public class Turntable
+    {
+        public float maxLoops = 670;
+        public volatile float loop = 0;
+
+        public bool motorRunning = true;
+        public float motorSpeed = 45f;
+
+        public volatile float currentSpeed = 0f;
+        public volatile float targetSpeed = 0f;
+        private const float acceleration = 2.4f; // Umdrehungen pro Sekunde^2, anpassen nach Gefühl
+        private const float drag = 3.0f;
+        private const float baseDrag = 0.1f;
+        public int state = 0;
+
+        private float threshold = 0.00001f;
+
+        public Turntable(float songLength)
+        {
+            maxLoops = motorSpeed / 60 * songLength;
+        }
+
+        public void ThreadStep(double delta)
+        {
+            state = 0;
+            // Drag
+            //linear
+            // currentSpeed -= (float)(currentSpeed * drag * delta);
+            // exponentiell
+            float dragPerStep = MathF.Pow(baseDrag, (float)delta);
+            currentSpeed *= dragPerStep;
+
+            currentSpeed = (Mathf.Abs(currentSpeed) < threshold && targetSpeed==0) ? 0 : currentSpeed;
+            currentSpeed = Mathf.Min(currentSpeed, 1000f);
+            if (Mathf.Abs(currentSpeed) == 0.0f)
+            {
+                state += 4;
+                // Motor aus wenn current- und targetSpeed 0 sind
+                motorRunning = !(targetSpeed == 0);
+                currentSpeed = 0.0f;
+            }
+            state++;
+
+            loop += currentSpeed * (float)delta;
+            if (loop >= maxLoops || loop < 0)
+            {
+                state+=8;
+                StopMotor();
+                loop = Mathf.Clamp(loop, 0, maxLoops);
+            }
+
+            state++;
+
+            if (!motorRunning) return;
+
+            // Inertia
+            if (MathF.Abs(currentSpeed - targetSpeed) > threshold)
+            {
+                state+=16;
+                float sign = MathF.Sign(targetSpeed - currentSpeed);
+                currentSpeed += sign * acceleration * (float)delta;
+                // Stabilisieren der Zielgeschwindigkeit
+                if (sign != MathF.Sign(targetSpeed - currentSpeed))
+                    currentSpeed = targetSpeed;
+            }
+        }
+
+        public void StartMotor()
+        {
+            targetSpeed = motorSpeed / 60f;
+        }
+
+        public void StopMotor()
+        {
+            targetSpeed = 0f;
+        }
+
+        public void ToggleMotor()
+        {
+            if (targetSpeed > 0)
+                StopMotor();
+            else
+                StartMotor();
+            motorRunning = !(targetSpeed == 0);
+        }
+
+        public void Rotate(float angle)
+        {
+            float loopDelta = angle / (Mathf.Pi * 2);
+            loop += loopDelta;
+        }
     }
 }
