@@ -15,6 +15,8 @@ public partial class TurntableControl : Node2D
 
 	private Vector2 _rightDragLastMousePos = Vector2.Zero;
 	private float _rightDragLastLoop = 0f;
+	private float _rightDragAngleOffset = 0f;
+	private bool _rightDragPreviousMotorState = false;
 
 	public override void _Ready()
 	{
@@ -47,15 +49,34 @@ public partial class TurntableControl : Node2D
 				_isRightHolding = true;
 				_rightDragLastMousePos = btn.Position;
 				_rightDragLastLoop = AudioManager.turntable.loop;
+				_rightDragPreviousMotorState = AudioManager.turntable.motorRunning;
 				AudioManager.turntable.StopMotor();
 				AudioManager.turntable.motorRunning = false;
+				Vector2 mousePos = GetViewport().GetMousePosition();
+				Vector2 center = record.GlobalPosition;
+				float lastAngle = (AudioManager.turntable.loop * 2 * Mathf.Pi);
+				float newAngle = (mousePos - center).Angle();
+				_rightDragAngleOffset = Mathf.Wrap(newAngle - lastAngle, -Mathf.Pi, Mathf.Pi);
 			}
 			if (btn.ButtonIndex == MouseButton.Right && !btn.Pressed)
 			{
 				_isRightHolding = false;
-				AudioManager.turntable.StartMotor();
-				AudioManager.turntable.motorRunning = true;
+				if (_rightDragPreviousMotorState)
+				{
+					AudioManager.turntable.StartMotor();
+					AudioManager.turntable.motorRunning = true;
+				}
 			}
+		}
+		if (Input.IsActionPressed("ui_up"))
+		{
+			AudioManager.turntable.motorSpeed += 1;
+			AudioManager.turntable.StartMotor();
+		}
+		if (Input.IsActionPressed("ui_down"))
+		{
+			AudioManager.turntable.motorSpeed -= 1;
+			AudioManager.turntable.StartMotor();
 		}
 	}
 
@@ -70,14 +91,13 @@ public partial class TurntableControl : Node2D
 		{
 			Vector2 mousePos = GetViewport().GetMousePosition();
 			Vector2 center = record.GlobalPosition;
-			float lastAngle = (_rightDragLastMousePos - center).Angle();
-			float newAngle = (mousePos - center).Angle();
+			float lastAngle = (AudioManager.turntable.loop * 2 * Mathf.Pi);
+			_rightDragLastLoop = AudioManager.turntable.loop;
+			float newAngle = (mousePos - center).Angle() - _rightDragAngleOffset;
 			float angleDelta = Mathf.Wrap(newAngle - lastAngle, -Mathf.Pi, Mathf.Pi);
 
 			AudioManager.turntable.Rotate(angleDelta);
 			AudioManager.turntable.currentSpeed = (AudioManager.turntable.loop - _rightDragLastLoop) / (float)delta;
-			_rightDragLastMousePos = mousePos;
-			_rightDragLastLoop = AudioManager.turntable.loop;
 			QueueRedraw();
 		}
 
