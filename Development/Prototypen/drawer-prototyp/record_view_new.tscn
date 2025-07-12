@@ -1,0 +1,46 @@
+[gd_scene load_steps=6 format=3 uid="uid://bl7n0osduvcfv"]
+
+[ext_resource type="Script" uid="uid://bbos1p5clbcsm" path="res://RecordView.cs" id="1_dl458"]
+[ext_resource type="Shader" uid="uid://4vskkga5ghjx" path="res://coutout_shader.gdshader" id="2_vrcsv"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_jl4lc"]
+render_priority = 0
+shader = ExtResource("2_vrcsv")
+shader_parameter/albedo = Color(0.656422, 0.528158, 0.370323, 1)
+shader_parameter/roughness = 0.0
+shader_parameter/specular = 0.0
+shader_parameter/metallic = 0.0
+shader_parameter/box_transform = Projection(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)
+shader_parameter/box_size = Vector3(1000, 1000, 1000)
+shader_parameter/fade_color = Color(0.37705, 0.298497, 0.212033, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_hr5et"]
+size = Vector3(2.987, 0.0899609, 7.24)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_466gm"]
+size = Vector3(2.80957, 3.58247, 6.15039)
+
+[node name="RecordView" type="StaticBody3D" node_paths=PackedStringArray("mousePlane", "recordsContainer", "movableContainer", "recordViewBounds")]
+transform = Transform3D(-1, 0, 8.74228e-08, 0, 1, 0, -8.74228e-08, 0, -1, 0, 0, 0)
+collision_layer = 8
+collision_mask = 8
+script = ExtResource("1_dl458")
+mousePlane = NodePath("MovableContainer/MouseRayCollShape")
+recordsContainer = NodePath("MovableContainer/RecordPackagesContainer")
+movableContainer = NodePath("MovableContainer")
+recordViewBounds = NodePath("RecordViewBounds")
+BaseMaterial = SubResource("ShaderMaterial_jl4lc")
+
+[node name="MovableContainer" type="StaticBody3D" parent="."]
+collision_layer = 2
+collision_mask = 2
+
+[node name="MouseRayCollShape" type="CollisionShape3D" parent="MovableContainer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.271, 0)
+shape = SubResource("BoxShape3D_hr5et")
+
+[node name="RecordPackagesContainer" type="Node3D" parent="MovableContainer"]
+
+[node name="RecordViewBounds" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.669654, 0)
+shape = SubResource("BoxShape3D_466gm")
