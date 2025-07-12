@@ -82,10 +82,7 @@ public partial class TurntableControl : Node2D
 
 	public override void _Process(double delta)
 	{
-		if (Mathf.Abs(AudioManager.turntable.currentSpeed) > 0.001f)
-		{
-			QueueRedraw();
-		}
+		QueueRedraw();
 
 		if (_isRightHolding)
 		{
@@ -97,7 +94,7 @@ public partial class TurntableControl : Node2D
 			float angleDelta = Mathf.Wrap(newAngle - lastAngle, -Mathf.Pi, Mathf.Pi);
 
 			AudioManager.turntable.Rotate(angleDelta);
-			AudioManager.turntable.currentSpeed = (AudioManager.turntable.loop - _rightDragLastLoop) / (float)delta;
+			AudioManager.turntable.currentSpeed = (angleDelta / (4*Mathf.Pi)) / (float)delta;
 			QueueRedraw();
 		}
 
@@ -126,7 +123,7 @@ public partial class TurntableControl : Node2D
 		record.Rotation = AudioManager.turntable.loop % 1 * Mathf.Pi * 2;
 		needle.Position = new Vector2((1 - (AudioManager.turntable.loop / AudioManager.turntable.maxLoops)) * 125 + 60, -12);
 		// Text für Sample-Länge und aktuellen Index zeichnen
-		string info = $"Max Loop: {AudioManager.turntable.maxLoops} | Loop: {AudioManager.turntable.loop:F7} | Speed: {AudioManager.turntable.currentSpeed:F5} | Target Speed: {AudioManager.turntable.targetSpeed:F3}";
+		string info = $"Max Loop: {AudioManager.turntable.maxLoops} | Loop: {AudioManager.turntable.loop:F7} | Speed: {AudioManager.turntable.currentSpeed:F7} | Target Speed: {AudioManager.turntable.targetSpeed:F3}";
 		DrawString(_defaultFont, new Vector2(-240, 240), info, HorizontalAlignment.Center);
 	}
 }

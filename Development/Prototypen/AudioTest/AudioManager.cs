@@ -101,20 +101,22 @@ public partial class AudioManager : Node2D
         {
             double delta = sw.Elapsed.TotalMilliseconds - lastTime;
             int samplesToWrite = (int)(((delay * sampleRate)/1000)*(1+(float)delta))+1;
+            Vector2 sample;
             while (_playback.GetFramesAvailable() > 0 && samplesToWrite > 0)
             {
                 float prevIndex = _sampleIndex;
                 turntable.ThreadStep(1.0f / sampleRate);
                 _sampleIndex = (turntable.loop / turntable.maxLoops) * SampleLength;
-                Vector2 sample = _samples[Math.Clamp((int)_sampleIndex, 0, _samples.Length - 1)];
+                sample = _samples[Math.Clamp((int)_sampleIndex, 0, _samples.Length - 1)];
                 // Ringpuffer für die Wellenform (Mono-Mix für Visualisierung)
-                _waveformBuffer[_waveformIndex] = (sample.X + sample.Y) * 0.5f;
-                _waveformIndex = (_waveformIndex + 1) % WaveformLength;
                 _playback.PushFrame(sample);
                 _speed = (float)((prevIndex - _sampleIndex) * sampleRate);
                 samplesToWrite--;
                 indexDelta = prevIndex - _sampleIndex;
             }
+            sample = _samples[Math.Clamp((int)_sampleIndex, 0, _samples.Length - 1)];
+            _waveformBuffer[_waveformIndex] = (sample.X + sample.Y) * 0.5f;
+            _waveformIndex = (_waveformIndex + 1) % WaveformLength;
             _deltaPlot[_deltaIndex] = (turntable.currentSpeed*200);
             _deltaIndex = (_deltaIndex + 1) % deltaLength;
             lastTime = sw.Elapsed.TotalMilliseconds;
@@ -223,6 +225,7 @@ namespace Simulation
         public volatile float targetSpeed = 0f;
         private const float acceleration = 2.4f; // Umdrehungen pro Sekunde^2, anpassen nach Gefühl
         private const float drag = 3.0f;
+        private const float baseDrag = 0.1f;
         public int state = 0;
 
         private float threshold = 0.00001f;
@@ -235,7 +238,14 @@ namespace Simulation
         public void ThreadStep(double delta)
         {
             state = 0;
-            currentSpeed = Mathf.Abs(currentSpeed) > threshold ? currentSpeed : 0;
+            // Drag
+            //linear
+            // currentSpeed -= (float)(currentSpeed * drag * delta);
+            // exponentiell
+            float dragPerStep = MathF.Pow(baseDrag, (float)delta);
+            currentSpeed *= dragPerStep;
+
+            currentSpeed = (Mathf.Abs(currentSpeed) < threshold && targetSpeed==0) ? 0 : currentSpeed;
             currentSpeed = Mathf.Min(currentSpeed, 1000f);
             if (Mathf.Abs(currentSpeed) == 0.0f)
             {
@@ -255,9 +265,6 @@ namespace Simulation
             }
 
             state++;
-
-            // Drag
-            currentSpeed -= currentSpeed * drag * (float)delta;
 
             if (!motorRunning) return;
 
@@ -285,10 +292,11 @@ namespace Simulation
 
         public void ToggleMotor()
         {
-            if (motorRunning)
+            if (targetSpeed > 0)
                 StopMotor();
             else
                 StartMotor();
+            motorRunning = !(targetSpeed == 0);
         }
 
         public void Rotate(float angle)
