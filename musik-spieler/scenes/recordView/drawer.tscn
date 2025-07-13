@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3 uid="uid://8y7b6cmjh35d"]
+
+[ext_resource type="ArrayMesh" uid="uid://b2ggn1e7ytpr5" path="res://assets/3D/Drawer.res" id="1_lvudm"]
+
+[node name="Drawer" type="Node3D"]
+
+[node name="DrawerMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(-100, -3.89414e-05, 2.84217e-12, 0, 5.96046e-06, 100, -3.89414e-05, 100, -1.19209e-05, 0, 0, 0)
+mesh = ExtResource("1_lvudm")
+skeleton = NodePath("")

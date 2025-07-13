@@ -138,26 +138,17 @@ namespace Scripts
 
             // Material instanziieren
             instancedMaterial = (ShaderMaterial)BaseMaterial.Duplicate();
-            GD.Print("A");
             PackedScene recordPrefab = GD.Load<PackedScene>("res://record_package.tscn");
-            GD.Print("B");
             for (int i = 0; i < playlistSongs.Count; i++)
             {
                 RecordPackage record = (RecordPackage)recordPrefab.Instantiate();
-                GD.Print("CC");
                 record.Name = $"RecordPackage_{i}";
-                GD.Print("CC");
                 recordsContainer.AddChild(record);       //adds the instantiated object to the scene, makes it visible
-                GD.Print("CC");
                 recordPackageObjects.Add(new RecordPackageSlot() { index = i, packageObject = record, song = playlistSongs[i] });
-                GD.Print("CC");
                 record.MeshInstance.MaterialOverride = instancedMaterial;
-                GD.Print("CC");
             }
 
             SetPlaylistSize();
-
-            GD.Print($"Ich bin RecordView: {Name} / ID: {GetInstanceId()}");
         }
 
         private void SetPlaylistSize()
@@ -240,7 +231,7 @@ namespace Scripts
             }
             else return null;
         }
-
+        /*
         private static float LeaningAnimationFunction(Vector2 v)
         {
             float maxXAngle = Mathf.DegToRad(50);
@@ -266,7 +257,7 @@ namespace Scripts
             Vector2 vNorm = dstToMouse.Normalized();
             return Mathf.Min(Mathf.Abs(vNorm.X) / (100 * Mathf.Max(dstToMouse.Length(), 0.3f)), maxYAngle) * Mathf.Sign(vNorm.Y * vNorm.X);
         }
-
+        */
         //Man könnte das Updaten des Zielzustands auch entkoppelter mit Events lösen, jedoch macht das wenig Sinn, da sie sowieso von hier gemanaged sind, und keine eigenständigen Objekte sind.
         //Wären sie das, könnt evtl. nicht sichergestellt werden, 
         /// <summary>
