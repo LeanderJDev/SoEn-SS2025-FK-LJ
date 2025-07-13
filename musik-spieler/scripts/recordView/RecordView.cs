@@ -119,7 +119,7 @@ namespace Musikspieler.Scripts
 
         public void SetPlaylist(Playlist playlist)
         {
-            
+
         }
 
         private void Scroll(float lines)
@@ -171,7 +171,7 @@ namespace Musikspieler.Scripts
 
         public override void _Ready()
         {
-            
+
         }
 
         private float lastMouseY;
@@ -214,7 +214,7 @@ namespace Musikspieler.Scripts
                 Vector2 packageToMouse = containerMousePos - new Vector2(packagePosition.X, packagePosition.Z);
                 UpdatePackageTransforms(recordPackageObjects[i], packageToMouse);
             }
-            
+
             materialInstance.SetShaderParameter("box_transform", recordViewBounds.GlobalTransform);
             materialInstance.SetShaderParameter("box_size", ((BoxShape3D)recordViewBounds.Shape).Size);
         }
