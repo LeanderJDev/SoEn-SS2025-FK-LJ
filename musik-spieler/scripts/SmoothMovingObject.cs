@@ -8,20 +8,38 @@ namespace Musikspieler.Scripts
         //ausblenden, damit andere Klassen nicht wissen müssen, das das hier ein bewegungs-modifiziertes Objekt ist
         public new Vector3 Position
         {
-            get => MovementState.targetPosition;
-            set => MovementState.targetPosition = value;
+            get => SmoothDamp.PositionParameters is null ? base.Position : MovementState.targetPosition;
+            set
+            {
+                if (SmoothDamp.PositionParameters is null)
+                    base.Scale = value;
+                else
+                    MovementState.targetPosition = value;
+            }
         }
 
         public new Vector3 Rotation
         {
-            get => MovementState.targetRotation;
-            set => MovementState.targetRotation = value;
+            get => SmoothDamp.RotationParameters is null ? base.Rotation : MovementState.targetRotation;
+            set
+            {
+                if (SmoothDamp.RotationParameters is null)
+                    base.Scale = value;
+                else
+                    MovementState.targetRotation = value;
+            }
         }
 
         public new Vector3 Scale
         {
-            get => MovementState.targetScale;
-            set => MovementState.targetScale = value;
+            get => SmoothDamp.ScaleParameters is null ? base.Scale : MovementState.targetScale;
+            set
+            {
+                if (SmoothDamp.ScaleParameters is null)
+                    base.Scale = value;
+                else
+                    MovementState.targetScale = value;
+            }
         }
 
         private SmoothDamp.SmoothMovementState _movementState;
@@ -48,12 +66,38 @@ namespace Musikspieler.Scripts
             SmoothDamp.Step(this, MovementState, (float)delta);
         }
 
-        public void Teleport(Vector3 pos, Vector3 rot)
+        /// <summary>
+        /// Teleport to specific targets immediately.
+        /// </summary>
+        /// <param name="pos"></param>
+        /// <param name="rot"></param>
+        public void Teleport(Vector3? pos, Vector3? rot, Vector3? scale)
         {
-            Position = pos;
-            Rotation = rot;
-            base.Position = pos;
-            base.Rotation = rot;
+            if (pos.HasValue)
+            {
+                Position = pos.Value;
+                base.Position = pos.Value;
+            }
+            if (rot.HasValue)
+            {
+                Rotation = rot.Value;
+                base.Rotation = rot.Value;
+            }
+            if (scale.HasValue)
+            {
+                Scale = scale.Value;
+                base.Scale = scale.Value;
+            }
+        }
+
+        /// <summary>
+        /// Teleport to the respective targets immediately.
+        /// </summary>
+        public void Teleport()
+        {
+            base.Position = Position;
+            base.Rotation = Rotation;
+            base.Scale = Scale;
         }
 
         public SmoothMovingObject()

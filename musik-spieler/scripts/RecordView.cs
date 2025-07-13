@@ -2,6 +2,7 @@ using Godot;
 using Godot.Collections;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 
 namespace Musikspieler.Scripts
@@ -116,9 +117,61 @@ namespace Musikspieler.Scripts
                 return null;
         }
 
+        public void SetPlaylist(Playlist playlist)
+        {
+            
+        }
+
         private void Scroll(float lines)
         {
             recordsContainer.Position -= new Vector3(0, 0, lines * scrollSensitivity);
+        }
+
+        private void OnScrollInput(float lines)
+        {
+
+        }
+
+        private void OnLeftClickInput(bool pressed)
+        {
+            if (pressed)
+            {
+                var packageSlot = recordPackageObjects[(int)_gapIndex];
+                packageSlot.isPending = true;
+                packageSlot.isDragged = true;
+                recordPackageObjects.RemoveAt((int)_gapIndex);
+                packageSlot.packageObject.Reparent(GetTree().Root, true);
+                packageSlot.packageObject.Teleport();
+                packageSlot.packageObject.MeshInstance.MaterialOverride = BaseRecordMaterial;
+
+                //inform a handler that a record is dragged here
+            }
+        }
+
+        public override void _Input(InputEvent @event)
+        {
+            if (@event is InputEventMouseButton mouseEvent)
+            {
+                if (mouseEvent.ButtonIndex == MouseButton.WheelUp)
+                {
+                    if (mouseEvent.Pressed)
+                        OnScrollInput(-1f);
+                }
+                else if (mouseEvent.ButtonIndex == MouseButton.WheelDown)
+                {
+                    if (mouseEvent.Pressed)
+                        OnScrollInput(1f);
+                }
+                else if (mouseEvent.ButtonIndex == MouseButton.Left)
+                {
+                    OnLeftClickInput(mouseEvent.Pressed);
+                }
+            }
+        }
+
+        public override void _Ready()
+        {
+            
         }
 
         private float lastMouseY;
@@ -186,4 +239,27 @@ namespace Musikspieler.Scripts
             packageSlot.packageObject.Rotation = new Vector3(xRotation, yRotation, 0);
         }
     }
+}
+
+public class Playlist
+{
+    private readonly List<Song> songs = [];
+
+    public ImmutableArray<Song> GetAllSongs()
+    {
+        return songs.ToImmutableArray();
+    }
+
+    public IEnumerable<Song> GetEnumerable()
+    {
+        for (int i = 0; i < songs.Count; i++)
+        {
+            yield return songs[i];
+        }
+    }
+}
+
+public class Song
+{
+
 }
