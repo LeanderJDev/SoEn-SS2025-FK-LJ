@@ -1,0 +1,116 @@
+[gd_scene load_steps=15 format=3 uid="uid://cem353j2urtor"]
+
+[ext_resource type="ArrayMesh" uid="uid://bd583cu20bsvy" path="res://assets/3D/RecordOnPlayer.res" id="1_muem4"]
+[ext_resource type="ArrayMesh" uid="uid://b843msk64uoca" path="res://assets/3D/ArmArm.res" id="2_dp3eg"]
+[ext_resource type="ArrayMesh" uid="uid://0v8jwt5bkgos" path="res://assets/3D/ArmArm_001.res" id="3_0ld40"]
+[ext_resource type="ArrayMesh" uid="uid://bkmyqypfsmofg" path="res://assets/3D/PlayerBody.res" id="4_gqmmt"]
+[ext_resource type="ArrayMesh" uid="uid://csv7r343okxuk" path="res://assets/3D/PlayerCable_001.res" id="5_yc10j"]
+[ext_resource type="ArrayMesh" uid="uid://c68otce7k663d" path="res://assets/3D/PlayerPowerPlug.res" id="6_jscy8"]
+[ext_resource type="ArrayMesh" uid="uid://b0awyloq0vwo5" path="res://assets/3D/PlayerVelocityKnob.res" id="7_pm3ni"]
+[ext_resource type="ArrayMesh" uid="uid://uw121ydmjv48" path="res://assets/3D/Table.res" id="11_vxglm"]
+[ext_resource type="ArrayMesh" uid="uid://wjc6c7vfv3ke" path="res://assets/3D/ExtenisionCordCable_001.res" id="12_2f3dj"]
+[ext_resource type="ArrayMesh" uid="uid://cjj6tepxxw13s" path="res://assets/3D/ExtensionCordBox.res" id="13_yq6so"]
+[ext_resource type="ArrayMesh" uid="uid://rhdr6ox7h1n3" path="res://assets/3D/ExtensionCordSwitch.res" id="14_fv21b"]
+[ext_resource type="ArrayMesh" uid="uid://bqedbj155v5lv" path="res://assets/3D/Speaker.res" id="15_tel4y"]
+[ext_resource type="ArrayMesh" uid="uid://ce6vyv7jojj3x" path="res://assets/3D/SpeakerCable_001.res" id="16_qkpxi"]
+[ext_resource type="ArrayMesh" uid="uid://bs4xln7o60uli" path="res://assets/3D/SpeakerCablePlug.res" id="17_5q0nq"]
+
+[node name="root" type="Node3D"]
+
+[node name="musicplayer" type="Node3D" parent="."]
+
+[node name="RecordOnPlayer" type="MeshInstance3D" parent="musicplayer"]
+transform = Transform3D(100, 0, 0, 0, -4.37114e-06, 100, 0, -100, -4.37114e-06, 0, 0, 0)
+mesh = ExtResource("1_muem4")
+skeleton = NodePath("")
+
+[node name="ArmBase" type="MeshInstance3D" parent="musicplayer"]
+transform = Transform3D(-84.4401, 53.5711, 2.34167e-06, 0, -4.37114e-06, 100, 53.5711, 84.4401, 3.691e-06, 0.845739, 0.155946, -0.86766)
+mesh = ExtResource("2_dp3eg")
+skeleton = NodePath("")
+
+[node name="ArmArm" type="MeshInstance3D" parent="musicplayer"]
+transform = Transform3D(-81.1562, 58.3911, -2.03884, -9.20345, -9.33004, 99.1375, 57.6973, 80.6438, 12.9459, 0.845739, 0.0922596, -0.86766)
+mesh = ExtResource("3_0ld40")
+skeleton = NodePath("")
+
+[node name="PlayerBody" type="MeshInstance3D" parent="musicplayer"]
+transform = Transform3D(-100, -3.89414e-05, 2.84217e-12, 0, 5.96046e-06, 100, -3.89414e-05, 100, -1.19209e-05, -0.829077, -0.0133225, -0.82886)
+mesh = ExtResource("4_gqmmt")
+skeleton = NodePath("")
+
+[node name="PlayerCable" type="MeshInstance3D" parent="musicplayer"]
+transform = Transform3D(-100, -3.89414e-05, 2.84217e-12, 0, 5.96046e-06, 100, -3.89414e-05, 100, -1.19209e-05, 1.88354, 0.910131, 0.200613)
+mesh = ExtResource("5_yc10j")
+skeleton = NodePath("")
+
+[node name="PlayerCableCurve" type="MeshInstance3D" parent="musicplayer"]
+transform = Transform3D(-74.119, -67.1295, 0, 0, 0, 100, -67.1295, 74.119, 0, 1.88376, 0, 0.201759)
+skeleton = NodePath("")
+
+[node name="PlayerPowerPlug" type="MeshInstance3D" parent="musicplayer"]
+transform = Transform3D(-96.8831, -24.7722, 2.23517e-06, 0, 5.96046e-06, 100, -24.7722, 96.8831, -1.19209e-05, -0.090389, -0.516193, -2.03896)
+mesh = ExtResource("6_jscy8")
+skeleton = NodePath("")
+
+[node name="PlayerVelocityKnob" type="MeshInstance3D" parent="musicplayer"]
+transform = Transform3D(71.0641, 70.3555, 0, 0, 0, 100, 70.3555, -71.0641, 0, -0.843667, -0.0133225, -0.866963)
+mesh = ExtResource("7_pm3ni")
+skeleton = NodePath("")
+
+[node name="Table" type="MeshInstance3D" parent="."]
+transform = Transform3D(159.017, 0, 0, 0, -1.19209e-05, 100, 0, -100, -1.19209e-05, -0.818502, 0, 0)
+mesh = ExtResource("11_vxglm")
+skeleton = NodePath("")
+
+[node name="ExtensionCord" type="Node3D" parent="."]
+
+[node name="ExtenisionCordCable" type="MeshInstance3D" parent="ExtensionCord"]
+transform = Transform3D(-96.8831, -24.7722, 2.23517e-06, 0, 5.96046e-06, 100, -24.7722, 96.8831, -1.19209e-05, -3.80197, -0.162112, -1.62426)
+mesh = ExtResource("12_2f3dj")
+skeleton = NodePath("")
+
+[node name="ExtensionCordBox" type="MeshInstance3D" parent="ExtensionCord"]
+transform = Transform3D(-96.8831, -24.7722, 2.23517e-06, 0, 5.96046e-06, 100, -24.7722, 96.8831, -1.19209e-05, -0.258701, -0.560098, -2.60902)
+mesh = ExtResource("13_yq6so")
+skeleton = NodePath("")
+
+[node name="ExtensionCordCableCurve" type="MeshInstance3D" parent="ExtensionCord"]
+transform = Transform3D(-55.1794, -83.3981, 8.9407e-06, -8.9407e-06, 1.19209e-05, 100, -83.3981, 55.1794, -2.38419e-05, 2.38978, -0.374566, 1.57176)
+skeleton = NodePath("")
+
+[node name="ExtensionCordSwitch" type="MeshInstance3D" parent="ExtensionCord"]
+transform = Transform3D(-96.8831, -24.7722, 2.23517e-06, 0, 5.96046e-06, 100, -24.7722, 96.8831, -1.19209e-05, -0.726773, -0.431955, -2.20045)
+mesh = ExtResource("14_fv21b")
+skeleton = NodePath("")
+
+[node name="Speaker" type="Node3D" parent="."]
+
+[node name="Speaker" type="MeshInstance3D" parent="Speaker"]
+transform = Transform3D(100, 0, 0, 0, -1.19209e-05, 100, 0, -100, -1.19209e-05, -0.090389, -0.491517, 2.02095)
+mesh = ExtResource("15_tel4y")
+skeleton = NodePath("")
+
+[node name="SpeakerCable" type="MeshInstance3D" parent="Speaker"]
+transform = Transform3D(-96.6676, -5.36442e-05, 25.6004, 25.6004, 5.96046e-06, 96.6676, -5.36442e-05, 100, 5.96046e-06, 0, 0, 4.41421)
+mesh = ExtResource("16_qkpxi")
+skeleton = NodePath("")
+
+[node name="SpeakerCableCurve" type="MeshInstance3D" parent="Speaker"]
+transform = Transform3D(100, 0, 0, 0, -1.19209e-05, 100, 0, -100, -1.19209e-05, 0, 0, 0)
+skeleton = NodePath("")
+
+[node name="SpeakerCablePlug" type="MeshInstance3D" parent="Speaker"]
+transform = Transform3D(-100, -3.89414e-05, 2.84217e-12, 0, 5.96046e-06, 100, -3.89414e-05, 100, -1.19209e-05, 0, 0, 0)
+mesh = ExtResource("17_5q0nq")
+skeleton = NodePath("")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 4.76837e-07, -2.84217e-14, 0, 5.96046e-08, 1, 4.76837e-07, -1, 5.96046e-08, 0, 5.44456, 0.548864)
+fov = 56.4
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.36961, 0.773056, -0.515531, 0.458424, 0.330886, 0.824841, 0.80823, -0.541201, -0.232089, 0, -9.03201, 0)
+light_energy = 2.131
+shadow_enabled = true
+shadow_opacity = 0.61

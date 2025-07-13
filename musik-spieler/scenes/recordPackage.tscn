@@ -1,0 +1,16 @@
+[gd_scene load_steps=3 format=3 uid="uid://bkfw8kblvm3d"]
+
+[ext_resource type="ArrayMesh" uid="uid://4dpjrsyp6ymr" path="res://assets/3D/RecordPackage.res" id="1_fvl2m"]
+[ext_resource type="ArrayMesh" uid="uid://5pew6wi3svtx" path="res://assets/3D/Record.res" id="2_4iwvx"]
+
+[node name="Node3D" type="Node3D"]
+
+[node name="RecordPackage" type="MeshInstance3D" parent="."]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 0, 0, 0)
+mesh = ExtResource("1_fvl2m")
+skeleton = NodePath("")
+
+[node name="Record" type="MeshInstance3D" parent="RecordPackage"]
+transform = Transform3D(1, 0, 0, 0, 1, -1.42109e-14, 0, 1.42109e-14, 1, 0.000197981, 0.0137721, -3.84348e-05)
+mesh = ExtResource("2_4iwvx")
+skeleton = NodePath("")
