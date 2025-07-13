@@ -19,6 +19,13 @@ config/icon="res://icon.svg"
 
 project/assembly_name="Musik-Spieler"
 
+[layer_names]
+
+3d_physics/layer_1="Default"
+3d_physics/layer_2="RecordViewBounds"
+3d_physics/layer_3="DrawerBounds"
+3d_physics/layer_4="GlobalDragPlane"
+
 [rendering]
 
 renderer/rendering_method="mobile"
