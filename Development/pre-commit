@@ -45,15 +45,15 @@ EOF
 	exit 1
 fi
 
-# C#-Dateien im scripts-Ordner vor dem Commit formatieren
-dotnet format musik-spieler/Musik-Spieler.sln --include musik-spieler/scripts/
+# Alle C#-Dateien im scripts-Ordner und Unterordnern vor dem Commit formatieren
+dotnet format musik-spieler/Musik-Spieler.sln --include musik-spieler/scripts/**
 if [ $? -ne 0 ]; then
   echo "dotnet format hat einen Fehler zurückgegeben. Vielleicht ist es nicht installiert. Commit abgebrochen.\n Installieren mit dotnet tool install -g dotnet-format"
   exit 1
 fi
 
 # Prüfen, ob nach dem Formatieren unstaged Änderungen existieren
-if ! git diff --quiet musik-spieler/scripts/*.cs; then
+if ! git diff --quiet musik-spieler/scripts/**/*.cs; then
   echo "Es wurden Dateien durch das Formatieren geändert. Bitte prüfe die Änderungen und stage sie ggf. erneut."
   exit 1
 fi
