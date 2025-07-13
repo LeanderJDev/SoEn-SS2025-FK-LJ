@@ -17,43 +17,43 @@
 
 [node name="root" type="Node3D"]
 
-[node name="musicplayer" type="Node3D" parent="."]
+[node name="MusicPlayer" type="Node3D" parent="."]
 
-[node name="RecordOnPlayer" type="MeshInstance3D" parent="musicplayer"]
+[node name="RecordOnPlayer" type="MeshInstance3D" parent="MusicPlayer"]
 transform = Transform3D(100, 0, 0, 0, -4.37114e-06, 100, 0, -100, -4.37114e-06, 0, 0, 0)
 mesh = ExtResource("1_muem4")
 skeleton = NodePath("")
 
-[node name="ArmBase" type="MeshInstance3D" parent="musicplayer"]
+[node name="ArmBase" type="MeshInstance3D" parent="MusicPlayer"]
 transform = Transform3D(-84.4401, 53.5711, 2.34167e-06, 0, -4.37114e-06, 100, 53.5711, 84.4401, 3.691e-06, 0.845739, 0.155946, -0.86766)
 mesh = ExtResource("2_dp3eg")
 skeleton = NodePath("")
 
-[node name="ArmArm" type="MeshInstance3D" parent="musicplayer"]
+[node name="ArmArm" type="MeshInstance3D" parent="MusicPlayer"]
 transform = Transform3D(-81.1562, 58.3911, -2.03884, -9.20345, -9.33004, 99.1375, 57.6973, 80.6438, 12.9459, 0.845739, 0.0922596, -0.86766)
 mesh = ExtResource("3_0ld40")
 skeleton = NodePath("")
 
-[node name="PlayerBody" type="MeshInstance3D" parent="musicplayer"]
+[node name="PlayerBody" type="MeshInstance3D" parent="MusicPlayer"]
 transform = Transform3D(-100, -3.89414e-05, 2.84217e-12, 0, 5.96046e-06, 100, -3.89414e-05, 100, -1.19209e-05, -0.829077, -0.0133225, -0.82886)
 mesh = ExtResource("4_gqmmt")
 skeleton = NodePath("")
 
-[node name="PlayerCable" type="MeshInstance3D" parent="musicplayer"]
+[node name="PlayerCable" type="MeshInstance3D" parent="MusicPlayer"]
 transform = Transform3D(-100, -3.89414e-05, 2.84217e-12, 0, 5.96046e-06, 100, -3.89414e-05, 100, -1.19209e-05, 1.88354, 0.910131, 0.200613)
 mesh = ExtResource("5_yc10j")
 skeleton = NodePath("")
 
-[node name="PlayerCableCurve" type="MeshInstance3D" parent="musicplayer"]
+[node name="PlayerCableCurve" type="MeshInstance3D" parent="MusicPlayer"]
 transform = Transform3D(-74.119, -67.1295, 0, 0, 0, 100, -67.1295, 74.119, 0, 1.88376, 0, 0.201759)
 skeleton = NodePath("")
 
-[node name="PlayerPowerPlug" type="MeshInstance3D" parent="musicplayer"]
+[node name="PlayerPowerPlug" type="MeshInstance3D" parent="MusicPlayer"]
 transform = Transform3D(-96.8831, -24.7722, 2.23517e-06, 0, 5.96046e-06, 100, -24.7722, 96.8831, -1.19209e-05, -0.090389, -0.516193, -2.03896)
 mesh = ExtResource("6_jscy8")
 skeleton = NodePath("")
 
-[node name="PlayerVelocityKnob" type="MeshInstance3D" parent="musicplayer"]
+[node name="PlayerVelocityKnob" type="MeshInstance3D" parent="MusicPlayer"]
 transform = Transform3D(71.0641, 70.3555, 0, 0, 0, 100, 70.3555, -71.0641, 0, -0.843667, -0.0133225, -0.866963)
 mesh = ExtResource("7_pm3ni")
 skeleton = NodePath("")
