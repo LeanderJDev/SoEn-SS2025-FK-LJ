@@ -3,10 +3,26 @@ using System;
 
 namespace Musikspieler.Scripts
 {
-    public class Song
+    public class Song : ISong
     {
-        public readonly string name;
+        private readonly string _name;
+        public string Name => _name;
+
+        public override string ToString()
+        {
+            return $"{nameof(Song)}: {_name}";
+        }
+
+        public Song(string name)
+        {
+            _name = name;
+        }
 
         //...
+    }
+
+    public interface ISong
+    {
+        public string Name { get; }
     }
 }

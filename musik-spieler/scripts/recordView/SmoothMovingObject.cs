@@ -12,7 +12,7 @@ namespace Musikspieler.Scripts
             set
             {
                 if (SmoothDamp.PositionParameters is null)
-                    base.Scale = value;
+                    base.Position = value;
                 else
                     MovementState.targetPosition = value;
             }
@@ -24,7 +24,7 @@ namespace Musikspieler.Scripts
             set
             {
                 if (SmoothDamp.RotationParameters is null)
-                    base.Scale = value;
+                    base.Rotation = value;
                 else
                     MovementState.targetRotation = value;
             }

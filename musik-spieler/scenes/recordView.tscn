@@ -1,0 +1,21 @@
+[gd_scene load_steps=4 format=3 uid="uid://dlj5xsuc13qmu"]
+
+[ext_resource type="Script" uid="uid://c5h5eqcdw126n" path="res://scripts/recordView/RecordView.cs" id="1_lokm7"]
+[ext_resource type="Script" uid="uid://b6qecccj5is4g" path="res://scripts/recordView/RecordContainer.cs" id="2_jjlna"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_td48w"]
+size = Vector3(6.37866, 1.35962, 2.41992)
+
+[node name="RecordView" type="StaticBody3D" node_paths=PackedStringArray("recordsContainer", "recordViewBounds")]
+collision_layer = 2
+collision_mask = 2
+script = ExtResource("1_lokm7")
+recordsContainer = NodePath("Container")
+recordViewBounds = NodePath("Bounds")
+
+[node name="Container" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.470345, 0)
+script = ExtResource("2_jjlna")
+
+[node name="Bounds" type="CollisionShape3D" parent="."]
+shape = SubResource("BoxShape3D_td48w")
