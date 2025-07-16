@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3 uid="uid://c768lb02k5lwe"]
+
+[ext_resource type="PackedScene" uid="uid://ew28vqpvjn1g" path="res://scenes/recordView.tscn" id="1_sjlo3"]
+
+[node name="RecordViewTest" type="Node3D"]
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(0.676773, -0.388585, 0.625284, 0, 0.84935, 0.527831, -0.736192, -0.357222, 0.574817, 2.00517, 1.8664, 2.00409)
+
+[node name="RecordView" parent="." instance=ExtResource("1_sjlo3")]

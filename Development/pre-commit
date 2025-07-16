@@ -63,4 +63,3 @@ git add musik-spieler/scripts/**/*.cs
 
 # Ungestagete Änderungen zurückholen
 if [ $STASHED -eq 0 ]; then git stash pop -q; fi
-

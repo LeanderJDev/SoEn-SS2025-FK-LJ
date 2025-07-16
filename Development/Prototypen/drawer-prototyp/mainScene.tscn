@@ -1,0 +1,314 @@
+[gd_scene load_steps=25 format=3 uid="uid://cttlc2ygbkvu1"]
+
+[ext_resource type="ArrayMesh" uid="uid://c10ko7k8uuuau" path="res://3D Assets/Drawer.res" id="1_nlk40"]
+[ext_resource type="ArrayMesh" uid="uid://dvn6dllk13k4h" path="res://3D Assets/Table.res" id="2_466gm"]
+[ext_resource type="ArrayMesh" uid="uid://p3otv5370x7" path="res://3D Assets/RecordOnPlayer.res" id="3_auxaw"]
+[ext_resource type="ArrayMesh" uid="uid://c4b013yu0eggw" path="res://3D Assets/ArmArm_001.res" id="4_smdy7"]
+[ext_resource type="ArrayMesh" uid="uid://de2mryko20n3" path="res://3D Assets/ArmHead.res" id="5_6qrj0"]
+[ext_resource type="ArrayMesh" uid="uid://cp5gar3r3l8la" path="res://3D Assets/ExtenisionCordCable_001.res" id="6_tlk23"]
+[ext_resource type="ArrayMesh" uid="uid://dmc703v30ml66" path="res://3D Assets/ExtensionCordBox.res" id="7_6k62e"]
+[ext_resource type="ArrayMesh" uid="uid://cwhf6qri7q7rq" path="res://3D Assets/ExtensionCordSwitch.res" id="8_kpsh6"]
+[ext_resource type="ArrayMesh" uid="uid://t33myq0tktmi" path="res://3D Assets/PlayerBody.res" id="9_3qdnn"]
+[ext_resource type="ArrayMesh" uid="uid://6mt8lnlpjfwt" path="res://3D Assets/PlayerCable_001.res" id="10_s7pqw"]
+[ext_resource type="ArrayMesh" uid="uid://b64ixboh7g1tf" path="res://3D Assets/PlayerPowerPlug.res" id="11_251pa"]
+[ext_resource type="ArrayMesh" uid="uid://mnu3lwknj34i" path="res://3D Assets/PlayerVelocityKnob.res" id="12_vg2gt"]
+[ext_resource type="ArrayMesh" uid="uid://cdurquv35j7en" path="res://3D Assets/Speaker.res" id="13_1uw5o"]
+[ext_resource type="ArrayMesh" uid="uid://t8wjp5ye36ji" path="res://3D Assets/SpeakerCable_001.res" id="14_efo4c"]
+[ext_resource type="ArrayMesh" uid="uid://cn3o5khacxyan" path="res://3D Assets/SpeakerCablePlug.res" id="15_wsq5h"]
+[ext_resource type="PackedScene" uid="uid://b153wgbgu0u4w" path="res://record_view.tscn" id="16_nlk40"]
+
+[sub_resource type="Environment" id="Environment_g4qto"]
+
+[sub_resource type="CameraAttributesPractical" id="CameraAttributesPractical_hr5et"]
+
+[sub_resource type="Animation" id="Animation_xelxj"]
+resource_name = "RecordOnPlayer|Record_off"
+length = 1.16667
+tracks/0/type = "position_3d"
+tracks/0/imported = true
+tracks/0/enabled = true
+tracks/0/path = NodePath("RecordOnPlayer")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = PackedFloat32Array(0, 1, 0, 0, 0, 0.0416667, 1, 0, 0.00294531, 0, 0.0833333, 1, 0, 0.0235625, 0, 0.125, 1, 0, 0.0795233, 0, 0.166667, 1, 0.0209073, 0.206305, 0.0180939, 0.208333, 1, 0.0805882, 0.400661, 0.0653146, 0.25, 1, 0.174481, 0.622177, 0.13107, 0.291667, 1, 0.298024, 0.830439, 0.20477, 0.333333, 1, 0.446656, 0.985033, 0.275822, 0.375, 1, 0.615815, 1.04554, 0.333634, 0.416667, 1, 0.80094, 1.04329, 0.370692, 0.458333, 1, 0.997469, 1.03727, 0.391793, 0.5, 1, 1.20084, 1.02862, 0.404808, 0.583333, 1, 1.60986, 1.00792, 0.438074, 0.625, 1, 1.80639, 0.998109, 0.47407, 0.666667, 1, 1.99152, 0.990165, 0.533472, 0.708333, 1, 2.16068, 0.985211, 0.624153, 0.75, 1, 2.30931, 0.97931, 0.803709, 0.791667, 1, 2.43285, 0.948292, 1.02304, 0.833333, 1, 2.52674, 0.862924, 1.12996, 0.875, 1, 2.58642, 0.419034, 1.09195, 0.916667, 1, 2.60733, -0.135775, 1.01656, 0.958333, 1, 2.60733, -0.425732, 0.951612, 1, 1, 2.60733, -0.620099, 0.904526, 1.04167, 1, 2.60733, -0.737993, 0.872601, 1.08333, 1, 2.60733, -0.798534, 0.853139, 1.125, 1, 2.60733, -0.820838, 0.84344, 1.16667, 1, 2.60733, -0.824025, 0.840807)
+tracks/1/type = "rotation_3d"
+tracks/1/imported = true
+tracks/1/enabled = true
+tracks/1/path = NodePath("RecordOnPlayer")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = PackedFloat32Array(0, 1, -0.707107, 0, 0, 0.707107, 0.0416667, 1, -0.70748, -0.00793838, 0.0082956, 0.70664, 0.0833333, 1, -0.710046, -0.0218379, 0.0245503, 0.703389, 0.125, 1, -0.71748, -0.0269298, 0.0358169, 0.695136, 0.166667, 1, -0.737964, -0.0158578, 0.0389006, 0.673531, 0.208333, 1, -0.775443, 0.00487609, 0.0410593, 0.630063, 0.25, 1, -0.825332, 0.0292453, 0.0456127, 0.562042, 0.291667, 1, -0.881054, 0.0507036, 0.0547637, 0.467092, 0.333333, 1, -0.934359, 0.0624072, 0.0679827, 0.344175, 0.375, 1, -0.975916, 0.0582977, 0.0806835, 0.194114, 0.416667, 1, -0.995563, 0.0405658, 0.0825084, 0.0200329, 0.458333, 1, -0.982903, 0.0204203, 0.0687584, -0.169578, 0.5, 1, -0.931175, 0.00604419, 0.0423673, -0.362052, 0.541667, 1, -0.839668, 0.00263189, 0.00916594, -0.543017, 0.583333, 1, -0.714473, 0.0110083, -0.0239111, -0.699168, 0.625, 1, -0.567561, 0.0276006, -0.0511993, -0.821274, 0.666667, 1, -0.414381, 0.0457506, -0.0701653, -0.906241, 0.708333, 1, -0.270907, 0.0576542, -0.0819209, -0.957379, 0.75, 1, -0.152986, 0.0467808, -0.0883546, -0.983158, 0.766667, 1, -0.12204, 0.0358327, -0.0902706, -0.987762, 0.791667, 1, -0.0751007, 0.0197538, -0.0945264, -0.992489, 0.833333, 1, -0.0473354, 0.00449086, -0.0980885, -0.994041, 0.875, 1, -0.0776088, 0.0088401, -0.0971033, -0.992204, 0.916667, 1, -0.115144, 0.0140456, -0.0967395, -0.988527, 0.958333, 1, -0.127449, 0.0153789, -0.0972161, -0.98695, 1, 1, -0.135685, 0.0162671, -0.0975617, -0.985803, 1.04167, 1, -0.139484, 0.0169217, -0.0977611, -0.985241, 1.06667, 1, -0.141736, 0.0170157, -0.0978426, -0.98491, 1.08333, 1, -0.143236, 0.0170782, -0.0978974, -0.984687, 1.16667, 1, -0.144314, 0.0171937, -0.0979472, -0.984522)
+tracks/2/type = "rotation_3d"
+tracks/2/imported = true
+tracks/2/enabled = true
+tracks/2/path = NodePath("ArmArm")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = PackedFloat32Array(0, 1, 0.246332, 0.662813, 0.662813, -0.246332)
+tracks/3/type = "rotation_3d"
+tracks/3/imported = true
+tracks/3/enabled = true
+tracks/3/path = NodePath("ArmCurve")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = PackedFloat32Array(0, 1, 0.246332, 0.662813, 0.662813, -0.246332)
+tracks/4/type = "rotation_3d"
+tracks/4/imported = true
+tracks/4/enabled = true
+tracks/4/path = NodePath("ArmHead")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = PackedFloat32Array(0, 1, 0.246332, 0.662813, 0.662813, -0.246332)
+
+[sub_resource type="Animation" id="Animation_gs4kw"]
+resource_name = "RecordOnPlayer|Record_on"
+length = 1.20833
+tracks/0/type = "position_3d"
+tracks/0/imported = true
+tracks/0/enabled = true
+tracks/0/path = NodePath("RecordOnPlayer")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = PackedFloat32Array(0, 1, 2.64445, -0.821329, 0.84599, 0.125, 1, 2.64266, 0.111388, 1.12666, 0.166667, 1, 2.64206, 0.351107, 1.12384, 0.208333, 1, 2.62373, 0.475236, 1.10404, 0.25, 1, 2.57397, 0.559608, 1.0503, 0.291667, 1, 2.4779, 0.663815, 0.919225, 0.333333, 1, 2.33747, 0.782487, 0.714025, 0.375, 1, 2.16221, 0.89401, 0.487641, 0.416667, 1, 1.96167, 0.976773, 0.293013, 0.458333, 1, 1.74539, 1.00916, 0.183085, 0.5, 1, 1.52212, 0.994214, 0.137554, 0.625, 1, 0.862926, 0.807489, 0.0471811, 0.666667, 1, 0.662661, 0.713578, 0.0297117, 0.708333, 1, 0.480094, 0.611646, 0.0171943, 0.75, 1, 0.320004, 0.506381, 0.00880349, 0.791667, 1, 0.187171, 0.402468, 0.00371395, 0.833333, 1, 0.0863732, 0.304597, 0.00110042, 0.875, 1, 0.0223901, 0.217455, 0.000137553, 0.916667, 1, 0, 0.145729, 0, 0.958333, 1, 0, 0.0917711, 0, 1, 1, 0, 0.0531083, 0, 1.04167, 1, 0, 0.0271914, 0, 1.08333, 1, 0, 0.0114714, 0, 1.125, 1, 0, 0.00339893, 0, 1.16667, 1, 0, 0.000424862, 0, 1.20833, 1, 0, 0, 0)
+tracks/1/type = "rotation_3d"
+tracks/1/imported = true
+tracks/1/enabled = true
+tracks/1/path = NodePath("RecordOnPlayer")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = PackedFloat32Array(0, 1, 0.000583038, 0.989334, 0.14563, 0.00317688, 0.125, 1, 0.00057244, 0.989334, 0.14563, 0.00324888, 0.166667, 1, 0.00040407, 0.989896, 0.141755, 0.00324518, 0.208333, 1, -0.000507873, 0.993217, 0.11623, 0.00314165, 0.25, 1, -0.00265507, 0.998929, 0.0461002, 0.00308453, 0.291667, 1, -0.0240241, 0.994685, -0.0955277, -0.029998, 0.333333, 1, -0.0954899, 0.950891, -0.279038, -0.093941, 0.375, 1, -0.207882, 0.863294, -0.43872, -0.137963, 0.416667, 1, -0.315326, 0.769671, -0.535475, -0.146433, 0.458333, 1, -0.370316, 0.718451, -0.570209, -0.146821, 0.5, 1, -0.384407, 0.702588, -0.578105, -0.156192, 0.541667, 1, -0.393266, 0.688448, -0.586114, -0.166891, 0.583333, 1, -0.397636, 0.67578, -0.594329, -0.17883, 0.666667, 1, -0.395507, 0.654172, -0.611084, -0.205451, 0.75, 1, -0.382928, 0.636888, -0.62712, -0.233366, 0.791667, 1, -0.37429, 0.629742, -0.634371, -0.246791, 0.833333, 1, -0.365005, 0.623554, -0.640869, -0.259304, 0.875, 1, -0.35545, 0.618526, -0.646637, -0.270076, 0.916667, 1, -0.347567, 0.613935, -0.651074, -0.279969, 0.958333, 1, -0.339899, 0.612222, -0.653398, -0.287618, 1, 1, -0.333166, 0.613622, -0.652411, -0.294667, 1.04167, 1, -0.327357, 0.617133, -0.649222, -0.300823, 1.08333, 1, -0.322543, 0.621695, -0.644899, -0.305885, 1.125, 1, -0.318854, 0.626235, -0.640503, -0.309705, 1.16667, 1, -0.316448, 0.629692, -0.637107, -0.312159, 1.20833, 1, -0.315494, 0.631018, -0.635794, -0.313123)
+tracks/2/type = "rotation_3d"
+tracks/2/imported = true
+tracks/2/enabled = true
+tracks/2/path = NodePath("ArmArm")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = PackedFloat32Array(0, 1, 0.246332, 0.662813, 0.662813, -0.246332)
+tracks/3/type = "rotation_3d"
+tracks/3/imported = true
+tracks/3/enabled = true
+tracks/3/path = NodePath("ArmCurve")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = PackedFloat32Array(0, 1, 0.246332, 0.662813, 0.662813, -0.246332)
+tracks/4/type = "rotation_3d"
+tracks/4/imported = true
+tracks/4/enabled = true
+tracks/4/path = NodePath("ArmHead")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = PackedFloat32Array(0, 1, 0.246332, 0.662813, 0.662813, -0.246332)
+
+[sub_resource type="Animation" id="Animation_8w6l4"]
+resource_name = "Record_off"
+tracks/0/type = "position_3d"
+tracks/0/imported = true
+tracks/0/enabled = true
+tracks/0/path = NodePath("RecordOnPlayer")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = PackedFloat32Array(0, 1, 0, 0, 0, 0.0416667, 1, 0, 0.00294531, 0, 0.0833333, 1, 0, 0.0235625, 0, 0.125, 1, 0, 0.0795233, 0, 0.166667, 1, 0.0209073, 0.206305, 0.0180939, 0.208333, 1, 0.0805882, 0.400661, 0.0653146, 0.25, 1, 0.174481, 0.622177, 0.13107, 0.291667, 1, 0.298024, 0.830439, 0.20477, 0.333333, 1, 0.446656, 0.985033, 0.275822, 0.375, 1, 0.615815, 1.04554, 0.333634, 0.416667, 1, 0.80094, 1.04329, 0.370692, 0.458333, 1, 0.997469, 1.03727, 0.391793, 0.5, 1, 1.20084, 1.02862, 0.404808, 0.583333, 1, 1.60986, 1.00792, 0.438074, 0.625, 1, 1.80639, 0.998109, 0.47407, 0.666667, 1, 1.99152, 0.990165, 0.533472, 0.708333, 1, 2.16068, 0.985211, 0.624153, 0.75, 1, 2.30931, 0.97931, 0.803709, 0.791667, 1, 2.43285, 0.948292, 1.02304, 0.833333, 1, 2.52674, 0.862924, 1.12996, 0.875, 1, 2.58642, 0.419034, 1.09195, 0.916667, 1, 2.60733, -0.135775, 1.01656, 0.958333, 1, 2.60733, -0.425732, 0.951612, 1, 1, 2.60733, -0.620099, 0.904526)
+tracks/1/type = "rotation_3d"
+tracks/1/imported = true
+tracks/1/enabled = true
+tracks/1/path = NodePath("RecordOnPlayer")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = PackedFloat32Array(0, 1, -0.707107, 0, 0, 0.707107, 0.0416667, 1, -0.70748, -0.00793838, 0.0082956, 0.70664, 0.0833333, 1, -0.710046, -0.0218379, 0.0245503, 0.703389, 0.125, 1, -0.71748, -0.0269298, 0.0358169, 0.695136, 0.166667, 1, -0.737964, -0.0158578, 0.0389006, 0.673531, 0.208333, 1, -0.775443, 0.00487609, 0.0410593, 0.630063, 0.25, 1, -0.825332, 0.0292453, 0.0456127, 0.562042, 0.291667, 1, -0.881054, 0.0507036, 0.0547637, 0.467092, 0.333333, 1, -0.934359, 0.0624072, 0.0679827, 0.344175, 0.375, 1, -0.975916, 0.0582977, 0.0806835, 0.194114, 0.416667, 1, -0.995563, 0.0405658, 0.0825084, 0.0200329, 0.458333, 1, -0.982903, 0.0204203, 0.0687584, -0.169578, 0.5, 1, -0.931175, 0.00604419, 0.0423673, -0.362052, 0.541667, 1, -0.839668, 0.00263189, 0.00916594, -0.543017, 0.583333, 1, -0.714473, 0.0110083, -0.0239111, -0.699168, 0.625, 1, -0.567561, 0.0276006, -0.0511993, -0.821274, 0.666667, 1, -0.414381, 0.0457506, -0.0701653, -0.906241, 0.708333, 1, -0.270907, 0.0576542, -0.0819209, -0.957379, 0.75, 1, -0.152986, 0.0467808, -0.0883546, -0.983158, 0.766667, 1, -0.12204, 0.0358327, -0.0902706, -0.987762, 0.791667, 1, -0.0751007, 0.0197538, -0.0945264, -0.992489, 0.833333, 1, -0.0473354, 0.00449086, -0.0980885, -0.994041, 0.875, 1, -0.0776088, 0.0088401, -0.0971033, -0.992204, 0.916667, 1, -0.115144, 0.0140456, -0.0967395, -0.988527, 0.958333, 1, -0.127449, 0.015379, -0.0972157, -0.98695, 1, 1, -0.135685, 0.0162672, -0.0975607, -0.985803)
+tracks/2/type = "rotation_3d"
+tracks/2/imported = true
+tracks/2/enabled = true
+tracks/2/path = NodePath("ArmArm")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = PackedFloat32Array(0, 1, -0.246332, -0.662813, -0.662813, 0.246332)
+tracks/3/type = "rotation_3d"
+tracks/3/imported = true
+tracks/3/enabled = true
+tracks/3/path = NodePath("ArmCurve")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = PackedFloat32Array(0, 1, -0.246332, -0.662813, -0.662813, 0.246332)
+tracks/4/type = "rotation_3d"
+tracks/4/imported = true
+tracks/4/enabled = true
+tracks/4/path = NodePath("ArmHead")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = PackedFloat32Array(0, 1, -0.246332, -0.662813, -0.662813, 0.246332)
+
+[sub_resource type="Animation" id="Animation_shubs"]
+resource_name = "Record_on"
+length = 1.20833
+tracks/0/type = "position_3d"
+tracks/0/imported = true
+tracks/0/enabled = true
+tracks/0/path = NodePath("RecordOnPlayer")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = PackedFloat32Array(0, 1, 2.64445, -0.821329, 0.84599, 0.125, 1, 2.64266, 0.111388, 1.12666, 0.166667, 1, 2.64206, 0.351107, 1.12384, 0.208333, 1, 2.62373, 0.475236, 1.10404, 0.25, 1, 2.57397, 0.559608, 1.0503, 0.291667, 1, 2.4779, 0.663815, 0.919225, 0.333333, 1, 2.33747, 0.782487, 0.714025, 0.375, 1, 2.16221, 0.89401, 0.487641, 0.416667, 1, 1.96167, 0.976773, 0.293013, 0.458333, 1, 1.74539, 1.00916, 0.183085, 0.5, 1, 1.52212, 0.994214, 0.137554, 0.625, 1, 0.862926, 0.807489, 0.0471811, 0.666667, 1, 0.662661, 0.713578, 0.0297117, 0.708333, 1, 0.480094, 0.611646, 0.0171943, 0.75, 1, 0.320004, 0.506381, 0.00880349, 0.791667, 1, 0.187171, 0.402468, 0.00371395, 0.833333, 1, 0.0863732, 0.304597, 0.00110042, 0.875, 1, 0.0223901, 0.217455, 0.000137553, 0.916667, 1, 0, 0.145729, 0, 0.958333, 1, 0, 0.0917711, 0, 1, 1, 0, 0.0531083, 0, 1.04167, 1, 0, 0.0271914, 0, 1.08333, 1, 0, 0.0114714, 0, 1.125, 1, 0, 0.00339893, 0, 1.16667, 1, 0, 0.000424862, 0, 1.20833, 1, 0, 0, 0)
+tracks/1/type = "rotation_3d"
+tracks/1/imported = true
+tracks/1/enabled = true
+tracks/1/path = NodePath("RecordOnPlayer")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = PackedFloat32Array(0, 1, 0.000583038, 0.989334, 0.14563, 0.00317688, 0.125, 1, 0.00057244, 0.989334, 0.14563, 0.00324888, 0.166667, 1, 0.00040407, 0.989896, 0.141755, 0.00324518, 0.208333, 1, -0.000507873, 0.993217, 0.11623, 0.00314165, 0.25, 1, -0.00265507, 0.998929, 0.0461002, 0.00308453, 0.291667, 1, -0.0240241, 0.994685, -0.0955277, -0.029998, 0.333333, 1, -0.0954899, 0.950891, -0.279038, -0.093941, 0.375, 1, -0.207882, 0.863294, -0.43872, -0.137963, 0.416667, 1, -0.315326, 0.769671, -0.535475, -0.146433, 0.458333, 1, -0.370316, 0.718451, -0.570209, -0.146821, 0.5, 1, -0.384407, 0.702588, -0.578105, -0.156192, 0.541667, 1, -0.393266, 0.688448, -0.586114, -0.166891, 0.583333, 1, -0.397636, 0.67578, -0.594329, -0.17883, 0.666667, 1, -0.395507, 0.654172, -0.611084, -0.205451, 0.75, 1, -0.382928, 0.636888, -0.62712, -0.233366, 0.791667, 1, -0.37429, 0.629742, -0.634371, -0.246791, 0.833333, 1, -0.365005, 0.623554, -0.640869, -0.259304, 0.875, 1, -0.35545, 0.618526, -0.646637, -0.270076, 0.916667, 1, -0.347567, 0.613935, -0.651074, -0.279969, 0.958333, 1, -0.339899, 0.612222, -0.653398, -0.287618, 1, 1, -0.333166, 0.613622, -0.652411, -0.294667, 1.04167, 1, -0.327357, 0.617133, -0.649222, -0.300823, 1.08333, 1, -0.322543, 0.621695, -0.644899, -0.305885, 1.125, 1, -0.318854, 0.626235, -0.640503, -0.309705, 1.16667, 1, -0.316448, 0.629692, -0.637107, -0.312159, 1.20833, 1, -0.315494, 0.631018, -0.635794, -0.313123)
+tracks/2/type = "rotation_3d"
+tracks/2/imported = true
+tracks/2/enabled = true
+tracks/2/path = NodePath("ArmArm")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = PackedFloat32Array(0, 1, -0.246332, -0.662813, -0.662813, 0.246332)
+tracks/3/type = "rotation_3d"
+tracks/3/imported = true
+tracks/3/enabled = true
+tracks/3/path = NodePath("ArmCurve")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = PackedFloat32Array(0, 1, -0.246332, -0.662813, -0.662813, 0.246332)
+tracks/4/type = "rotation_3d"
+tracks/4/imported = true
+tracks/4/enabled = true
+tracks/4/path = NodePath("ArmHead")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = PackedFloat32Array(0, 1, -0.246332, -0.662813, -0.662813, 0.246332)
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_wbeus"]
+_data = {
+&"RecordOnPlayer|Record_off": SubResource("Animation_xelxj"),
+&"RecordOnPlayer|Record_on": SubResource("Animation_gs4kw"),
+&"Record_off": SubResource("Animation_8w6l4"),
+&"Record_on": SubResource("Animation_shubs")
+}
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_nlk40"]
+size = Vector3(30, 0.001, 30)
+
+[node name="root" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_g4qto")
+camera_attributes = SubResource("CameraAttributesPractical_hr5et")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 13.0444, -0.518842)
+current = true
+fov = 37.7
+
+[node name="musikplayer" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.530841)
+
+[node name="Drawer" type="MeshInstance3D" parent="musikplayer"]
+transform = Transform3D(-100, -3.89414e-05, 2.84217e-12, 0, 5.96046e-06, 100, -3.89414e-05, 100, -1.19209e-05, -2.07998, -0.000733186, -0.000512603)
+mesh = ExtResource("1_nlk40")
+skeleton = NodePath("")
+
+[node name="Table" type="MeshInstance3D" parent="musikplayer"]
+transform = Transform3D(100, 0, 0, 0, -1.19209e-05, 100, 0, -100, -1.19209e-05, 0, 0, 0)
+mesh = ExtResource("2_466gm")
+skeleton = NodePath("")
+
+[node name="RecordOnPlayer" type="MeshInstance3D" parent="musikplayer"]
+transform = Transform3D(99.9736, -0.0491518, -2.29571, 2.29565, -0.119436, 99.9736, -0.0518804, -99.9999, -0.118268, 0, 0.00294531, 0)
+mesh = ExtResource("3_auxaw")
+skeleton = NodePath("")
+
+[node name="ArmArm" type="MeshInstance3D" parent="musikplayer"]
+transform = Transform3D(-99.5835, 9.11682, 0, 0, 0, 100, 9.11682, 99.5835, 0, 0.845739, 0.155946, -0.86766)
+mesh = ExtResource("4_smdy7")
+skeleton = NodePath("")
+
+[node name="ArmCurve" type="MeshInstance3D" parent="musikplayer"]
+transform = Transform3D(-99.5835, 9.11682, 0, 0, 0, 100, 9.11682, 99.5835, 0, 0.845739, 0.155946, -0.86766)
+skeleton = NodePath("")
+
+[node name="ArmHead" type="MeshInstance3D" parent="musikplayer"]
+transform = Transform3D(-99.5835, 9.11682, 0, 0, 0, 100, 9.11682, 99.5835, 0, 0.845739, 0.155946, -0.86766)
+mesh = ExtResource("5_6qrj0")
+skeleton = NodePath("")
+
+[node name="ExtenisionCordCable" type="MeshInstance3D" parent="musikplayer"]
+transform = Transform3D(-96.8831, -24.7722, 2.23517e-06, 0, 5.96046e-06, 100, -24.7722, 96.8831, -1.19209e-05, -3.80197, -0.162112, -1.62426)
+mesh = ExtResource("6_tlk23")
+skeleton = NodePath("")
+
+[node name="ExtensionCordBox" type="MeshInstance3D" parent="musikplayer"]
+transform = Transform3D(-96.8831, -24.7722, 2.23517e-06, 0, 5.96046e-06, 100, -24.7722, 96.8831, -1.19209e-05, -0.258701, -0.560098, -2.60902)
+mesh = ExtResource("7_6k62e")
+skeleton = NodePath("")
+
+[node name="ExtensionCordCableCurve" type="MeshInstance3D" parent="musikplayer"]
+transform = Transform3D(-55.1794, -83.3981, 8.9407e-06, -8.9407e-06, 1.19209e-05, 100, -83.3981, 55.1794, -2.38419e-05, 2.38978, -0.374566, 1.57176)
+skeleton = NodePath("")
+
+[node name="ExtensionCordSwitch" type="MeshInstance3D" parent="musikplayer"]
+transform = Transform3D(-96.8831, -24.7722, 2.23517e-06, 0, 5.96046e-06, 100, -24.7722, 96.8831, -1.19209e-05, -0.726773, -0.431955, -2.20045)
+mesh = ExtResource("8_kpsh6")
+skeleton = NodePath("")
+
+[node name="PlayerBody" type="MeshInstance3D" parent="musikplayer"]
+transform = Transform3D(-100, -3.89414e-05, 2.84217e-12, 0, 5.96046e-06, 100, -3.89414e-05, 100, -1.19209e-05, -0.829077, -0.0133225, -0.82886)
+mesh = ExtResource("9_3qdnn")
+skeleton = NodePath("")
+
+[node name="PlayerCable" type="MeshInstance3D" parent="musikplayer"]
+transform = Transform3D(-100, -3.89414e-05, 2.84217e-12, 0, 5.96046e-06, 100, -3.89414e-05, 100, -1.19209e-05, 1.88354, 0.910131, 0.200613)
+mesh = ExtResource("10_s7pqw")
+skeleton = NodePath("")
+
+[node name="PlayerCableCurve" type="MeshInstance3D" parent="musikplayer"]
+transform = Transform3D(-74.119, -67.1295, 0, 0, 0, 100, -67.1295, 74.119, 0, 1.88376, 0, 0.201759)
+skeleton = NodePath("")
+
+[node name="PlayerPowerPlug" type="MeshInstance3D" parent="musikplayer"]
+transform = Transform3D(-96.8831, -24.7722, 2.23517e-06, 0, 5.96046e-06, 100, -24.7722, 96.8831, -1.19209e-05, -0.090389, -0.516193, -2.03896)
+mesh = ExtResource("11_251pa")
+skeleton = NodePath("")
+
+[node name="PlayerVelocityKnob" type="MeshInstance3D" parent="musikplayer"]
+transform = Transform3D(71.0641, 70.3555, 0, 0, 0, 100, 70.3555, -71.0641, 0, -0.843667, -0.0133225, -0.866963)
+mesh = ExtResource("12_vg2gt")
+skeleton = NodePath("")
+
+[node name="Speaker" type="MeshInstance3D" parent="musikplayer"]
+transform = Transform3D(100, 0, 0, 0, -1.19209e-05, 100, 0, -100, -1.19209e-05, -0.090389, -0.491517, 2.02095)
+mesh = ExtResource("13_1uw5o")
+skeleton = NodePath("")
+
+[node name="SpeakerCable" type="MeshInstance3D" parent="musikplayer"]
+transform = Transform3D(-96.6676, -5.36442e-05, 25.6004, 25.6004, 5.96046e-06, 96.6676, -5.36442e-05, 100, 5.96046e-06, 0, 0, 4.41421)
+mesh = ExtResource("14_efo4c")
+skeleton = NodePath("")
+
+[node name="SpeakerCableCurve" type="MeshInstance3D" parent="musikplayer"]
+transform = Transform3D(100, 0, 0, 0, -1.19209e-05, 100, 0, -100, -1.19209e-05, 0, 0, 0)
+skeleton = NodePath("")
+
+[node name="SpeakerCablePlug" type="MeshInstance3D" parent="musikplayer"]
+transform = Transform3D(-100, -3.89414e-05, 2.84217e-12, 0, 5.96046e-06, 100, -3.89414e-05, 100, -1.19209e-05, 0, 0, 0)
+mesh = ExtResource("15_wsq5h")
+skeleton = NodePath("")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="musikplayer"]
+libraries = {
+&"": SubResource("AnimationLibrary_wbeus")
+}
+
+[node name="RecordView" parent="." instance=ExtResource("16_nlk40")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.87167, -2.55808, 0)
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.865466, 0.134206, -0.482656, 0.500967, -0.231853, 0.833832, 0, -0.963448, -0.267894, -6.814, 14.5548, -1.85433)
+shadow_enabled = true
+shadow_opacity = 0.58
+
+[node name="RecordDragPlane" type="StaticBody3D" parent="."]
+collision_layer = 4
+collision_mask = 4
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="RecordDragPlane"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.314, 0)
+shape = SubResource("BoxShape3D_nlk40")
