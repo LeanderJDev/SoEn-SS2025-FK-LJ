@@ -45,18 +45,22 @@ EOF
 	exit 1
 fi
 
-# C#-Dateien im scripts-Ordner vor dem Commit formatieren
-dotnet format musik-spieler/Musik-Spieler.sln --include musik-spieler/scripts/
+# Ungestagete Änderungen stashen (nur Working Directory, staged bleibt erhalten)
+git stash push --keep-index --include-untracked -m "pre-commit-format-stash"
+STASHED=$?
+
+# Jetzt sind nur noch die gestageten Änderungen im Arbeitsverzeichnis
+# Formatieren und Whitespace entfernen
+dotnet format musik-spieler/Musik-Spieler.sln --include musik-spieler/scripts/**
 if [ $? -ne 0 ]; then
   echo "dotnet format hat einen Fehler zurückgegeben. Vielleicht ist es nicht installiert. Commit abgebrochen.\n Installieren mit dotnet tool install -g dotnet-format"
+  # Stash ggf. zurückholen
+  if [ $STASHED -eq 0 ]; then git stash pop -q; fi
   exit 1
 fi
+find musik-spieler/scripts/ -name '*.cs' -exec sed -i 's/[ \t]*$//' {} +
+git add musik-spieler/scripts/**/*.cs
 
-# Prüfen, ob nach dem Formatieren unstaged Änderungen existieren
-if ! git diff --quiet musik-spieler/scripts/*.cs; then
-  echo "Es wurden Dateien durch das Formatieren geändert. Bitte prüfe die Änderungen und stage sie ggf. erneut."
-  exit 1
-fi
+# Ungestagete Änderungen zurückholen
+if [ $STASHED -eq 0 ]; then git stash pop -q; fi
 
-# If there are whitespace errors, print the offending file names and fail.
-exec git diff-index --check --cached $against --
