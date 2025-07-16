@@ -100,7 +100,7 @@ public partial class AudioManager : Node2D
         while (_threadRunning)
         {
             double delta = sw.Elapsed.TotalMilliseconds - lastTime;
-            int samplesToWrite = (int)(((delay * sampleRate)/1000)*(1+(float)delta))+1;
+            int samplesToWrite = (int)(((delay * sampleRate) / 1000) * (1 + (float)delta)) + 1;
             Vector2 sample;
             while (_playback.GetFramesAvailable() > 0 && samplesToWrite > 0)
             {
@@ -117,7 +117,7 @@ public partial class AudioManager : Node2D
             sample = _samples[Math.Clamp((int)_sampleIndex, 0, _samples.Length - 1)];
             _waveformBuffer[_waveformIndex] = (sample.X + sample.Y) * 0.5f;
             _waveformIndex = (_waveformIndex + 1) % WaveformLength;
-            _deltaPlot[_deltaIndex] = (turntable.currentSpeed*200);
+            _deltaPlot[_deltaIndex] = (turntable.currentSpeed * 200);
             _deltaIndex = (_deltaIndex + 1) % deltaLength;
             lastTime = sw.Elapsed.TotalMilliseconds;
             Thread.Sleep(delay);
