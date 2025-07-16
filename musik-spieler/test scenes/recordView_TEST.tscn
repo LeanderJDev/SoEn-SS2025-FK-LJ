@@ -5,7 +5,7 @@
 [node name="RecordViewTest" type="Node3D"]
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(0.676773, -0.388585, 0.625284, 0, 0.849349, 0.527831, -0.736192, -0.357222, 0.574817, 2.00517, 2.1515, 2.00409)
-fov = 96.8
+transform = Transform3D(0.227557, -0.923942, 0.30749, -0.0270751, 0.309649, 0.950466, -0.973388, -0.22461, 0.0454468, 1.00046, 6.40321, 1.1528)
+fov = 64.3
 
 [node name="RecordView" parent="." instance=ExtResource("1_sjlo3")]

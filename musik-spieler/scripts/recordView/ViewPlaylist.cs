@@ -11,7 +11,7 @@ namespace Musikspieler.Scripts
 
         private readonly List<RecordPackage> packages;
 
-        private static readonly PackedScene recordPackagePrefab = GD.Load<PackedScene>("res://scenes/recordPackage.tscn");
+        private static readonly PackedScene recordPackagePrefab = GD.Load<PackedScene>("res://scenes/recordView/recordPackage.tscn");
 
         public int SongCount => packages.Count;
 
@@ -46,12 +46,11 @@ namespace Musikspieler.Scripts
             List<RecordPackage> newPackages = new(args.count);
             for (int i = 0; i < args.count; i++)
             {
-                GD.Print($"instanciating recordpackage {i}");
+                //GD.Print($"instanciating recordpackage {i}");
                 ISong song = playlist[args.startIndex + i];
                 newPackages.Add(InstantiateRecordPackage(song));
             }
             packages.InsertRange(args.startIndex, newPackages);
-            GD.Print($"args: i:{args.startIndex}, c:{args.count}");
             for (int i = 0; i < newPackages.Count; i++)
             {
                 newPackages[i].Playlist = this;

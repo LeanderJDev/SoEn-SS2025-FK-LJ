@@ -70,7 +70,7 @@ namespace Musikspieler.Scripts
         {
             ViewIndex = Playlist.IndexOf(this);
             _meshInstance.MaterialOverride = Playlist.recordView.CutoffMaterialInstance;
-            GD.Print($"Updated VieweIndex to: {ViewIndex}");
+            //GD.Print($"Updated VieweIndex to: {ViewIndex}");
             if (ViewIndex == -1)
                 throw new Exception($"Einer {nameof(RecordPackage)} ist eine {nameof(ViewPlaylist)} zugewiesen, die sie nicht enthält.");
         }

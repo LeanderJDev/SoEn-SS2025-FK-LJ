@@ -5,10 +5,10 @@ namespace Musikspieler.Scripts
 {
     public partial class RecordView : Node3D
     {
-        [Export] Node3D recordsContainer;
+        [Export] Node3D _recordsContainer;
         [Export] CollisionShape3D recordViewBounds;
 
-        public RecordContainer RecordsContainer => (RecordContainer)recordsContainer;
+        public RecordContainer RecordsContainer => (RecordContainer)_recordsContainer;
 
         private int RecordCount => _playlist.SongCount;
 
@@ -40,13 +40,13 @@ namespace Musikspieler.Scripts
 
         // Setup Settings
         private const float recordPackageWidth = 0.25f;     //als wie breit eine recordPackage behandelt wird
-        private const float scrollAreaSize = 0.2f;          //wie groß der Bereich ist, in dem gescrollt werden kann (link und rechts, zw. 0 und 1)
-        private const float flipThresholdOffset = -0.7f;    //um wie viel das Maus-spiel verschoben ist
+        private const float scrollAreaSize = 0.3f;          //wie groß der Bereich ist, in dem gescrollt werden kann (link und rechts, zw. 0 und 1)
+        private const float flipThresholdOffset = -0.2f;    //um wie viel das Maus-spiel verschoben ist
         private const float flipThreshold = 1.7f;           //wie viel spiel die der Mauszeiger hat
 
         // User Settings
         public bool useAutoScroll = true;                   //ob, wenn die Maus an die Kanten des RecordViews kommt, automatsich gescrollt werden soll
-        public float autoScrollSensitivity = 4f;            //wie schnell es auto-scrollt
+        public float autoScrollSensitivity = 40f;           //wie schnell es auto-scrollt
         public float scrollSensitivity = 0.9f;              //wie schnell es mit der Maus scrollt
 
 
@@ -150,7 +150,7 @@ namespace Musikspieler.Scripts
 
         private void Scroll(float lines)
         {
-            recordsContainer.Position -= new Vector3(0, 0, lines);
+            RecordsContainer.Position -= new Vector3(0, 0, lines);
         }
 
         private void OnScrollInput(float lines)
@@ -209,11 +209,12 @@ namespace Musikspieler.Scripts
             if (boundaryMousePos == null)
                 return;
 
-            Transform3D transform = recordsContainer.GlobalTransform.AffineInverse() * recordViewBounds.GlobalTransform;
+            Transform3D transform = RecordsContainer.GlobalTransform.AffineInverse() * recordViewBounds.GlobalTransform;
             Vector2 containerMousePos;
             if (useAutoScroll)
             {
-                float scroll = Mathf.Max(Mathf.Abs(boundaryMousePos.Value.Y) - (0.5f - scrollAreaSize), 0) * Mathf.Sign(boundaryMousePos.Value.Y);
+                float normalizedBoundaryPos = boundaryMousePos.Value.Y / Bounds.Z;
+                float scroll = Mathf.Max(Mathf.Abs(normalizedBoundaryPos) - (0.5f - scrollAreaSize), 0) * Mathf.Sign(normalizedBoundaryPos);
                 Scroll(scroll * (float)delta * autoScrollSensitivity);
                 float scrollArea = Bounds.Z * (0.5f - scrollAreaSize);
                 float clamped = Mathf.Clamp(boundaryMousePos.Value.Y, -scrollArea, scrollArea);
@@ -230,14 +231,13 @@ namespace Musikspieler.Scripts
             float mouseZDelta = containerMousePos.Y - lastMouseY;
             currentFlipOffset = Mathf.Clamp(currentFlipOffset + mouseZDelta, -flipThreshold * 0.5f + flipThresholdOffset, flipThreshold * 0.5f + flipThresholdOffset);
             lastMouseY = containerMousePos.Y;
-
-            _centeredGapIndex = (containerMousePos.Y - currentFlipOffset) / (recordPackageWidth * RecordCount);
+            _centeredGapIndex = (containerMousePos.Y - currentFlipOffset) / recordPackageWidth;
 
             for (int i = 0; i < _playlist.SongCount; i++)
             {
-                Vector3 packagePosition = _playlist[i].Position;
-                Vector2 packageToMouse = containerMousePos - new Vector2(packagePosition.X, packagePosition.Z);
-                UpdatePackageTransforms(_playlist[i], packageToMouse);
+                var package = _playlist[i];
+                Vector2 packageToMouse = new(containerMousePos.X - package.Position.X, _centeredGapIndex - (package.ViewIndex - RecordCount / 2));
+                UpdatePackageTransforms(package, packageToMouse);
             }
 
             CutoffMaterialInstance.SetShaderParameter("box_transform", recordViewBounds.GlobalTransform);

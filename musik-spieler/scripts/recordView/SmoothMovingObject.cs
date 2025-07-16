@@ -104,5 +104,11 @@ namespace Musikspieler.Scripts
         {
             _movementState = new(this);
         }
+
+        public override void _Ready()
+        {
+            base._Ready();
+            RequestReady();
+        }
     }
 }

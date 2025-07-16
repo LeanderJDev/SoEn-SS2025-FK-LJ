@@ -1,33 +1,20 @@
-[gd_scene load_steps=6 format=3 uid="uid://ew28vqpvjn1g"]
+[gd_scene load_steps=4 format=3 uid="uid://ew28vqpvjn1g"]
 
-[ext_resource type="Script" uid="uid://c5h5eqcdw126n" path="res://scripts/RecordView.cs" id="1_lokm7"]
-[ext_resource type="Shader" uid="uid://ct7ts4fy7tiw1" path="res://graphics/cutout.gdshader" id="2_jjlna"]
-[ext_resource type="Script" uid="uid://b6qecccj5is4g" path="res://scripts/RecordContainer.cs" id="3_jjlna"]
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_3hyb7"]
-render_priority = 0
-shader = ExtResource("2_jjlna")
-shader_parameter/albedo = Color(0.695505, 0.53859, 0.312884, 1)
-shader_parameter/roughness = 0.0
-shader_parameter/specular = 0.0
-shader_parameter/metallic = 0.0
-shader_parameter/box_transform = Projection(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)
-shader_parameter/box_size = Vector3(0, 0, 0)
-shader_parameter/fade_color = Color(0.430411, 0.322678, 0.166807, 1)
-shader_parameter/transition_width = 0.1
+[ext_resource type="Script" uid="uid://c5h5eqcdw126n" path="res://scripts/recordView/RecordView.cs" id="1_lokm7"]
+[ext_resource type="Script" uid="uid://b6qecccj5is4g" path="res://scripts/recordView/RecordContainer.cs" id="3_jjlna"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_td48w"]
-size = Vector3(1, 1, 2.41992)
+size = Vector3(2.5, 3, 6)
 
-[node name="RecordView" type="StaticBody3D" node_paths=PackedStringArray("recordsContainer", "recordViewBounds")]
+[node name="RecordView" type="StaticBody3D" node_paths=PackedStringArray("_recordsContainer", "recordViewBounds")]
 collision_layer = 2
 collision_mask = 2
 script = ExtResource("1_lokm7")
-recordsContainer = NodePath("Container")
+_recordsContainer = NodePath("Container")
 recordViewBounds = NodePath("Bounds")
-BaseRecordMaterial = SubResource("ShaderMaterial_3hyb7")
 
 [node name="Container" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.32625, 0)
 script = ExtResource("3_jjlna")
 
 [node name="Bounds" type="CollisionShape3D" parent="."]
