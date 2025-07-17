@@ -13,15 +13,18 @@ Geplant sind Releases für Windows und Linux, die dann als Standalone Versionen 
 
 ## Development
 
-Es gibt im Development Ordner einen `pre-commit` Hook, der automatisch den Code formatiert (hoffentlich). Das sollte die Commits übersichtlicher machen. Lokal muss diese Datei in `.git/hooks/pre-commit` kopiert werden.
-Ggf muss der `pre-commit` Hook noch mit `chmod +x pre-commit` ausführbar gemacht werden.
-Um das Staging nicht kaputt zu machen ist es allerdings so, dass der Hook wenn er Sachen formatieren musste einen Fehler auswirft und man diese Umformatierung dann erneut stagen muss, Ich hätte ein `git add .` einbauen können, allerdings würde der Hook einen dann zwingen immer alle Änderungen zu commiten.
+Es gibt im Development Ordner einen `pre-commit` Hook, der automatisch den Code formatiert. Das sollte die Commits übersichtlicher machen. Lokal muss diese Datei in `.git/hooks/pre-commit` kopiert werden.
+Gegebenenfalls muss der `pre-commit` Hook noch mit `chmod +x pre-commit` ausführbar gemacht werden oder dotnet-format installiert werden (Steht dann aber auch im Hook Fehler).
+
+## Vorgaben
+
+Die Tabelle zur Verwendung von LLMs ist unter [Nutzung von LLMs](https://github.com/LeanderJDev/SoEn-SS2025-FK-LJ/wiki/Nutzung-von-LLMs) zu finden.
 
 ## Mitwirkende
 
 <table cellspacing="0" cellpadding="8" style="">
 	<tr>
-		<td align="center" valign="middle" style="padding: 16px 0; border: 0;">
+		<td align="left" valign="middle" style="padding: 16px 0; border: 0;">
 			<a href="https://github.com/Friedy630" style="display: flex; align-items: center; gap: 16px; text-decoration: none;">
 				<img src="https://github.com/Friedy630.png" width="32" style="vertical-align: middle;"/>
 				<span style="font-size:1.3em; vertical-align: middle;"><b>@Friedy630</b></span>
@@ -29,7 +32,7 @@ Um das Staging nicht kaputt zu machen ist es allerdings so, dass der Hook wenn e
 		</td>
 	</tr>
 	<tr>
-		<td align="center" valign="middle" style="padding: 16px 0; border: 0;">
+		<td align="left" valign="middle" style="padding: 16px 0; border: 0;">
 			<a href="https://github.com/LeanderJDev" style="display: flex; align-items: center; gap: 16px; text-decoration: none;">
 				<img src="https://github.com/LeanderJDev.png" width="32" style="vertical-align: middle;"/>
 				<span style="font-size:1.3em; vertical-align: middle;"><b>@LeanderJDev</b></span>
