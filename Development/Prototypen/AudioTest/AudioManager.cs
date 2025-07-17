@@ -305,6 +305,11 @@ namespace Simulation
             loop += loopDelta;
         }
 
+        public void Move(float loops)
+        {
+            loop += loops;
+        }
+
         public void Scratch(float deltaLoops, float scratchSpeed)
         {
             float loopDelta = deltaLoops / (Mathf.Pi * 2);

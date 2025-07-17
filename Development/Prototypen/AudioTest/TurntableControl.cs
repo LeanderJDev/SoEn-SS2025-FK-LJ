@@ -102,9 +102,7 @@ public partial class TurntableControl : Node2D
 			float localMousePos = mousePos.X - Position.X;
 			if (localMousePos > 60 && localMousePos < 185)
 			{
-				float offset = AudioManager.turntable.loop % 1;
-				AudioManager.turntable.loop = (int)((1 - (localMousePos - 60) / 125) * AudioManager.turntable.maxLoops);
-				AudioManager.turntable.loop += offset;
+				AudioManager.turntable.Move((int)((1 - (localMousePos - 60) / 125) * AudioManager.turntable.maxLoops)-(int)AudioManager.turntable.loop);
 			}
 			if (Math.Abs(AudioManager.turntable.loop - _lastLoop) > 0.5f)
 				_leftMoved = true;
