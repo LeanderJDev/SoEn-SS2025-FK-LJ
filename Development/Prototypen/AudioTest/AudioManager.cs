@@ -187,26 +187,6 @@ public partial class AudioManager : Node2D
         string info = $"Sample Length: {_samples?.Length ?? 0:D7} | Index: {(int)_sampleIndex:D7} | Frames Available: {_playback.GetFramesAvailable():D5} | Skips: {_playback.GetSkips():D6} | Speed: {_speed:F3} | state: {turntable.state:D0} | MotorSpeed: {turntable.motorSpeed}";
         DrawString(_defaultFont, new Vector2(100, 30), info, HorizontalAlignment.Center);
     }
-
-    // Play/Pause-Methoden
-    public void Play()
-    {
-        if (!_player.Playing)
-            _player.StreamPaused = false;
-    }
-
-    public void Pause()
-    {
-        if (_player.Playing)
-            _player.StreamPaused = true;
-    }
-
-    public void JumpTo(float loop)
-    {
-        turntable.loop = loop;
-        _sampleIndex = turntable.loop * turntable.maxLoops;
-        _speed = turntable.currentSpeed / turntable.maxLoops * (SampleLength / sampleRate);
-    }
 }
 
 // ----- TURNTABLE SIM -----
@@ -224,7 +204,6 @@ namespace Simulation
         public volatile float currentSpeed = 0f;
         public volatile float targetSpeed = 0f;
         private const float acceleration = 2.4f; // Umdrehungen pro Sekunde^2, anpassen nach Gefühl
-        private const float drag = 3.0f;
         private const float baseDrag = 0.1f;
         public int state = 0;
 
@@ -290,6 +269,19 @@ namespace Simulation
             targetSpeed = 0f;
         }
 
+        public void SetMotorState(bool enabled)
+        {
+            motorRunning = enabled;
+            if (motorRunning)
+            {
+                StartMotor();
+            }
+            else
+            {
+                StopMotor();
+            }
+        }
+
         public void ToggleMotor()
         {
             if (targetSpeed > 0)
@@ -299,15 +291,14 @@ namespace Simulation
             motorRunning = !(targetSpeed == 0);
         }
 
-        public void Rotate(float angle)
-        {
-            float loopDelta = angle / (Mathf.Pi * 2);
-            loop += loopDelta;
-        }
-
-        public void Move(float loops)
+        public void Rotate(float loops)
         {
             loop += loops;
+        }
+
+        public void MoveArm(float pos)
+        {
+            Rotate((int)(pos * maxLoops)-(int)loop);
         }
 
         public void Scratch(float deltaLoops, float scratchSpeed)
@@ -315,6 +306,11 @@ namespace Simulation
             float loopDelta = deltaLoops / (Mathf.Pi * 2);
             loop += loopDelta;
             currentSpeed = scratchSpeed;
+        }
+
+        public void ChangeMotorSpeed(float speed)
+        {
+            motorSpeed += speed;
         }
     }
 }
