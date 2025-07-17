@@ -45,7 +45,7 @@ public partial class AudioManager : Node2D
         _player = new AudioStreamPlayer();
         AddChild(_player);
         _player.Stream = _generator;
-        _player.VolumeLinear = 0.5f;
+        _player.VolumeLinear = 0.3f;
         _player.Play();
 
         _playback = (AudioStreamGeneratorPlayback)_player.GetStreamPlayback();
@@ -245,7 +245,7 @@ namespace Simulation
             float dragPerStep = MathF.Pow(baseDrag, (float)delta);
             currentSpeed *= dragPerStep;
 
-            currentSpeed = (Mathf.Abs(currentSpeed) < threshold && targetSpeed==0) ? 0 : currentSpeed;
+            currentSpeed = (Mathf.Abs(currentSpeed) < threshold && targetSpeed == 0) ? 0 : currentSpeed;
             currentSpeed = Mathf.Min(currentSpeed, 1000f);
             if (Mathf.Abs(currentSpeed) == 0.0f)
             {
@@ -259,7 +259,7 @@ namespace Simulation
             loop += currentSpeed * (float)delta;
             if (loop >= maxLoops || loop < 0)
             {
-                state+=8;
+                state += 8;
                 StopMotor();
                 loop = Mathf.Clamp(loop, 0, maxLoops);
             }
@@ -271,7 +271,7 @@ namespace Simulation
             // Inertia
             if (MathF.Abs(currentSpeed - targetSpeed) > threshold)
             {
-                state+=16;
+                state += 16;
                 float sign = MathF.Sign(targetSpeed - currentSpeed);
                 currentSpeed += sign * acceleration * (float)delta;
                 // Stabilisieren der Zielgeschwindigkeit
@@ -303,6 +303,13 @@ namespace Simulation
         {
             float loopDelta = angle / (Mathf.Pi * 2);
             loop += loopDelta;
+        }
+
+        public void Scratch(float deltaLoops, float scratchSpeed)
+        {
+            float loopDelta = deltaLoops / (Mathf.Pi * 2);
+            loop += loopDelta;
+            currentSpeed = scratchSpeed;
         }
     }
 }
