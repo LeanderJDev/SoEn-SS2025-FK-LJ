@@ -37,6 +37,10 @@ namespace Musikspieler.Scripts.RecordView
                 else
                 {
                     SmoothReparent(RecordView.RecordsContainer);
+
+                    //das hier muss schöner gehen eigentlich: jetzt sagt es einem anderen objekt, dass es bitte geupdated werden soll...
+                    //Diese Fkt hier ist ja public, damit andere von außen evtl. refreshen können
+                    RecordView.UpdatePackageTransform(ViewIndex);
                 }
             }
         }
@@ -60,6 +64,9 @@ namespace Musikspieler.Scripts.RecordView
                 ArgumentNullException.ThrowIfNull(value);
                 if (_view != null)
                     _view.PlaylistChanged -= OnPlaylistChanged;
+                GD.Print("set RecordView");
+                if (IsInsideTree() && IsGettingDragged)
+                    SmoothReparent(value.RecordsContainer);
                 _view = value;
                 _view.PlaylistChanged += OnPlaylistChanged;
             }

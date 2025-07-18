@@ -101,6 +101,7 @@ namespace Musikspieler.Scripts.RecordView
         public void SmoothReparent(Node3D newParent)
         {
             // Alte Ziel-Transforms in globalen Raum bringen
+            GD.Print(ToGlobal(MovementState.targetPosition));
             Vector3 globalTargetPos = GlobalTransform * MovementState.targetPosition;
             Vector3 globalTargetRot = GlobalTransform.Basis * MovementState.targetRotation;
             Vector3 globalTargetScale = GlobalTransform.Basis.Scale * MovementState.targetScale;

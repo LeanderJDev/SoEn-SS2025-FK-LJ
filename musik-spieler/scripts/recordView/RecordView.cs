@@ -426,6 +426,9 @@ namespace Musikspieler.Scripts.RecordView
         /// </summary>
         public RecordPackage Grab()
         {
+            if (RecordCount == 0)
+                return null;
+
             var package = packages[Math.Clamp(GapIndex, 0, RecordCount - 1)];
             return package;
         }
@@ -471,20 +474,22 @@ namespace Musikspieler.Scripts.RecordView
             UpdateAllPackageTransforms();
         }
 
-        private void UpdateAllPackageTransforms()
+        public void UpdateAllPackageTransforms()
         {
             for (int i = 0; i < _playlist.SongCount; i++)
             {
-                var package = packages[i];
-                Vector2 packageToMouse = new(lastMousePos.X - package.Position.X, _centeredGapIndex - (package.ViewIndex - RecordCount / 2));
-                UpdatePackageTransform(package, packageToMouse);
+                UpdatePackageTransform(i);
             }
         }
 
-        private void UpdatePackageTransform(RecordPackage package, Vector2 packageToMouse)
+        public void UpdatePackageTransform(int index)
         {
+            var package = packages[index];
+
             if (package.IsGettingDragged)
                 return;
+
+            Vector2 packageToMouse = new(lastMousePos.X - package.Position.X, _centeredGapIndex - (package.ViewIndex - RecordCount / 2));
 
             package.Position = new(0, 0, (package.ViewIndex - (RecordCount / 2)) * recordPackageWidth);
 
