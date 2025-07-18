@@ -1,7 +1,7 @@
 using Godot;
 using System;
 
-namespace Musikspieler.Scripts
+namespace Musikspieler.Scripts.RecordView
 {
     /// <summary>
     /// Klasse, die drei Parameter speichert, um SmoothDamp auf allen drei Transform3D-Komponenten auszuführen.

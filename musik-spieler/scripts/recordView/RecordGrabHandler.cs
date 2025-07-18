@@ -1,7 +1,7 @@
 using Godot;
 using System;
 
-namespace Musikspieler.Scripts
+namespace Musikspieler.Scripts.RecordView
 {
     public partial class RecordGrabHandler : Node
     {

@@ -2,7 +2,7 @@ using Godot;
 using System;
 using System.Linq;
 
-namespace Musikspieler.Scripts
+namespace Musikspieler.Scripts.RecordView
 {
     public enum CollisionMask
     {
