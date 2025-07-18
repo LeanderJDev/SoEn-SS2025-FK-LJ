@@ -21,7 +21,6 @@ namespace Musikspieler.Scripts.RecordView
                 if (Utility.CameraRaycast(GetViewport().GetCamera3D(), CollisionMask.GlobalDragPlane, out var result))
                 {
                     currentlyGrabbed.Position = (Vector3)result["position"];
-                    GD.Print(currentlyGrabbed.Position);
                 }
             }
         }
@@ -81,6 +80,9 @@ namespace Musikspieler.Scripts.RecordView
         {
             GD.Print("grab");
             currentlyGrabbed = recordView.Grab();
+            if (currentlyGrabbed == null)
+                return;
+
             currentlyGrabbed.IsGettingDragged = true;
         }
 
@@ -92,6 +94,7 @@ namespace Musikspieler.Scripts.RecordView
 
             currentlyGrabbed.RecordView.MoveRecord(currentlyGrabbed, recordView);
             currentlyGrabbed.IsGettingDragged = false;
+
             currentlyGrabbed = null;
         }
 
