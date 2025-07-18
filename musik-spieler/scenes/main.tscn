@@ -116,5 +116,5 @@ light_energy = 2.131
 shadow_enabled = true
 shadow_opacity = 0.61
 
-[node name="GrabHandler" type="Node3D" parent="."]
+[node name="RecordGrabHandler" type="Node3D" parent="."]
 script = ExtResource("15_jkv2x")

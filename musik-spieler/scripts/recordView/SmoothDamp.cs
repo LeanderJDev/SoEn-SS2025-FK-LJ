@@ -22,8 +22,8 @@ namespace Musikspieler.Scripts
 
         public SmoothDamp(float positionSmoothTime, float positionMaxSpeed, float rotationSmoothTime, float rotationMaxSpeed, float scaleSmoothTime, float scaleMaxSpeed)
         {
-            RotationParameters = new(positionSmoothTime, positionMaxSpeed);
-            PositionParameters = new(rotationSmoothTime, rotationMaxSpeed);
+            PositionParameters = new(positionSmoothTime, positionMaxSpeed);
+            RotationParameters = new(rotationSmoothTime, rotationMaxSpeed);
             ScaleParameters = new(scaleSmoothTime, scaleMaxSpeed);
         }
 

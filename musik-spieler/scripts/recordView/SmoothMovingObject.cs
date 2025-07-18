@@ -69,8 +69,6 @@ namespace Musikspieler.Scripts
         /// <summary>
         /// Teleport to specific targets immediately.
         /// </summary>
-        /// <param name="pos"></param>
-        /// <param name="rot"></param>
         public void Teleport(Vector3? pos, Vector3? rot, Vector3? scale)
         {
             if (pos.HasValue)
@@ -98,6 +96,22 @@ namespace Musikspieler.Scripts
             base.Position = Position;
             base.Rotation = Rotation;
             base.Scale = Scale;
+        }
+
+        public void SmoothReparent(Node3D newParent)
+        {
+            // Alte Ziel-Transforms in globalen Raum bringen
+            Vector3 globalTargetPos = GlobalTransform * MovementState.targetPosition;
+            Vector3 globalTargetRot = GlobalTransform.Basis * MovementState.targetRotation;
+            Vector3 globalTargetScale = GlobalTransform.Basis.Scale * MovementState.targetScale;
+
+            // Reparent
+            Reparent(newParent, true);
+
+            // Neue local targets relativ zu neuem Parent berechnen
+            MovementState.targetPosition = GlobalTransform.AffineInverse() * globalTargetPos;
+            MovementState.targetRotation = GlobalTransform.Basis.Inverse() * globalTargetRot;
+            MovementState.targetScale = GlobalTransform.Basis.Scale.Inverse() * globalTargetScale;
         }
 
         public SmoothMovingObject()

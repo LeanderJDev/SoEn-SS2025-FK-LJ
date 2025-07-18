@@ -6,10 +6,10 @@ namespace Musikspieler.Scripts
 {
     public enum CollisionMask
     {
-        Default = (0 << 1),
+        Default = (1 << 0),
         RecordViewBoundary = (1 << 1),
-        DrawerViewBoundary = (2 << 1),
-        GlobalDragPlane = (3 << 1),
+        DrawerViewBoundary = (1 << 2),
+        GlobalDragPlane = (1 << 3),
     }
 
     public struct Mask<T> where T : Enum
@@ -26,6 +26,22 @@ namespace Musikspieler.Scripts
             mask = Convert.ToUInt32(type);
         }
 
+        public Mask(T type1, T type2)
+        {
+            mask = Convert.ToUInt32(type1) | Convert.ToUInt32(type2);
+        }
+
+        public Mask(params T[] types)
+        {
+            if (types == null || types.Length == 0) throw new ArgumentNullException(nameof(types));
+            uint mask = Convert.ToUInt32(types[0]);
+            for (int i = 1; i < types.Length; i++)
+            {
+                mask |= Convert.ToUInt32(types[i]);
+            }
+            this.mask |= mask;
+        }
+
         public readonly bool Contains(T type)
         {
             return (Convert.ToUInt32(type) & mask) > 0;
@@ -39,22 +55,6 @@ namespace Musikspieler.Scripts
         public readonly bool ContainsAll(Mask<T> type)
         {
             return (type.mask | mask) == mask;
-        }
-
-        public static Mask<T> GetMask(T type1, T type2)
-        {
-            return new(Convert.ToUInt32(type1) | Convert.ToUInt32(type2));
-        }
-
-        public static Mask<T> GetMask(params T[] types)
-        {
-            if (types == null || types.Length == 0) throw new ArgumentNullException(nameof(types));
-            Mask<T> mask = new(Convert.ToUInt32(types[0]));
-            for (int i = 1; i < types.Length; i++)
-            {
-                mask.mask |= Convert.ToUInt32(types[i]);
-            }
-            return mask;
         }
 
         public void Remove(T type)

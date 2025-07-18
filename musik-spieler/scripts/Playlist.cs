@@ -1,4 +1,3 @@
-using Godot;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -130,6 +129,8 @@ namespace Musikspieler.Scripts
             SongsRemoved?.Invoke(args);
             return true;
         }
+
+        public int BufferSizeLeft => int.MaxValue - SongCount;
     }
 
     public interface IPlaylist
@@ -147,6 +148,9 @@ namespace Musikspieler.Scripts
         public bool RemoveSong(ISong song);
         public bool RemoveSongAt(int index);
         public bool RemoveSongsAt(int startIndex, int count);
+
+        //how many songs could be added
+        public int BufferSizeLeft { get; }
     }
 
     public struct SongsAddedEventArgs
