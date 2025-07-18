@@ -89,6 +89,7 @@ namespace Musikspieler.Scripts.RecordView
                 packages = newPackages,
                 changeToView = null,
             });
+            UpdateAllPackageTransforms();
         }
 
         private void OnSongsRemoved(SongsRemovedEventArgs args)
@@ -108,6 +109,7 @@ namespace Musikspieler.Scripts.RecordView
                 packages = packagesToDelete,
                 changeToView = RecordGrabHandler.Instance.GarbageBin,
             });
+            UpdateAllPackageTransforms();
         }
 
         public int IndexOf(RecordPackage recordPackage)
@@ -229,6 +231,8 @@ namespace Musikspieler.Scripts.RecordView
                 packages = packagesToRemove,
                 changeToView = null,            //Add, so move to none
             });
+            UpdateAllPackageTransforms();
+            targetView.UpdateAllPackageTransforms();
             return true;
         }
 
@@ -387,7 +391,11 @@ namespace Musikspieler.Scripts.RecordView
             float scrollMax = scrollStopLength + FlickThroughRotationXAnimation.ForwardGapToViewBoundryMargin;
             float scrollMin = -scrollStopLength - FlickThroughRotationXAnimation.BackwardGapToViewBoundryMargin;
 
-            newPos = Mathf.Clamp(newPos, scrollMin, scrollMax);
+            if (scrollMin > scrollMax)
+                //die playlist ist zu wenig gefüllt, scrollen ist aus
+                newPos = 0;
+            else
+                newPos = Mathf.Clamp(newPos, scrollMin, scrollMax);
             RecordsContainer.Position = new Vector3(RecordsContainer.Position.X, RecordsContainer.Position.Y, newPos);
         }
 
@@ -418,15 +426,21 @@ namespace Musikspieler.Scripts.RecordView
         /// </summary>
         public RecordPackage Grab()
         {
+            if (RecordCount == 0)
+                return null;
+
             var package = packages[Math.Clamp(GapIndex, 0, RecordCount - 1)];
             return package;
         }
 
-        private float lastMouseY;
+        private Vector2 lastMousePos;
         private float currentFlipOffset;
 
         public override void _Process(double delta)
         {
+            CutoffMaterialInstance.SetShaderParameter("box_transform", recordViewBounds.GlobalTransform);
+            CutoffMaterialInstance.SetShaderParameter("box_size", ((BoxShape3D)recordViewBounds.Shape).Size);
+
             base._Process(delta);
             Vector2? boundaryMousePos = GetBoundaryMousePosition();
 
@@ -452,26 +466,30 @@ namespace Musikspieler.Scripts.RecordView
                 containerMousePos = new(localPos.X, localPos.Z);
             }
 
-            float mouseZDelta = containerMousePos.Y - lastMouseY;
+            float mouseZDelta = containerMousePos.Y - lastMousePos.Y;
             currentFlipOffset = Mathf.Clamp(currentFlipOffset + mouseZDelta, Mathf.Min(-flipThreshold * 0.5f + flipThresholdOffset, -currentFlipOffset), Mathf.Max(flipThreshold * 0.5f + flipThresholdOffset, currentFlipOffset));
-            lastMouseY = containerMousePos.Y;
+            lastMousePos = containerMousePos;
             _centeredGapIndex = (containerMousePos.Y - currentFlipOffset) / recordPackageWidth;
 
-            for (int i = 0; i < _playlist.SongCount; i++)
-            {
-                var package = packages[i];
-                Vector2 packageToMouse = new(containerMousePos.X - package.Position.X, _centeredGapIndex - (package.ViewIndex - RecordCount / 2));
-                UpdatePackageTransforms(package, packageToMouse);
-            }
-
-            CutoffMaterialInstance.SetShaderParameter("box_transform", recordViewBounds.GlobalTransform);
-            CutoffMaterialInstance.SetShaderParameter("box_size", ((BoxShape3D)recordViewBounds.Shape).Size);
+            UpdateAllPackageTransforms();
         }
 
-        private void UpdatePackageTransforms(RecordPackage package, Vector2 packageToMouse)
+        public void UpdateAllPackageTransforms()
         {
+            for (int i = 0; i < _playlist.SongCount; i++)
+            {
+                UpdatePackageTransform(i);
+            }
+        }
+
+        public void UpdatePackageTransform(int index)
+        {
+            var package = packages[index];
+
             if (package.IsGettingDragged)
                 return;
+
+            Vector2 packageToMouse = new(lastMousePos.X - package.Position.X, _centeredGapIndex - (package.ViewIndex - RecordCount / 2));
 
             package.Position = new(0, 0, (package.ViewIndex - (RecordCount / 2)) * recordPackageWidth);
 
