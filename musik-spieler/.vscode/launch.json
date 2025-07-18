@@ -13,7 +13,7 @@
 			"request": "launch",
 			"mode": "executable",
 			"preLaunchTask": "build",
-			"executable": "$GODOT4",
+			"executable": "godot4",
 			// See which arguments are available here:
 			// https://docs.godotengine.org/en/stable/getting_started/editor/command_line_tutorial.html
 			"executableArguments": [
@@ -27,7 +27,7 @@
 			"request": "launch",
 			"mode": "executable",
 			"preLaunchTask": "build",
-			"executable": "$GODOT4",
+			"executable": "godot4",
 			// See which arguments are available here:
 			// https://docs.godotengine.org/en/stable/getting_started/editor/command_line_tutorial.html
 			"executableArguments": [
