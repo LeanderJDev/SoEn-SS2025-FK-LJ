@@ -16,7 +16,7 @@ namespace Musikspieler.Scripts.Audio
         public void SetSong(Song song)
         {
             currentSong = song;
-            audioPlayer.SetSample(song.Audio);
+            audioPlayer.SetSample(currentSong.Audio);
             turntable.SetMaxLoops(audioPlayer.SampleLength / audioPlayer.SampleRate);
         }
 
@@ -36,9 +36,9 @@ namespace Musikspieler.Scripts.Audio
                 if (audioPlayer.SampleLength != -1)
                 {
                     int samplesToWrite =
-                        (int)(delay * audioPlayer.SampleRate / 1000 * (1 + (float)delta)) + 1; // + 1 to adjust for int clamping
+                        (int)(delta * audioPlayer.SampleRate / 1000 * (1 + (float)delta)) + 1; // + 1 to adjust for int clamping
 
-                    while (samplesToWrite > 0)
+                    while (audioPlayer.FramesAvailable > 0 && samplesToWrite > 0)
                     {
                         turntable.SimulationStep(1.0f / audioPlayer.SampleRate);
                         audioPlayer.PlaySample(
