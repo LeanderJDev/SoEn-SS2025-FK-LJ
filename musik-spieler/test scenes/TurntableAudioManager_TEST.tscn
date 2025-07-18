@@ -1,0 +1,13 @@
+[gd_scene load_steps=4 format=3 uid="uid://dyxi3a1ptfiuh"]
+
+[ext_resource type="Script" uid="uid://dx8b3pugsccgu" path="res://scripts/test/TurntableAudioManagerTest.cs" id="1_aexrn"]
+[ext_resource type="Script" uid="uid://c8b0fj26s2nje" path="res://scripts/audio/TurntableAudioManager.cs" id="2_c43lj"]
+[ext_resource type="AudioStream" uid="uid://4ajuf5e7w4ph" path="res://assets/Audio/song.wav" id="2_kox1g"]
+
+[node name="Node2D" type="Node2D" node_paths=PackedStringArray("turntableAudioManager")]
+script = ExtResource("1_aexrn")
+sample = ExtResource("2_kox1g")
+turntableAudioManager = NodePath("TurntableAudioManager")
+
+[node name="TurntableAudioManager" type="Node2D" parent="."]
+script = ExtResource("2_c43lj")
