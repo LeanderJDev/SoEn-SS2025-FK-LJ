@@ -16,24 +16,29 @@ namespace Musikspieler.Scripts.Audio
 
         public int SampleLength => samples != null ? samples.Length : -1;
         public int SampleRate => sampleRate;
+        public int FramesAvailable => playback.GetFramesAvailable();
 
         public void SetSample(AudioStreamWav sample)
         {
             if (sample == null || sample.Format != AudioStreamWav.FormatEnum.Format16Bits)
             {
-                GD.PrintErr("Etwas ist schief gelaufen. Sample ist keine PCM16-WAV-Datei.");
+                GD.PrintErr("AudioPlayer: Etwas ist schief gelaufen. Sample ist keine PCM16-WAV-Datei.");
                 return;
+            }
+            if (sample.MixRate != sampleRate)
+            {
+                GD.PrintErr($"AudioPlayer: Etwas ist schief gelaufen. sample.MixRate ist nicht {sampleRate}Hz.");
             }
             var data = sample.Data;
             var channelCount = sample.Stereo ? 2 : 1;
             var sampleCount = data.Length / 2 / channelCount;
 
 #if DEBUG
-            GD.Print($"wav.Data.Length (Bytes): {data.Length}");
-            GD.Print($"wav.MixRate: {sample.MixRate}");
-            GD.Print($"wav.Format: {sample.Format}");
+            GD.Print($"sample.Data.Length (Bytes): {data.Length}");
+            GD.Print($"sample.MixRate: {sample.MixRate}");
+            GD.Print($"sample.Format: {sample.Format}");
             GD.Print($"AudioStreamWav.GetLength: {sample.GetLength()}");
-            GD.Print($"wav.Stereo: {sample.Stereo}");
+            GD.Print($"sample.Stereo: {sample.Stereo}");
             GD.Print($"Berechnete Sample-Anzahl: {sampleCount}");
 #endif
 

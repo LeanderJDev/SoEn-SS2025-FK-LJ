@@ -6,6 +6,7 @@ namespace Musikspieler.Scripts.Audio
     public interface ITurntable
     {
         float CurrentLoop { get; }
+        float CurrentSpeed { get; }
         float MaxLoops { get; }
         bool IsMotorRunning { get; }
 
@@ -25,13 +26,14 @@ namespace Musikspieler.Scripts.Audio
         private float currentLoop = 0;
         private float maxLoops;
         private float motorSpeed = 45f;
-        private float currentSpeed;
+        private float currentSpeed = 0;
         private float targetSpeed;
         private bool motorRunning;
         private float motorAcceleration = 2.4f; // Kalibrierter Wert
         private float drag = 0.1f; // Kalibrierter Wert
         private float threshold = 0.0001f; // At which point the speed is considered 0.0f
         public float CurrentLoop => currentLoop;
+        public float CurrentSpeed => currentSpeed;
         public float MaxLoops => maxLoops;
         public bool IsMotorRunning => motorRunning;
 
@@ -51,8 +53,7 @@ namespace Musikspieler.Scripts.Audio
             float dragPerStep = MathF.Pow(drag, (float)delta);
             currentSpeed *= dragPerStep;
 
-            currentSpeed =
-                (Mathf.Abs(currentSpeed) < threshold && targetSpeed == 0) ? 0 : currentSpeed;
+            currentSpeed = (Mathf.Abs(currentSpeed) < threshold && targetSpeed == 0) ? 0 : currentSpeed;
             currentSpeed = Mathf.Min(currentSpeed, 1000f);
 
             if (Mathf.Abs(currentSpeed) == 0.0f)
