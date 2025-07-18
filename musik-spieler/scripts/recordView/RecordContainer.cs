@@ -1,7 +1,7 @@
 using Godot;
 using System;
 
-namespace Musikspieler.Scripts
+namespace Musikspieler.Scripts.RecordView
 {
     public partial class RecordContainer : SmoothMovingObject
     {
@@ -14,13 +14,19 @@ namespace Musikspieler.Scripts
             const float PositionSmoothTime = 0.1f;
             const float PositionMaxSpeed = 40f;
 
-            SmoothDamp = new(new(PositionSmoothTime, PositionMaxSpeed), null, null);
+            SmoothDamp = new(positionParameters: new SmoothDamp.SmoothMovementParameters(PositionSmoothTime, PositionMaxSpeed), null, null);
         }
 
         ///Im Gegensatz zu Unity kann in Godot mit Konstruktoren gearbeitet werden.
         public RecordContainer()
         {
             base.SmoothDamp = SmoothDamp;
+        }
+
+        public override void _Ready()
+        {
+            base._Ready();
+            RequestReady();
         }
     }
 }
