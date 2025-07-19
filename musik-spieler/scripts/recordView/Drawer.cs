@@ -1,5 +1,4 @@
 using Godot;
-using System;
 
 namespace Musikspieler.Scripts.RecordView
 {

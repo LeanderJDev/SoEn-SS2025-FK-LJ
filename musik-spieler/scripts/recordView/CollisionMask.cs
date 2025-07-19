@@ -1,6 +1,4 @@
-using Godot;
 using System;
-using System.Linq;
 
 namespace Musikspieler.Scripts.RecordView
 {

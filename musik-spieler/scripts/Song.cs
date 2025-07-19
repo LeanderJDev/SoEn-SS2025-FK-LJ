@@ -1,6 +1,3 @@
-using Godot;
-using System;
-
 namespace Musikspieler.Scripts
 {
     public class Song : ISong
