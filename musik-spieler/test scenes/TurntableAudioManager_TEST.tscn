@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=3 uid="uid://dyxi3a1ptfiuh"]
+[gd_scene load_steps=5 format=3 uid="uid://wmr4gac34c5k"]
 
 [ext_resource type="Script" uid="uid://dx8b3pugsccgu" path="res://scripts/test/TurntableAudioManagerTest.cs" id="1_aexrn"]
 [ext_resource type="Script" uid="uid://c8b0fj26s2nje" path="res://scripts/audio/TurntableAudioManager.cs" id="2_c43lj"]

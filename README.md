@@ -11,6 +11,11 @@ Die genauere Ausführung der Idee ist im [Wiki](https://github.com/LeanderJDev/S
 Solange noch keine Releases erstellt wurden braucht man Godot 4.4, um das Projekt zu öffnen. Das Projekt kann dann über den Godot Editor gestartet werden.
 Geplant sind Releases für Windows und Linux, die dann als Standalone Versionen laufen.
 
+###Voraussetzung
+ffmpeg muss installiert und im PATH verfügbar sein.
+Installation unter Ubuntu:
+sudo apt install ffmpeg
+
 ## Development
 
 Es gibt im Development Ordner einen `pre-commit` Hook, der automatisch den Code formatiert. Das sollte die Commits übersichtlicher machen. Lokal muss diese Datei in `.git/hooks/pre-commit` kopiert werden.
