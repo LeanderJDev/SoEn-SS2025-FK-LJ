@@ -4,14 +4,36 @@ using System.Collections.Generic;
 
 namespace Musikspieler.Scripts.RecordView
 {
-    public partial class RecordView : Node3D
+    public interface IItem
+    {
+
+    }
+
+    //Genaralisiert alles, wo man etwas ablegen kann
+    public interface IView<T> where T : IItem
+    {
+
+    }
+
+    //generalisiert, einen View, in dem man scrollen kann
+    public abstract partial class ScrollView<T> : Node3D, IView<T> where T : IItem
+    {
+        protected List<T> items;
+
+        public int ItemCount => items.Count;
+
+        public T this[int index]
+        {
+            get { return items[index]; }
+        }
+    }
+
+    public partial class RecordView : ScrollView<RecordPackage>
     {
         [Export] Node3D _recordsContainer;
         [Export] CollisionShape3D recordViewBounds;
 
         public RecordContainer RecordsContainer => (RecordContainer)_recordsContainer;
-
-        private int RecordCount => packages.Count;
 
         public ShaderMaterial CutoffMaterialInstance { get; private set; }
 
@@ -23,35 +45,26 @@ namespace Musikspieler.Scripts.RecordView
             {
                 if (_playlist != null)
                 {
-                    _playlist.SongsAdded -= OnSongsAdded;
-                    _playlist.SongsRemoved -= OnSongsRemoved;
-                    for (int i = 0; i < RecordCount; i++)
+                    _playlist.ItemsAdded -= OnSongsAdded;
+                    _playlist.ItemsRemoved -= OnSongsRemoved;
+                    for (int i = 0; i < ItemCount; i++)
                     {
-                        packages[i].QueueFree();
+                        items[i].QueueFree();
                     }
-                    packages = null;
+                    items = null;
                 }
                 _playlist = value;
                 if (_playlist != null)
                 {
-                    packages = new(_playlist.SongCount);
-                    for (int i = 0; i < _playlist.SongCount; i++)
+                    items = new(_playlist.ItemCount);
+                    for (int i = 0; i < _playlist.ItemCount; i++)
                     {
-                        packages.Add(RecordPackage.InstantiateAndAssign(this, i));
+                        items.Add(RecordPackage.InstantiateAndAssign(this, i));
                     }
-                    _playlist.SongsAdded += OnSongsAdded;
-                    _playlist.SongsRemoved += OnSongsRemoved;
+                    _playlist.ItemsAdded += OnSongsAdded;
+                    _playlist.ItemsRemoved += OnSongsRemoved;
                 }
             }
-        }
-
-        private List<RecordPackage> packages;
-
-        public int SongCount => packages.Count;
-
-        public RecordPackage this[int index]
-        {
-            get { return packages[index]; }
         }
 
         public event Action<PlaylistChangedEventArgs> PlaylistChanged = delegate { };
@@ -68,7 +81,7 @@ namespace Musikspieler.Scripts.RecordView
         private bool ignoreSongsAddedEvent = false;
         private bool ignoreSongsRemovedEvent = false;
 
-        private void OnSongsAdded(SongsAddedEventArgs args)
+        private void OnSongsAdded(IPlaylist.ItemsAddedEventArgs args)
         {
             if (ignoreSongsAddedEvent)
                 return;
@@ -80,10 +93,10 @@ namespace Musikspieler.Scripts.RecordView
                 newPackages.Add(package);
                 RecordsContainer.AddChild(package);
             }
-            if (args.startIndex >= RecordCount)
-                packages.AddRange(newPackages);
+            if (args.startIndex >= ItemCount)
+                items.AddRange(newPackages);
             else
-                packages.InsertRange(args.startIndex, newPackages);
+                items.InsertRange(args.startIndex, newPackages);
             PlaylistChanged?.Invoke(new()
             {
                 packages = newPackages,
@@ -92,7 +105,7 @@ namespace Musikspieler.Scripts.RecordView
             UpdateAllPackageTransforms();
         }
 
-        private void OnSongsRemoved(SongsRemovedEventArgs args)
+        private void OnSongsRemoved(IPlaylist.ItemsRemovedEventArgs args)
         {
             if (ignoreSongsRemovedEvent)
                 return;
@@ -100,10 +113,10 @@ namespace Musikspieler.Scripts.RecordView
             List<RecordPackage> packagesToDelete = new(args.count);
             for (int i = 0; i < args.count; i++)
             {
-                packagesToDelete.Add(packages[args.startIndex + i]);
+                packagesToDelete.Add(items[args.startIndex + i]);
                 //package.QueueFree(); //macht jetzt der garbage bin
             }
-            packages.RemoveRange(args.startIndex, args.count);
+            items.RemoveRange(args.startIndex, args.count);
             PlaylistChanged?.Invoke(new()
             {
                 packages = packagesToDelete,
@@ -114,7 +127,7 @@ namespace Musikspieler.Scripts.RecordView
 
         public int IndexOf(RecordPackage recordPackage)
         {
-            return packages.IndexOf(recordPackage);
+            return items.IndexOf(recordPackage);
         }
 
         /// <summary>
@@ -165,26 +178,26 @@ namespace Musikspieler.Scripts.RecordView
             List<RecordPackage> packagesToRemove = new(count);
             for (int i = 0; i < count; i++)
             {
-                packagesToRemove.Add(packages[index + i]);
-                packages[index + i] = null;
+                packagesToRemove.Add(items[index + i]);
+                items[index + i] = null;
             }
 
             if (targetIndex.HasValue)
-                targetIndex = Math.Clamp(targetIndex.Value, 0, RecordCount);
+                targetIndex = Math.Clamp(targetIndex.Value, 0, ItemCount);
             else
             {
                 if (targetView.GapIndex <= 0)
                 {
                     targetIndex = 0;
                 }
-                else if (targetView.GapIndex >= targetView.RecordCount)
+                else if (targetView.GapIndex >= targetView.ItemCount)
                 {
                     //einfach hinten anfügen
-                    targetIndex = targetView.RecordCount;
+                    targetIndex = targetView.ItemCount;
                 }
                 //Wenn man auf eine Package im View zeigt, erwartet man, dass sie davor gelegt wird, und nicht ersetzt (was sie dahinter legen würde).
                 //Deshalb wird getestet, ob der aktuelle Slot gerade frei ist. Es wird der davor genommen, falls nicht.
-                else if (targetView.GapIndex >= 0 && targetView.packages[targetView.GapIndex] == null)
+                else if (targetView.GapIndex >= 0 && targetView.items[targetView.GapIndex] == null)
                 {
                     targetIndex = targetView.GapIndex;
                 }
@@ -199,26 +212,26 @@ namespace Musikspieler.Scripts.RecordView
             for (int i = 0; i < count; i++)
             {
                 RecordPackage package = packagesToRemove[i];
-                if (!_playlist.RemoveSong(package.song))
+                if (!_playlist.RemoveItem(package.song))
                     continue;
 
-                packages[index + i] = null;
+                items[index + i] = null;
 
-                if (targetIndex.Value == targetView.RecordCount)
+                if (targetIndex.Value == targetView.ItemCount)
                 {
-                    targetView._playlist.AddSong(package.song);
-                    targetView.packages.Add(package);
+                    targetView._playlist.AddItem(package.song);
+                    targetView.items.Add(package);
                 }
                 else
                 {
-                    targetView._playlist.InsertSongAt(package.song, targetIndex.Value);
-                    targetView.packages.Insert(targetIndex.Value, package);
+                    targetView._playlist.InsertItemAt(package.song, targetIndex.Value);
+                    targetView.items.Insert(targetIndex.Value, package);
                 }
             }
 
             //nicht RemoveRange verwenden, da evtl. in die gleiche Liste schon etwas eingefügt wurde, was alles verschiebt
             //wenn man vorher alles herauslöscht, geht die Lücke verloren, die ja angibt
-            packages.RemoveAll(x => x == null);
+            items.RemoveAll(x => x == null);
             ignoreSongsRemovedEvent = false;
             targetView.ignoreSongsAddedEvent = false;
             PlaylistChanged?.Invoke(new()
@@ -248,7 +261,7 @@ namespace Musikspieler.Scripts.RecordView
         public float scrollSensitivity = 1f;                //wie schnell es mit der Maus scrollt
 
 
-        public int GapIndex => Math.Clamp((int)(_centeredGapIndex + (RecordCount / 2)), -1, RecordCount);
+        public int GapIndex => Math.Clamp((int)(_centeredGapIndex + (ItemCount / 2)), -1, ItemCount);
         private float _centeredGapIndex;
 
         private Vector3 Bounds => ((BoxShape3D)recordViewBounds.Shape).Size;
@@ -345,7 +358,7 @@ namespace Musikspieler.Scripts.RecordView
             }
             Playlist playlist = new();
             Playlist = playlist;
-            playlist.AddSongs(songs);
+            playlist.AddItems(songs);
         }
 
         //containerMousePos auf der Boundary
@@ -378,7 +391,7 @@ namespace Musikspieler.Scripts.RecordView
             float newPos = RecordsContainer.Position.Z - (gaps * recordPackageWidth);
 
             //so viel muss mindestens in beide richtungen gescrollt werden können, sonst erreicht man nicht alles
-            float minimumScrollStop = RecordCount * 0.5f * recordPackageWidth - Bounds.Z * 0.5f;
+            float minimumScrollStop = ItemCount * 0.5f * recordPackageWidth - Bounds.Z * 0.5f;
 
             //Es wird bis hierher erlaubt zu scrollen: Es wird zB. 30% (0.3f) der Bounds.Z-Länge frei sein, wenn das Ende erreicht ist.
             const float relativeScrollStopOffset = 0.3f;
@@ -426,10 +439,10 @@ namespace Musikspieler.Scripts.RecordView
         /// </summary>
         public RecordPackage Grab()
         {
-            if (RecordCount == 0)
+            if (ItemCount == 0)
                 return null;
 
-            var package = packages[Math.Clamp(GapIndex, 0, RecordCount - 1)];
+            var package = items[Math.Clamp(GapIndex, 0, ItemCount - 1)];
             return package;
         }
 
@@ -476,7 +489,7 @@ namespace Musikspieler.Scripts.RecordView
 
         public void UpdateAllPackageTransforms()
         {
-            for (int i = 0; i < _playlist.SongCount; i++)
+            for (int i = 0; i < _playlist.ItemCount; i++)
             {
                 UpdatePackageTransform(i);
             }
@@ -484,14 +497,14 @@ namespace Musikspieler.Scripts.RecordView
 
         public void UpdatePackageTransform(int index)
         {
-            var package = packages[index];
+            var package = items[index];
 
             if (package.IsGettingDragged)
                 return;
 
-            Vector2 packageToMouse = new(lastMousePos.X - package.Position.X, _centeredGapIndex - (package.ViewIndex - RecordCount / 2));
+            Vector2 packageToMouse = new(lastMousePos.X - package.Position.X, _centeredGapIndex - (package.ViewIndex - ItemCount / 2));
 
-            package.Position = new(0, 0, (package.ViewIndex - (RecordCount / 2)) * recordPackageWidth);
+            package.Position = new(0, 0, (package.ViewIndex - (ItemCount / 2)) * recordPackageWidth);
 
             float xRotation = FlickThroughRotationXAnimation.AnimationFunction(packageToMouse);
             float yRotation = FlickThroughRotationYAnimation.AnimationFunction(packageToMouse);

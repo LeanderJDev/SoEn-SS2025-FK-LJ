@@ -8,9 +8,9 @@ namespace Musikspieler.Scripts
     {
         private readonly List<ISong> songs = [];
 
-        public int SongCount => songs.Count;
+        public int ItemCount => songs.Count;
 
-        public ImmutableArray<ISong> GetAllSongs()
+        public ImmutableArray<ISong> GetAllItems()
         {
             return songs.ToImmutableArray();
         }
@@ -23,145 +23,113 @@ namespace Musikspieler.Scripts
             }
         }
 
-        public event Action<SongsAddedEventArgs> SongsAdded = delegate { };
-        public event Action<SongsRemovedEventArgs> SongsRemoved = delegate { };
+        public event Action<IPlaylist.ItemsAddedEventArgs> ItemsAdded = delegate { };
+        public event Action<IPlaylist.ItemsRemovedEventArgs> ItemsRemoved = delegate { };
 
         public ISong this[int index]
         {
             get { return songs[index]; }
         }
 
-        public bool AddSong(ISong song)
+        public bool AddItem(ISong song)
         {
             if (song == null)
                 return false;
             songs.Add(song);
-            SongsAddedEventArgs args = new()
+            IPlaylist.ItemsAddedEventArgs args = new()
             {
                 startIndex = songs.Count - 1,
                 count = 1,
             };
-            SongsAdded?.Invoke(args);
+            ItemsAdded?.Invoke(args);
             return true;
         }
 
-        public bool AddSongs(List<ISong> songList)
+        public bool AddItems(List<ISong> songList)
         {
             if (songs == null)
                 return false;
-            SongsAddedEventArgs args = new()
+            IPlaylist.ItemsAddedEventArgs args = new()
             {
                 startIndex = songs.Count,
                 count = songList.Count,
             };
             songs.AddRange(songList);
-            SongsAdded?.Invoke(args);
+            ItemsAdded?.Invoke(args);
             return true;
         }
 
-        public bool InsertSongAt(ISong song, int index)
+        public bool InsertItemAt(ISong song, int index)
         {
-            if (song == null || index >= SongCount || index < 0)
+            if (song == null || index >= ItemCount || index < 0)
                 return false;
             songs.Insert(index, song);
-            SongsAddedEventArgs args = new()
+            IPlaylist.ItemsAddedEventArgs args = new()
             {
                 startIndex = index,
                 count = 1,
             };
-            SongsAdded?.Invoke(args);
+            ItemsAdded?.Invoke(args);
             return true;
         }
 
-        public bool InsertSongsAt(List<ISong> songs, int index)
+        public bool InsertItemsAt(List<ISong> songs, int index)
         {
-            if (songs == null || index >= SongCount || index < 0 || songs.Count < 1)
+            if (songs == null || index >= ItemCount || index < 0 || songs.Count < 1)
                 return false;
             songs.InsertRange(index, songs);
-            SongsAddedEventArgs args = new()
+            IPlaylist.ItemsAddedEventArgs args = new()
             {
                 startIndex = index,
                 count = songs.Count,
             };
-            SongsAdded?.Invoke(args);
+            ItemsAdded?.Invoke(args);
             return true;
         }
 
-        public bool RemoveSong(ISong song)
+        public bool RemoveItem(ISong song)
         {
             int index = songs.IndexOf(song);
             if (index < 0)
                 return false;
             songs.RemoveAt(index);
-            SongsRemovedEventArgs args = new()
+            IPlaylist.ItemsRemovedEventArgs args = new()
             {
                 startIndex = index,
                 count = 1,
             };
-            SongsRemoved?.Invoke(args);
+            ItemsRemoved?.Invoke(args);
             return true;
         }
 
-        public bool RemoveSongAt(int index)
+        public bool RemoveItemAt(int index)
         {
-            if (index >= SongCount || index < 0)
+            if (index >= ItemCount || index < 0)
                 return false;
             songs.RemoveAt(index);
-            SongsRemovedEventArgs args = new()
+            IPlaylist.ItemsRemovedEventArgs args = new()
             {
                 startIndex = index,
                 count = 1,
             };
-            SongsRemoved?.Invoke(args);
+            ItemsRemoved?.Invoke(args);
             return true;
         }
 
-        public bool RemoveSongsAt(int startIndex, int count)
+        public bool RemoveItemsAt(int startIndex, int count)
         {
-            if (startIndex + count >= SongCount || startIndex < 0)
+            if (startIndex + count >= ItemCount || startIndex < 0)
                 return false;
             songs.RemoveRange(startIndex, count);
-            SongsRemovedEventArgs args = new()
+            IPlaylist.ItemsRemovedEventArgs args = new()
             {
                 startIndex = startIndex,
                 count = count,
             };
-            SongsRemoved?.Invoke(args);
+            ItemsRemoved?.Invoke(args);
             return true;
         }
 
-        public int BufferSizeLeft => int.MaxValue - SongCount;
-    }
-
-    public interface IPlaylist
-    {
-        public int SongCount { get; }
-        public ISong this[int index] { get; }
-        public event Action<SongsAddedEventArgs> SongsAdded;
-        public event Action<SongsRemovedEventArgs> SongsRemoved;
-        public ImmutableArray<ISong> GetAllSongs();
-        public IEnumerable<ISong> GetEnumerable();
-        public bool AddSong(ISong song);
-        public bool AddSongs(List<ISong> songs);
-        public bool InsertSongAt(ISong song, int index);
-        public bool InsertSongsAt(List<ISong> songs, int index);
-        public bool RemoveSong(ISong song);
-        public bool RemoveSongAt(int index);
-        public bool RemoveSongsAt(int startIndex, int count);
-
-        //how many songs could be added
-        public int BufferSizeLeft { get; }
-    }
-
-    public struct SongsAddedEventArgs
-    {
-        public int startIndex;
-        public int count;
-    }
-
-    public struct SongsRemovedEventArgs
-    {
-        public int startIndex;
-        public int count;
+        public int BufferSizeLeft => int.MaxValue - ItemCount;
     }
 }

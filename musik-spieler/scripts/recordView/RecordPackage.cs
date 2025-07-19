@@ -3,13 +3,11 @@ using System;
 
 namespace Musikspieler.Scripts.RecordView
 {
-    public partial class RecordPackage : SmoothMovingObject
+    public partial class RecordPackage : SmoothMovingObject, IItem
     {
         [Export] private MeshInstance3D _meshInstance;
 
-        //private RecordGrabHandler _grabHandler;
-
-        public static readonly ShaderMaterial defaultMaterial;
+        public static readonly ShaderMaterial defaultMaterial = GD.Load<ShaderMaterial>("res://graphics/defaultRecordPackageMaterial.tres");
 
         private static readonly PackedScene recordPackagePrefab = GD.Load<PackedScene>("res://scenes/recordView/recordPackage.tscn");
 
@@ -64,7 +62,6 @@ namespace Musikspieler.Scripts.RecordView
                 ArgumentNullException.ThrowIfNull(value);
                 if (_view != null)
                     _view.PlaylistChanged -= OnPlaylistChanged;
-                GD.Print("set RecordView");
                 if (IsInsideTree() && IsGettingDragged)
                     SmoothReparent(value.RecordsContainer);
                 _view = value;
@@ -106,9 +103,6 @@ namespace Musikspieler.Scripts.RecordView
             const float ScaleMaxSpeed = 20f;
 
             SmoothDamp = new(PositionSmoothTime, PositionMaxSpeed, RotationSmoothTime, RotationMaxSpeed, ScaleSmoothTime, ScaleMaxSpeed);
-
-            //load default material
-            defaultMaterial = GD.Load<ShaderMaterial>("res://graphics/defaultRecordPackageMaterial.tres");
         }
 
         ///Im Gegensatz zu Unity kann in Godot mit Konstruktoren gearbeitet werden. Argumente sind dennoch nicht möglich, da der Konstruktor außerhalb unseres Codes aufgerufen wird.
