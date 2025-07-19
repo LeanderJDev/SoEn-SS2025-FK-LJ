@@ -1,0 +1,23 @@
+using System;
+
+namespace Musikspieler.Scripts.RecordView
+{
+    public partial class GarbageBin : View
+    {
+        public static GarbageBin Instance { get; private set; }
+
+        public override void _Ready()
+        {
+            base._Ready();
+            if (Instance != null)
+                throw new Exception("More than one GarbageBin exist.");
+            Instance = this;
+        }
+
+        public override bool IsItemListAssigned => true;
+
+        public override ViewItem Grab() => null;     //der Mülleimer gibt nie etwas her
+
+        public override bool MoveRecord(int index, View targetView) => false;  //man kann nichts rausnehmen
+    }
+}
