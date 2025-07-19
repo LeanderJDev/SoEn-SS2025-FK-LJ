@@ -3,19 +3,32 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 
-namespace Musikspieler.Scripts.RecordView
+namespace Musikspieler.Scripts
 {
     //Eine Klasse, die alle Playlists enthält.
     public class PlaylistDirectory : IPlaylistDirectory
     {
+        private readonly List<IPlaylist> _playlists;
+
         public IPlaylist this[int index] => throw new NotImplementedException();
 
         public int ItemCount => throw new NotImplementedException();
 
         public int BufferSizeLeft => throw new NotImplementedException();
 
-        public event Action<IItemList<IPlaylist>.ItemsAddedEventArgs> ItemsAdded;
-        public event Action<IItemList<IPlaylist>.ItemsRemovedEventArgs> ItemsRemoved;
+        public event Action<ItemsAddedEventArgs> ItemsAdded;
+        public event Action<ItemsRemovedEventArgs> ItemsRemoved;
+
+        public PlaylistDirectory()
+        {
+            _playlists = [];
+        }
+
+        public PlaylistDirectory(List<IPlaylist> playlists)
+        {
+            playlists ??= [];
+            _playlists = playlists;
+        }
 
         public bool AddItem(IPlaylist item)
         {

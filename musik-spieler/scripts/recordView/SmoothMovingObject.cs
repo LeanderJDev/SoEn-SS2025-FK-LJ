@@ -57,7 +57,7 @@ namespace Musikspieler.Scripts.RecordView
         public bool IsCloseToTargetRotation => (Rotation - base.Rotation).LengthSquared() < 0.1f;
         public bool IsCloseToTargetScale => (Scale - base.Scale).LengthSquared() < 0.1f;
 
-        protected SmoothDamp SmoothDamp { get; set; }
+        public SmoothDamp SmoothDamp { get; protected set; }
 
         public override void _Process(double delta)
         {

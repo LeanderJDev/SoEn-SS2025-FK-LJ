@@ -3,24 +3,53 @@ using System;
 
 namespace Musikspieler.Scripts.RecordView
 {
-    public partial class RecordPackage : SmoothMovingObject, IItem
+    //als Zwischenlayer, damit der GrabHandler ViewItems jeglichen Typs anfassen kann
+    public abstract partial class ViewItem : SmoothMovingObject
     {
-        [Export] private MeshInstance3D _meshInstance;
-
-        public static readonly ShaderMaterial defaultMaterial = GD.Load<ShaderMaterial>("res://graphics/defaultRecordPackageMaterial.tres");
-
-        private static readonly PackedScene recordPackagePrefab = GD.Load<PackedScene>("res://scenes/recordView/recordPackage.tscn");
+        /// <summary>
+        /// An welchem Index diese Packung gerade in seinem View liegt. Wenn die Packung herumgezogen wird, zeigt der Index immer noch auf die Stelle, wo es herkam.
+        /// </summary>
+        public int ViewIndex { get; protected set; }
 
         /// <summary>
         /// Ob die Packung sich gerade außerhalb des Views bewegt. Immer true, wenn isGettingDragged true ist, aber auch, wenn noch Animationen abgespielt werden nach dem Loslassen.
         /// </summary>
-        public bool IsPending { get; private set; }
+        public bool IsPending { get; protected set; }
+
+        /// <summary>
+        /// Ob die Packung gerade herumgezogen wird. Wird direkt auf false gesetzt, wenn der Nutzer loslässt.
+        /// </summary>
+        public abstract bool IsGettingDragged { get; set; }
+
+        public abstract bool Move(View targetView);
+    }
+
+    public abstract partial class ViewItem<T> : ViewItem where T : IItem
+    {
+        [Export] private MeshInstance3D _meshInstance;
+
+        public static ViewItem<T> InstantiateAndAssign(ScrollView<T> recordView, int playlistIndex)
+        {
+            T song = recordView.Playlist[playlistIndex];
+            var package = (ViewItem<T>)RecordPackagePrefab.Instantiate();
+            package.song = song;
+            package.View = recordView;
+            package._meshInstance.MaterialOverride = recordView.CutoffMaterialInstance;
+            return package;
+        }
+
+        protected static PackedScene RecordPackagePrefab { get; set; }
+
+        /// <summary>
+        /// Welches Lied diese Packung repräsentiert.
+        /// </summary>
+        public T song;
 
         private bool _isGettingDragged;
         /// <summary>
         /// Ob die Packung gerade herumgezogen wird. Wird direkt auf false gesetzt, wenn der Nutzer loslässt.
         /// </summary>
-        public bool IsGettingDragged
+        public override bool IsGettingDragged
         {
             get => _isGettingDragged;
             set
@@ -29,32 +58,22 @@ namespace Musikspieler.Scripts.RecordView
                 if (_isGettingDragged)
                 {
                     IsPending = true;
-                    _meshInstance.MaterialOverride = defaultMaterial;
+                    _meshInstance.MaterialOverride = DefaultMaterial;
                     SmoothReparent((Node3D)GetViewport().GetChild(0));
                 }
                 else
                 {
-                    SmoothReparent(RecordView.RecordsContainer);
+                    SmoothReparent(View.ScrollContainer);
 
                     //das hier muss schöner gehen eigentlich: jetzt sagt es einem anderen objekt, dass es bitte geupdated werden soll...
                     //Diese Fkt hier ist ja public, damit andere von außen evtl. refreshen können
-                    RecordView.UpdatePackageTransform(ViewIndex);
+                    View.UpdatePackageTransform(ViewIndex);
                 }
             }
         }
 
-        /// <summary>
-        /// Welches Lied diese Packung repräsentiert.
-        /// </summary>
-        public ISong song;
-
-        /// <summary>
-        /// An welchem Index diese Packung gerade in seinem View liegt. Wenn die Packung herumgezogen wird, zeigt der Index immer noch auf die Stelle, wo es herkam.
-        /// </summary>
-        public int ViewIndex { get; private set; }
-
-        private RecordView _view;
-        public RecordView RecordView
+        private ScrollView<T> _view;
+        public ScrollView<T> View
         {
             get => _view;
             private set
@@ -63,20 +82,36 @@ namespace Musikspieler.Scripts.RecordView
                 if (_view != null)
                     _view.PlaylistChanged -= OnPlaylistChanged;
                 if (IsInsideTree() && IsGettingDragged)
-                    SmoothReparent(value.RecordsContainer);
+                    SmoothReparent(value.ScrollContainer);
                 _view = value;
                 _view.PlaylistChanged += OnPlaylistChanged;
             }
         }
 
-        private void OnPlaylistChanged(RecordView.PlaylistChangedEventArgs args)
+        public override bool Move(View targetView)
+        {
+            return View.MoveRecord(ViewIndex, targetView);
+        }
+
+        private void OnPlaylistChanged(ScrollView<T>.PlaylistChangedEventArgs args)
         {
             if (args.RecordsRemoved && args.packages.Contains(this))
-                RecordView = args.changeToView;
+                View = args.changeToView;
 
-            ViewIndex = RecordView.IndexOf(this);
+            ViewIndex = View.IndexOf(this);
             if (ViewIndex == -1)
-                throw new Exception($"Einer {nameof(RecordPackage)} ist einem {nameof(RecordView)} zugewiesen, der sie nicht enthält.");
+                throw new Exception($"Einer {nameof(RecordPackage)} ist einem {nameof(Scripts.RecordView.View)} zugewiesen, der sie nicht enthält.");
+        }
+
+        public static SmoothDamp ObjectTypeSmoothDamp { get; protected set; }
+
+        public static ShaderMaterial DefaultMaterial { get; protected set; }
+
+        ///Im Gegensatz zu Unity kann in Godot mit Konstruktoren gearbeitet werden. Argumente sind dennoch nicht möglich, da der Konstruktor außerhalb unseres Codes aufgerufen wird.
+        ///Deshalb wird hier mit dem Factory-Prinzip gearbeitet.
+        protected ViewItem()
+        {
+            SmoothDamp = ObjectTypeSmoothDamp;
         }
 
         public override void _Process(double delta)
@@ -85,16 +120,28 @@ namespace Musikspieler.Scripts.RecordView
 
             if (IsPending && !IsGettingDragged && IsCloseToTargetPosition)
             {
-                _meshInstance.MaterialOverride = RecordView.CutoffMaterialInstance;
+                _meshInstance.MaterialOverride = View.CutoffMaterialInstance;
             }
         }
 
-        //Ausblenden ist sinnvoll hier, da, wenn ein Objekt alleine andere Parameter bekommt, die Parameter nicht mehr synchron angepasst werden, was der Sinn der statischen Variable ist.
-        public static readonly new SmoothDamp SmoothDamp;
+        static ViewItem()
+        {
+            //Muss ausgerufen werden, weil der statische Konstruktor von RecordPackage wortwörtlich zu faul ist.
+            //Aber die Funktionalität direkt in die Init-Funktion zu schreiben würde bedeuten, dass man die Objekte erneut überschreiben kann, was Chaos erzeugen würde.
+            //Und dann müsste man wieder neue Checks einbauen usw...
+            RecordPackage.Init();
+        }
+    }
 
+    public partial class RecordPackage : ViewItem<ISong>
+    {
+        public static void Init() { }
+        
         static RecordPackage()
         {
-            //statischer Konstruktor, um die Konstanten zu benennen, und kein "Magic Numbers" zu übergeben, und sie trotzdem nicht in der Klasse herumfliegen zu haben.
+            RecordPackagePrefab = GD.Load<PackedScene>("res://scenes/recordView/recordPackage.tscn");
+            DefaultMaterial = GD.Load<ShaderMaterial>("res://graphics/defaultRecordPackageMaterial.tres");
+
             const float PositionSmoothTime = 0.10f;
             const float PositionMaxSpeed = 20f;
             const float RotationSmoothTime = 0.07f;
@@ -102,24 +149,7 @@ namespace Musikspieler.Scripts.RecordView
             const float ScaleSmoothTime = 0.10f;
             const float ScaleMaxSpeed = 20f;
 
-            SmoothDamp = new(PositionSmoothTime, PositionMaxSpeed, RotationSmoothTime, RotationMaxSpeed, ScaleSmoothTime, ScaleMaxSpeed);
-        }
-
-        ///Im Gegensatz zu Unity kann in Godot mit Konstruktoren gearbeitet werden. Argumente sind dennoch nicht möglich, da der Konstruktor außerhalb unseres Codes aufgerufen wird.
-        ///Deshalb wird hier mit dem Factory-Prinzip gearbeitet.
-        private RecordPackage()
-        {
-            base.SmoothDamp = SmoothDamp;
-        }
-
-        public static RecordPackage InstantiateAndAssign(RecordView recordView, int playlistIndex)
-        {
-            ISong song = recordView.Playlist[playlistIndex];
-            var package = (RecordPackage)recordPackagePrefab.Instantiate();
-            package.song = song;
-            package.RecordView = recordView;
-            package._meshInstance.MaterialOverride = recordView.CutoffMaterialInstance;
-            return package;
+            ObjectTypeSmoothDamp = new(PositionSmoothTime, PositionMaxSpeed, RotationSmoothTime, RotationMaxSpeed, ScaleSmoothTime, ScaleMaxSpeed);
         }
     }
 }

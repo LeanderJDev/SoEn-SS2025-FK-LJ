@@ -10,6 +10,18 @@ namespace Musikspieler.Scripts
 
     }
 
+    public struct ItemsAddedEventArgs
+    {
+        public int startIndex;
+        public int count;
+    }
+
+    public struct ItemsRemovedEventArgs
+    {
+        public int startIndex;
+        public int count;
+    }
+
     public interface IItemList<T> where T : IItem
     {
         public int ItemCount { get; }
@@ -25,18 +37,6 @@ namespace Musikspieler.Scripts
         public bool RemoveItem(T item);
         public bool RemoveItemAt(int index);
         public bool RemoveItemsAt(int startIndex, int count);
-
-        public struct ItemsAddedEventArgs
-        {
-            public int startIndex;
-            public int count;
-        }
-
-        public struct ItemsRemovedEventArgs
-        {
-            public int startIndex;
-            public int count;
-        }
 
         //how many items could be added
         public int BufferSizeLeft { get; }

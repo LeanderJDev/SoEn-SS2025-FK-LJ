@@ -6,9 +6,20 @@ namespace Musikspieler.Scripts
 {
     public class Playlist : IPlaylist
     {
-        private readonly List<ISong> songs = [];
+        private readonly List<ISong> songs;
+
+        public string Name { get; set; }
 
         public int ItemCount => songs.Count;
+
+        public Playlist(string name) : this(null, name) { }
+
+        public Playlist(List<ISong> songs, string name)
+        {
+            songs ??= [];
+            this.songs = songs;
+            Name = name;
+        }
 
         public ImmutableArray<ISong> GetAllItems()
         {
@@ -23,8 +34,8 @@ namespace Musikspieler.Scripts
             }
         }
 
-        public event Action<IPlaylist.ItemsAddedEventArgs> ItemsAdded = delegate { };
-        public event Action<IPlaylist.ItemsRemovedEventArgs> ItemsRemoved = delegate { };
+        public event Action<ItemsAddedEventArgs> ItemsAdded = delegate { };
+        public event Action<ItemsRemovedEventArgs> ItemsRemoved = delegate { };
 
         public ISong this[int index]
         {
@@ -36,7 +47,7 @@ namespace Musikspieler.Scripts
             if (song == null)
                 return false;
             songs.Add(song);
-            IPlaylist.ItemsAddedEventArgs args = new()
+            ItemsAddedEventArgs args = new()
             {
                 startIndex = songs.Count - 1,
                 count = 1,
@@ -49,7 +60,7 @@ namespace Musikspieler.Scripts
         {
             if (songs == null)
                 return false;
-            IPlaylist.ItemsAddedEventArgs args = new()
+            ItemsAddedEventArgs args = new()
             {
                 startIndex = songs.Count,
                 count = songList.Count,
@@ -64,7 +75,7 @@ namespace Musikspieler.Scripts
             if (song == null || index >= ItemCount || index < 0)
                 return false;
             songs.Insert(index, song);
-            IPlaylist.ItemsAddedEventArgs args = new()
+            ItemsAddedEventArgs args = new()
             {
                 startIndex = index,
                 count = 1,
@@ -78,7 +89,7 @@ namespace Musikspieler.Scripts
             if (songs == null || index >= ItemCount || index < 0 || songs.Count < 1)
                 return false;
             songs.InsertRange(index, songs);
-            IPlaylist.ItemsAddedEventArgs args = new()
+            ItemsAddedEventArgs args = new()
             {
                 startIndex = index,
                 count = songs.Count,
@@ -93,7 +104,7 @@ namespace Musikspieler.Scripts
             if (index < 0)
                 return false;
             songs.RemoveAt(index);
-            IPlaylist.ItemsRemovedEventArgs args = new()
+            ItemsRemovedEventArgs args = new()
             {
                 startIndex = index,
                 count = 1,
@@ -107,7 +118,7 @@ namespace Musikspieler.Scripts
             if (index >= ItemCount || index < 0)
                 return false;
             songs.RemoveAt(index);
-            IPlaylist.ItemsRemovedEventArgs args = new()
+            ItemsRemovedEventArgs args = new()
             {
                 startIndex = index,
                 count = 1,
@@ -121,7 +132,7 @@ namespace Musikspieler.Scripts
             if (startIndex + count >= ItemCount || startIndex < 0)
                 return false;
             songs.RemoveRange(startIndex, count);
-            IPlaylist.ItemsRemovedEventArgs args = new()
+            ItemsRemovedEventArgs args = new()
             {
                 startIndex = startIndex,
                 count = count,
