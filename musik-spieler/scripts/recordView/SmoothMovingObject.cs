@@ -57,7 +57,7 @@ namespace Musikspieler.Scripts.RecordView
         public bool IsCloseToTargetRotation => (Rotation - base.Rotation).LengthSquared() < 0.1f;
         public bool IsCloseToTargetScale => (Scale - base.Scale).LengthSquared() < 0.1f;
 
-        protected SmoothDamp SmoothDamp { get; set; }
+        public SmoothDamp SmoothDamp { get; protected set; }
 
         public override void _Process(double delta)
         {
@@ -101,7 +101,6 @@ namespace Musikspieler.Scripts.RecordView
         public void SmoothReparent(Node3D newParent)
         {
             // Alte Ziel-Transforms in globalen Raum bringen
-            GD.Print(ToGlobal(MovementState.targetPosition));
             Vector3 globalTargetPos = GlobalTransform * MovementState.targetPosition;
             Vector3 globalTargetRot = GlobalTransform.Basis * MovementState.targetRotation;
             Vector3 globalTargetScale = GlobalTransform.Basis.Scale * MovementState.targetScale;

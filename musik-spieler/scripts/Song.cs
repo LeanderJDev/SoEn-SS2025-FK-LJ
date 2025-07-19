@@ -8,6 +8,9 @@ namespace Musikspieler.Scripts
         private readonly string _name;
         public string Name => _name;
 
+        private readonly float _length;
+        public float LengthInSeconds => _length;
+
         public override string ToString()
         {
             return $"{nameof(Song)}: {_name}";
@@ -19,10 +22,5 @@ namespace Musikspieler.Scripts
         }
 
         //...
-    }
-
-    public interface ISong
-    {
-        public string Name { get; }
     }
 }

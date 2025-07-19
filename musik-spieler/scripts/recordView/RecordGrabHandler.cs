@@ -5,7 +5,7 @@ namespace Musikspieler.Scripts.RecordView
 {
     public partial class RecordGrabHandler : Node
     {
-        private RecordPackage currentlyGrabbed;
+        private ViewItem currentlyGrabbed;
 
         public static RecordGrabHandler Instance { get; private set; }
 
@@ -45,7 +45,7 @@ namespace Musikspieler.Scripts.RecordView
             Mask<CollisionMask> mask = new(CollisionMask.RecordViewBoundary, CollisionMask.DrawerViewBoundary);
             if (Utility.CameraRaycast(GetViewport().GetCamera3D(), mask, out var result))
             {
-                if (result != null && result.Count > 0 && (Node3D)result["collider"] is RecordView recordView)
+                if (result != null && result.Count > 0 && (Node3D)result["collider"] is View recordView)
                 {
                     if (isPressed && currentlyGrabbed == null)
                     {
@@ -70,13 +70,13 @@ namespace Musikspieler.Scripts.RecordView
                     return;
 
                 //Es wird versucht etwas abzulegen, wo nichts ist. Die Platte muss zurück, wo sie herkommt.
-                //Da die Platte ihre RecordView und ihren Index noch hat, muss nur das hier wieder gesetzt werden:
+                //Da die Platte ihre View und ihren Index noch hat, muss nur das hier wieder gesetzt werden:
                 currentlyGrabbed.IsGettingDragged = false;
                 currentlyGrabbed = null;
             }
         }
 
-        private void GrabRecord(RecordView recordView)
+        private void GrabRecord(View recordView)
         {
             GD.Print("grab");
             currentlyGrabbed = recordView.Grab();
@@ -86,13 +86,13 @@ namespace Musikspieler.Scripts.RecordView
             currentlyGrabbed.IsGettingDragged = true;
         }
 
-        private void PutRecord(RecordView recordView)
+        private void PutRecord(View recordView)
         {
             GD.Print("put");
             if (currentlyGrabbed == null)
                 throw new Exception("Cannot put Record \"null\" into a RecordView.");
 
-            currentlyGrabbed.RecordView.MoveRecord(currentlyGrabbed, recordView);
+            currentlyGrabbed.Move(recordView);
             currentlyGrabbed.IsGettingDragged = false;
 
             currentlyGrabbed = null;
