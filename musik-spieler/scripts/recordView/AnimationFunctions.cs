@@ -29,6 +29,7 @@ namespace Musikspieler.Scripts.RecordView
         {
             public Vector2 relativeMousePos;
             public float PackagePos;
+            public bool isSelected;
         }
 
         public readonly struct Animations(float forwardMargin, float backwardMargin, params Animations.AnimationFunction[] functions)
@@ -100,6 +101,18 @@ namespace Musikspieler.Scripts.RecordView
                 return new()
                 {
                     RotationOffset = new Vector3(0, yAngle, 0)
+                };
+            }
+
+            public static AnimationOutput SelectedOffsetXAnimationFucntion(AnimationInput input)
+            {
+                const float offset = 3f;
+
+                float xOffset = input.isSelected ? offset : 0;
+
+                return new()
+                {
+                    PositionOffset = new Vector3(xOffset, 0, 0)
                 };
             }
         }

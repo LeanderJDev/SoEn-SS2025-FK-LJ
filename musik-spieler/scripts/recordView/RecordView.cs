@@ -21,6 +21,7 @@ namespace Musikspieler.Scripts.RecordView
             scrollAreaSize = 0.3f;
             flipThresholdOffset = -0.2f;
             flipThreshold = 1.7f;
+            mask = Scripts.RecordView.CollisionMask.RecordViewBoundary;
 
 
             /*

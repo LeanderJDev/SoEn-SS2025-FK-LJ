@@ -1,3 +1,4 @@
+using Godot;
 using System;
 
 namespace Musikspieler.Scripts.RecordView
@@ -5,6 +6,9 @@ namespace Musikspieler.Scripts.RecordView
     public partial class GarbageBin : View
     {
         public static GarbageBin Instance { get; private set; }
+
+        [Export] private CollisionShape3D viewBounds;
+        public override CollisionShape3D BoundsShape => viewBounds;
 
         public override void _Ready()
         {

@@ -7,14 +7,15 @@ namespace Musikspieler.Scripts.RecordView
     {
         [Export] private MeshInstance3D _meshInstance;
 
-        public static ViewItemGeneric<T> InstantiateAndAssign(ScrollView<T> recordView, int playlistIndex)
+        public static ViewItemGeneric<T> InstantiateAndAssign(ScrollView<T> scrollView, int playlistIndex)
         {
-            T song = recordView.ItemList[playlistIndex];
-            var package = (ViewItemGeneric<T>)ItemPrefab.Instantiate();
-            package.song = song;
-            package.View = recordView;
-            package._meshInstance.MaterialOverride = recordView.CutoffMaterialInstance;
-            return package;
+            GD.Print("inst");
+            T displayedItem = scrollView.ItemList[playlistIndex];
+            var item = (ViewItemGeneric<T>)ItemPrefab.Instantiate();
+            item.displayedItem = displayedItem;
+            item.View = scrollView;
+            item._meshInstance.MaterialOverride = scrollView.CutoffMaterialInstance;
+            return item;
         }
 
         protected static PackedScene ItemPrefab { get; set; }
@@ -22,7 +23,7 @@ namespace Musikspieler.Scripts.RecordView
         /// <summary>
         /// Welches Lied diese Packung repraesentiert.
         /// </summary>
-        public T song;
+        public T displayedItem;
 
         private bool _isGettingDragged;
         /// <summary>
@@ -38,6 +39,8 @@ namespace Musikspieler.Scripts.RecordView
                 {
                     IsPending = true;
                     _meshInstance.MaterialOverride = DefaultMaterial;
+                    if (GetViewport() == null)
+                        GD.Print(GetType());
                     SmoothReparent((Node3D)GetViewport().GetChild(0));
                 }
                 else
@@ -74,12 +77,12 @@ namespace Musikspieler.Scripts.RecordView
 
         private void OnPlaylistChanged(ScrollView<T>.PlaylistChangedEventArgs args)
         {
-            if (args.ItemsRemoved && args.items.Contains(this))
+            if (args.ViewChanged && args.items.Contains(this))
                 View = args.changeToView;
 
             ViewIndex = View.IndexOf(this);
             if (ViewIndex == -1)
-                throw new Exception($"Einer {nameof(RecordPackage)} ist einem {nameof(Scripts.RecordView.View)} zugewiesen, der sie nicht enthält.");
+                throw new Exception($"Einer {this} von Typ {GetType()} ist einem {View.GetType()} ({View}) zugewiesen, der sie nicht enthält.");
         }
 
         public static SmoothDamp ObjectTypeSmoothDamp { get; protected set; }

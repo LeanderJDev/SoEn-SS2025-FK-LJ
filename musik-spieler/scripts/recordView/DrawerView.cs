@@ -13,14 +13,14 @@ namespace Musikspieler.Scripts.RecordView
             Animation = new Animations(
                 forwardMargin: 0.5f,
                 backwardMargin: 0.5f,
-                Animations.BinaryFlickThroughRotationXAnimationFunction,
-                Animations.SubtleRotationYAnimationFunction
+                Animations.SelectedOffsetXAnimationFucntion
             );
 
             itemObjectWidth = 5f;
             scrollAreaSize = 0.3f;
             flipThresholdOffset = 0f;
             flipThreshold = 0f;
+            mask = Scripts.RecordView.CollisionMask.DrawerViewBoundary;
 
             //NUR FÜR TESTZWECKE
             GD.Print("DrawerView created");
@@ -34,7 +34,7 @@ namespace Musikspieler.Scripts.RecordView
                 }
                 playlists.Add(new Playlist(songs, $"Playlist {i}"));
             }
-            MusicCollection  dir = new();
+            MusicCollection dir = new();
             ItemList = dir;
             dir.AddItems(playlists);
         }

@@ -4,7 +4,7 @@ namespace Musikspieler.Scripts.RecordView
     public abstract partial class ViewItem : SmoothMovingObject
     {
         /// <summary>
-        /// An welchem Index diese Packung gerade in seinem View liegt. Wenn die Packung herumgezogen wird, zeigt der Index immer noch auf die Stelle, wo es herkam.
+        /// An welchem Index diese Packung gerade in seinem ChildView liegt. Wenn die Packung herumgezogen wird, zeigt der Index immer noch auf die Stelle, wo es herkam.
         /// </summary>
         public int ViewIndex { get; protected set; }
 

@@ -7,7 +7,8 @@ namespace Musikspieler.Scripts.RecordView
     public abstract partial class ScrollView<T> : View where T : IItem
     {
         [Export] protected Node3D _scrollContainer;
-        [Export] protected CollisionShape3D viewBounds;
+        [Export] private CollisionShape3D viewBounds;
+        public override CollisionShape3D BoundsShape => viewBounds;
         public ScrollViewContentContainer ScrollContainer => (ScrollViewContentContainer)_scrollContainer;
 
         protected readonly List<ViewItemGeneric<T>> itemObjects = [];
@@ -20,6 +21,8 @@ namespace Musikspieler.Scripts.RecordView
         }
 
         public override bool IsItemListAssigned => ItemList != null;
+
+        protected Mask<CollisionMask> mask;
 
         private IItemList<T> _itemList;
         public IItemList<T> ItemList
@@ -35,15 +38,26 @@ namespace Musikspieler.Scripts.RecordView
                     {
                         itemObjects[i].QueueFree();
                     }
+                    GD.Print("why are we here just to suffer");
                     itemObjects.Clear();
                 }
                 _itemList = value;
                 if (_itemList != null)
                 {
+                    List<ViewItemGeneric<T>> newItems = new(_itemList.ItemCount);
                     for (int i = 0; i < _itemList.ItemCount; i++)
                     {
-                        itemObjects.Add(ViewItemGeneric<T>.InstantiateAndAssign(this, i));
+                        var item = ViewItemGeneric<T>.InstantiateAndAssign(this, i);
+                        newItems.Add(item);
+                        _scrollContainer.AddChild(item);
                     }
+                    itemObjects.AddRange(newItems);
+                    ItemListChanged?.Invoke(new()
+                    {
+                        items = newItems,
+                        changeToView = this,
+                    });
+                    UpdateAllItemTransforms();
                     _itemList.ItemsAdded += OnItemsAdded;
                     _itemList.ItemsRemoved += OnItemsRemoved;
                 }
@@ -51,7 +65,7 @@ namespace Musikspieler.Scripts.RecordView
         }
 
         // Setup Settings - Sollten im Konstruktor des abgeleiteten Objekts gesetzt werden!
-        protected float itemObjectWidth = 0.25f;            //als wie breit eine item behandelt wird
+        protected float itemObjectWidth = 0.25f;            //als wie breit eine displayedItem behandelt wird
         protected float scrollAreaSize = 0.3f;              //wie groß der Bereich ist, in dem gescrollt werden kann (link und rechts, zw. 0 und 1)
         protected float flipThresholdOffset = -0.2f;        //um wie viel das Maus-spiel verschoben ist
         protected float flipThreshold = 1.7f;               //wie viel spiel die der Mauszeiger hat
@@ -75,8 +89,7 @@ namespace Musikspieler.Scripts.RecordView
 
         public struct PlaylistChangedEventArgs
         {
-            public readonly bool ItemsRemoved => changeToView != null;
-            public readonly bool ItemsAdded => changeToView == null;
+            public readonly bool ViewChanged => changeToView != null;
 
             public List<ViewItemGeneric<T>> items;
             public ScrollView<T> changeToView;
@@ -121,7 +134,7 @@ namespace Musikspieler.Scripts.RecordView
             for (int i = 0; i < args.count; i++)
             {
                 itemsToDelete.Add(itemObjects[args.startIndex + i]);
-                //item.QueueFree(); //macht jetzt der garbage bin
+                //displayedItem.QueueFree(); //macht jetzt der garbage bin
             }
             itemObjects.RemoveRange(args.startIndex, args.count);
             ItemListChanged?.Invoke(new()
@@ -151,7 +164,7 @@ namespace Musikspieler.Scripts.RecordView
         }
 
         /// <summary>
-        /// Move the open Record to another View, which also moves it to another underlaying ItemList.
+        /// Move the open Record to another ChildView, which also moves it to another underlaying ItemList.
         /// </summary>
         /// <returns>Returns false if the record could not be added to the target playlist.</returns>
         public bool MoveItem(ScrollView<T> targetView)
@@ -172,7 +185,9 @@ namespace Musikspieler.Scripts.RecordView
             //hier landet man theoretisch nur, wenn man etwas in den Mülleimer schmeißt,
             //da es bisher nur dieses Objekt gibt, was tatsächlich mehrere Typen an Items annimmt.
 
-            return true;
+            GD.Print("moving item to view of different item type, currently unsupported, aborting.");
+
+            return false;
         }
 
         private void MoveChecks(int index, int count, View targetView, int? targetIndex = null)
@@ -194,7 +209,7 @@ namespace Musikspieler.Scripts.RecordView
         }
 
         /// <summary>
-        /// Move a set of Records to another View, which also moves them to another underlaying ItemList.
+        /// Move a set of Records to another ChildView, which also moves them to another underlaying ItemList.
         /// </summary>
         /// <param name="targetIndex">Leave null to add it into the open gap.</param>
         /// <returns>Returns false if the records could not be added to the target playlist.</returns>
@@ -228,7 +243,7 @@ namespace Musikspieler.Scripts.RecordView
                     //einfach hinten anfügen
                     targetIndex = targetView.ItemCount;
                 }
-                //Wenn man auf eine Package im View zeigt, erwartet man, dass sie davor gelegt wird, und nicht ersetzt (was sie dahinter legen würde).
+                //Wenn man auf eine Package im ChildView zeigt, erwartet man, dass sie davor gelegt wird, und nicht ersetzt (was sie dahinter legen würde).
                 //Deshalb wird getestet, ob der aktuelle Slot gerade frei ist. Es wird der davor genommen, falls nicht.
                 else if (targetView.GapIndex >= 0 && targetView.itemObjects[targetView.GapIndex] == null)
                 {
@@ -245,19 +260,19 @@ namespace Musikspieler.Scripts.RecordView
             for (int i = 0; i < count; i++)
             {
                 ViewItemGeneric<T> item = itemsToRemove[i];
-                if (!_itemList.RemoveItem(item.song))
+                if (!_itemList.RemoveItem(item.displayedItem))
                     continue;
 
                 itemObjects[index + i] = null;
 
                 if (targetIndex.Value == targetView.ItemCount)
                 {
-                    targetView._itemList.AddItem(item.song);
+                    targetView._itemList.AddItem(item.displayedItem);
                     targetView.itemObjects.Add(item);
                 }
                 else
                 {
-                    targetView._itemList.InsertItemAt(item.song, targetIndex.Value);
+                    targetView._itemList.InsertItemAt(item.displayedItem, targetIndex.Value);
                     targetView.itemObjects.Insert(targetIndex.Value, item);
                 }
             }
@@ -270,7 +285,7 @@ namespace Musikspieler.Scripts.RecordView
             ItemListChanged?.Invoke(new()
             {
                 items = itemsToRemove,
-                changeToView = targetView,      //Remove, so move to target View
+                changeToView = targetView,      //Remove, so move to target ChildView
             });
             targetView.ItemListChanged?.Invoke(new()
             {
@@ -285,11 +300,9 @@ namespace Musikspieler.Scripts.RecordView
         //containerMousePos auf der Boundary
         private Vector2? GetBoundaryMousePosition()
         {
-            Mask<CollisionMask> mask = CollisionMask.RecordViewBoundary;
-
             //getroffen?
             if (!Utility.CameraRaycast(GetViewport().GetCamera3D(), mask, out var result))
-                return null;
+            return null;
 
             //unseres getroffen?
             if ((Node)result["collider"] != viewBounds.GetParent())
@@ -314,7 +327,7 @@ namespace Musikspieler.Scripts.RecordView
             //so viel muss mindestens in beide richtungen gescrollt werden können, sonst erreicht man nicht alles
             float minimumScrollStop = ItemCount * 0.5f * itemObjectWidth - Bounds.Z * 0.5f;
 
-            //Es wird bis hierher erlaubt zu scrollen: Es wird zB. 30% (0.3f) der Bounds.Z-Länge frei sein, wenn das Ende erreicht ist.
+            //Es wird bis hierher erlaubt zu scrollen: Es wird zB. 30% (0.3f) der BoundsShape.Z-Länge frei sein, wenn das Ende erreicht ist.
             const float relativeScrollStopOffset = 0.3f;
 
             float additionalScrollLength = Bounds.Z * relativeScrollStopOffset;
@@ -432,6 +445,7 @@ namespace Musikspieler.Scripts.RecordView
             {
                 PackagePos = posZ,
                 relativeMousePos = itemToMouse,
+                isSelected = index == GapIndex,
             };
 
             AnimationOutput output = Animation.RunAnimationFrame(animationInput);

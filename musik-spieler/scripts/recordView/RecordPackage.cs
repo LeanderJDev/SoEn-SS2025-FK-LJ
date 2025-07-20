@@ -5,9 +5,17 @@ namespace Musikspieler.Scripts.RecordView
     public partial class RecordPackage : ViewItemGeneric<ISong>
     {
         public static void Init() { }
+
+        public override void _Ready()
+        {
+
+            base._Ready();
+        }
         
         static RecordPackage()
         {
+            GD.Print("RecordPackage static constructor");
+
             ItemPrefab = GD.Load<PackedScene>("res://scenes/recordView/recordPackage.tscn");
             DefaultMaterial = GD.Load<ShaderMaterial>("res://graphics/defaultRecordPackageMaterial.tres");
 

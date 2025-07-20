@@ -12,7 +12,7 @@ namespace Musikspieler.Scripts.RecordView
         {
             //statischer Konstruktor, um die Konstanten zu benennen, und kein "Magic Numbers" zu übergeben, und sie trotzdem nicht in der Klasse herumfliegen zu haben.
             const float PositionSmoothTime = 0.1f;
-            const float PositionMaxSpeed = 40f;
+            const float PositionMaxSpeed = 100f;
 
             SmoothDamp = new(positionParameters: new SmoothDamp.SmoothMovementParameters(PositionSmoothTime, PositionMaxSpeed), null, null);
         }

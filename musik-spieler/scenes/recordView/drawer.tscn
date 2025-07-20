@@ -4,8 +4,9 @@
 [ext_resource type="PackedScene" uid="uid://ew28vqpvjn1g" path="res://scenes/recordView/recordView.tscn" id="1_g2xwe"]
 [ext_resource type="ArrayMesh" uid="uid://b2ggn1e7ytpr5" path="res://assets/3D/Drawer.res" id="1_lvudm"]
 
-[node name="Drawer" type="Node3D" node_paths=PackedStringArray("_meshInstance")]
+[node name="Drawer" type="Node3D" node_paths=PackedStringArray("_recordView", "_meshInstance")]
 script = ExtResource("1_26xk7")
+_recordView = NodePath("RecordView")
 _meshInstance = NodePath("DrawerMesh")
 
 [node name="RecordView" parent="." instance=ExtResource("1_g2xwe")]

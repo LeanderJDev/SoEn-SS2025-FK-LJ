@@ -121,7 +121,6 @@ namespace Musikspieler.Scripts.RecordView
         public override void _Ready()
         {
             base._Ready();
-            RequestReady();
         }
     }
 }

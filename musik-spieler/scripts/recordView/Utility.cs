@@ -1,6 +1,7 @@
 using Godot;
 using Godot.Collections;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Musikspieler.Scripts.RecordView
@@ -14,7 +15,7 @@ namespace Musikspieler.Scripts.RecordView
                 .Select(s => s[Random.Shared.Next(s.Length)]).ToArray());
         }
 
-        public static bool CameraRaycast(Camera3D camera, Mask<CollisionMask> mask, out Dictionary result)
+        public static bool CameraRaycast(Camera3D camera, Mask<CollisionMask> mask, out Dictionary result, List<StaticBody3D> objectsToIgnore = null)
         {
             if (camera == null)
             {
@@ -31,12 +32,25 @@ namespace Musikspieler.Scripts.RecordView
             Vector3 to = from + camera.ProjectRayNormal(mousePos) * rayLength;
 
             var spaceState = camera.GetWorld3D().DirectSpaceState;
-            result = spaceState.IntersectRay(new PhysicsRayQueryParameters3D
+
+            var query = new PhysicsRayQueryParameters3D
             {
                 From = from,
                 To = to,
                 CollisionMask = mask
-            });
+            };
+            
+            if (objectsToIgnore != null)
+            {
+                Rid[] excludes = new Rid[objectsToIgnore.Count];
+                for (int i = 0; i < objectsToIgnore.Count; i++)
+                {
+                    excludes[i] = objectsToIgnore[i].GetRid();
+                }
+                query.Exclude = new(excludes);
+            }
+
+            result = spaceState.IntersectRay(query);
             return result.Count > 0;
         }
     }

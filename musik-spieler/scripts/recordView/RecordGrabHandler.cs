@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Collections.Generic;
 
 namespace Musikspieler.Scripts.RecordView
 {
@@ -43,7 +44,15 @@ namespace Musikspieler.Scripts.RecordView
         {
             //RayCast
             Mask<CollisionMask> mask = new(CollisionMask.RecordViewBoundary, CollisionMask.DrawerViewBoundary);
-            if (Utility.CameraRaycast(GetViewport().GetCamera3D(), mask, out var result))
+
+            List<StaticBody3D> exludedObjects = null;
+            if (currentlyGrabbed is IItemAndView view)
+            {
+                //cast geht, da Godot vorschreibt, dass ein CollisionShape3D-Objekt eine StaticBody3D als Parent haben muss.
+                exludedObjects = [view.ChildView];
+            }
+
+            if (Utility.CameraRaycast(GetViewport().GetCamera3D(), mask, out var result, exludedObjects))
             {
                 if (result != null && result.Count > 0 && (Node3D)result["collider"] is View recordView)
                 {
@@ -70,7 +79,7 @@ namespace Musikspieler.Scripts.RecordView
                     return;
 
                 //Es wird versucht etwas abzulegen, wo nichts ist. Die Platte muss zurück, wo sie herkommt.
-                //Da die Platte ihre View und ihren Index noch hat, muss nur das hier wieder gesetzt werden:
+                //Da die Platte ihre ChildView und ihren Index noch hat, muss nur das hier wieder gesetzt werden:
                 currentlyGrabbed.IsGettingDragged = false;
                 currentlyGrabbed = null;
             }

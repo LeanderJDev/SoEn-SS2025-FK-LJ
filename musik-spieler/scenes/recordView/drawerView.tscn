@@ -4,9 +4,11 @@
 [ext_resource type="Script" uid="uid://rjfodgt2gyl3" path="res://scripts/recordView/DrawerView.cs" id="1_la3p7"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_la3p7"]
-size = Vector3(13.9412, 3, 9.13965)
+size = Vector3(13.9412, 6.47412, 15.9463)
 
 [node name="DrawerView" type="StaticBody3D" node_paths=PackedStringArray("_scrollContainer", "viewBounds")]
+collision_layer = 4
+collision_mask = 4
 script = ExtResource("1_la3p7")
 _scrollContainer = NodePath("Container")
 viewBounds = NodePath("Bounds")
@@ -16,4 +18,5 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.32625, 0)
 script = ExtResource("1_86sk0")
 
 [node name="Bounds" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.1272, 0)
 shape = SubResource("BoxShape3D_la3p7")
