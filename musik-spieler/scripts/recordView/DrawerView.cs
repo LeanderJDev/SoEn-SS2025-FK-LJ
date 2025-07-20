@@ -9,6 +9,19 @@ namespace Musikspieler.Scripts.RecordView
         {
             base._Ready();
 
+            //Animationfunctions setzen
+            Animation = new Animations(
+                forwardMargin: 0.5f,
+                backwardMargin: 0.5f,
+                Animations.BinaryFlickThroughRotationXAnimationFunction,
+                Animations.SubtleRotationYAnimationFunction
+            );
+
+            itemObjectWidth = 5f;
+            scrollAreaSize = 0.3f;
+            flipThresholdOffset = 0f;
+            flipThreshold = 0f;
+
             //NUR FÜR TESTZWECKE
             GD.Print("DrawerView created");
             List<IPlaylist> playlists = new(15);

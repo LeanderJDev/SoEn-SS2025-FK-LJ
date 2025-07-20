@@ -50,25 +50,23 @@ namespace Musikspieler.Scripts.RecordView
             }
         }
 
-        // Setup Settings
-        private const float itemObjectWidth = 0.25f;        //als wie breit eine item behandelt wird
-        private const float scrollAreaSize = 0.3f;          //wie groß der Bereich ist, in dem gescrollt werden kann (link und rechts, zw. 0 und 1)
-        private const float flipThresholdOffset = -0.2f;    //um wie viel das Maus-spiel verschoben ist
-        private const float flipThreshold = 1.7f;           //wie viel spiel die der Mauszeiger hat
+        // Setup Settings - Sollten im Konstruktor des abgeleiteten Objekts gesetzt werden!
+        protected float itemObjectWidth = 0.25f;            //als wie breit eine item behandelt wird
+        protected float scrollAreaSize = 0.3f;              //wie groß der Bereich ist, in dem gescrollt werden kann (link und rechts, zw. 0 und 1)
+        protected float flipThresholdOffset = -0.2f;        //um wie viel das Maus-spiel verschoben ist
+        protected float flipThreshold = 1.7f;               //wie viel spiel die der Mauszeiger hat
 
-        // User Settings
+        // User Settings - TODO: an eine statsichen ort bringen, bzw. als globales setting machen
         public bool useAutoScroll = true;                   //ob, wenn die Maus an die Kanten des RecordViews kommt, automatisch gescrollt werden soll
         public float autoScrollSensitivity = 40f;           //wie schnell es auto-scrollt
         public float scrollSensitivity = 1f;                //wie schnell es mit der Maus scrollt
-
 
         public int GapIndex => Math.Clamp((int)(_centeredGapIndex + (ItemCount / 2)), -1, ItemCount);
         private float _centeredGapIndex;
 
         private Vector3 Bounds => ((BoxShape3D)viewBounds.Shape).Size;
 
-        public IAnimationXFunction FlickThroughRotationXAnimation { get; set; } = new BinaryFlickThroughRotationXAnimationFunction();
-        public IAnimationYFunction FlickThroughRotationYAnimation { get; set; } = new SubtleRotationYAnimationFunction();
+        public Animations Animation { get; set; }
 
         private bool ignoreItemsAddedEvent = false;
         private bool ignoreItemsRemovedEvent = false;
@@ -324,8 +322,8 @@ namespace Musikspieler.Scripts.RecordView
             float scrollStopLength = minimumScrollStop + additionalScrollLength;
 
             //die margins der Gap noch aufrechen, da man sonst evtl. Packages am Rand nicht mehr erreicht
-            float scrollMax = scrollStopLength + FlickThroughRotationXAnimation.ForwardGapToViewBoundryMargin;
-            float scrollMin = -scrollStopLength - FlickThroughRotationXAnimation.BackwardGapToViewBoundryMargin;
+            float scrollMax = scrollStopLength + Animation.ForwardGapToViewBoundryMargin;
+            float scrollMin = -scrollStopLength - Animation.BackwardGapToViewBoundryMargin;
 
             if (scrollMin > scrollMax)
                 //die playlist ist zu wenig gefüllt, scrollen ist aus
@@ -391,8 +389,8 @@ namespace Musikspieler.Scripts.RecordView
                 float normalizedBoundaryPos = boundaryMousePos.Value.Y / Bounds.Z;
                 float scroll = Mathf.Max(Mathf.Abs(normalizedBoundaryPos) - (0.5f - scrollAreaSize), 0) * Mathf.Sign(normalizedBoundaryPos);
                 Scroll(scroll * (float)delta * autoScrollSensitivity);
-                float flipAreaMax = Bounds.Z * 0.5f - FlickThroughRotationXAnimation.ForwardGapToViewBoundryMargin;
-                float flipAreaMin = Bounds.Z * -0.5f + FlickThroughRotationXAnimation.BackwardGapToViewBoundryMargin;
+                float flipAreaMax = Bounds.Z * 0.5f - Animation.ForwardGapToViewBoundryMargin;
+                float flipAreaMin = Bounds.Z * -0.5f + Animation.BackwardGapToViewBoundryMargin;
                 float clamped = Mathf.Clamp(boundaryMousePos.Value.Y, flipAreaMin, flipAreaMax);
                 Vector3 localPos = transform * new Vector3(boundaryMousePos.Value.X, 0, clamped);
                 containerMousePos = new(localPos.X, localPos.Z);
@@ -428,12 +426,19 @@ namespace Musikspieler.Scripts.RecordView
 
             Vector2 itemToMouse = new(lastMousePos.X - item.Position.X, _centeredGapIndex - (item.ViewIndex - ItemCount / 2));
 
-            item.Position = new(0, 0, (item.ViewIndex - (ItemCount / 2)) * itemObjectWidth);
+            float posZ = (item.ViewIndex - (ItemCount / 2)) * itemObjectWidth;
 
-            float xRotation = FlickThroughRotationXAnimation.AnimationFunction(itemToMouse);
-            float yRotation = FlickThroughRotationYAnimation.AnimationFunction(itemToMouse);
+            AnimationInput animationInput = new()
+            {
+                PackagePos = posZ,
+                relativeMousePos = itemToMouse,
+            };
 
-            item.Rotation = new Vector3(xRotation, yRotation, 0);
+            AnimationOutput output = Animation.RunAnimationFrame(animationInput);
+
+            item.Position = output.PositionOffset + new Vector3(0, 0, posZ);
+            item.Rotation = output.RotationOffset;
+            item.Scale = output.ScaleOffset;
         }
     }
 }

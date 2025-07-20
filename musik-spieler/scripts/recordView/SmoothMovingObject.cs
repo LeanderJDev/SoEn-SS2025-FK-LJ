@@ -4,7 +4,7 @@ namespace Musikspieler.Scripts.RecordView
 {
     public partial class SmoothMovingObject : Node3D
     {
-        //ausblenden, damit andere Klassen nicht wissen müssen, das das hier ein bewegungs-modifiziertes Objekt ist
+        //ausblenden, da wir quasi die eigentliche Position verdecken hier ersetzen, und einen zwischenlayer bauen
         public new Vector3 Position
         {
             get => SmoothDamp.PositionParameters is null ? base.Position : MovementState.targetPosition;

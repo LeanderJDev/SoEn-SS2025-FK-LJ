@@ -10,9 +10,17 @@ namespace Musikspieler.Scripts.RecordView
             base._Ready();
 
             //Animationfunctions setzen
+            Animation = new Animations(
+                forwardMargin: 0.3f,
+                backwardMargin: 0.9f,
+                Animations.BinaryFlickThroughRotationXAnimationFunction,
+                Animations.SubtleRotationYAnimationFunction
+            );
 
-
-
+            itemObjectWidth = 0.25f;
+            scrollAreaSize = 0.3f;
+            flipThresholdOffset = -0.2f;
+            flipThreshold = 1.7f;
 
 
             /*
