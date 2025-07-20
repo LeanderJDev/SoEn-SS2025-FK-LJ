@@ -9,7 +9,7 @@ namespace Musikspieler.Scripts.RecordView
 
         public static RecordGrabHandler Instance { get; private set; }
 
-        //Hier werden alle durch externe Manipulation der Playlist gelöschten Records automatisch hinbewegt.
+        //Hier werden alle durch externe Manipulation der ItemList gelöschten Records automatisch hinbewegt.
         public RecordView GarbageBin { get; private set; }
 
         public override void _Process(double delta)

@@ -2,11 +2,13 @@ using Godot;
 
 namespace Musikspieler.Scripts.RecordView
 {
-    public partial class Drawer : ViewItem<IPlaylist>
+    public partial class Drawer : ViewItemGeneric<IPlaylist>
     {
+        public static void Init() { }
+
         static Drawer()
         {
-            RecordPackagePrefab = GD.Load<PackedScene>("res://scenes/recordView/recordPackage.tscn");
+            ItemPrefab = GD.Load<PackedScene>("res://scenes/recordView/drawer.tscn");
             DefaultMaterial = GD.Load<ShaderMaterial>("res://graphics/defaultRecordPackageMaterial.tres");
 
             const float PositionSmoothTime = 0.10f;

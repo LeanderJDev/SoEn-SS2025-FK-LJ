@@ -2,13 +2,13 @@ using Godot;
 
 namespace Musikspieler.Scripts.RecordView
 {
-    public partial class RecordPackage : ViewItem<ISong>
+    public partial class RecordPackage : ViewItemGeneric<ISong>
     {
         public static void Init() { }
         
         static RecordPackage()
         {
-            RecordPackagePrefab = GD.Load<PackedScene>("res://scenes/recordView/recordPackage.tscn");
+            ItemPrefab = GD.Load<PackedScene>("res://scenes/recordView/recordPackage.tscn");
             DefaultMaterial = GD.Load<ShaderMaterial>("res://graphics/defaultRecordPackageMaterial.tres");
 
             const float PositionSmoothTime = 0.10f;

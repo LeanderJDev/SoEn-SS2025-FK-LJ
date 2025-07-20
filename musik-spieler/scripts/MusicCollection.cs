@@ -4,73 +4,74 @@ using System.Collections.Immutable;
 
 namespace Musikspieler.Scripts
 {
-    public class Playlist : IPlaylist
+    //Eine Klasse, die alle Playlists enthält.
+    public class MusicCollection : IPlaylistDirectory
     {
-        private readonly List<ISong> songs;
+        private readonly List<IPlaylist> _playlists;
 
-        public string Name { get; set; }
+        public IPlaylist this[int index] => _playlists[index];
 
-        public int ItemCount => songs.Count;
+        public int ItemCount => _playlists.Count;
 
         public int BufferSizeLeft => int.MaxValue - ItemCount;
 
-        public Playlist(string name) : this(null, name) { }
+        public event Action<ItemsAddedEventArgs> ItemsAdded;
+        public event Action<ItemsRemovedEventArgs> ItemsRemoved;
 
-        public Playlist(List<ISong> songs, string name)
+        public MusicCollection()
         {
-            songs ??= [];
-            this.songs = songs;
-            Name = name;
+            _playlists = [];
         }
 
-        public ImmutableArray<ISong> GetAllItems() => [.. songs];
-
-        public IEnumerable<ISong> GetEnumerable()
+        public MusicCollection(List<IPlaylist> playlists)
         {
-            for (int i = 0; i < songs.Count; i++)
+            playlists ??= [];
+            _playlists = playlists;
+        }
+
+        public ImmutableArray<IPlaylist> GetAllItems() => [.. _playlists];
+
+        public IEnumerable<IPlaylist> GetEnumerable()
+        {
+            for (int i = 0; i < _playlists.Count; i++)
             {
-                yield return songs[i];
+                yield return _playlists[i];
             }
         }
 
-        public event Action<ItemsAddedEventArgs> ItemsAdded = delegate { };
-        public event Action<ItemsRemovedEventArgs> ItemsRemoved = delegate { };
-
-        public ISong this[int index] => songs[index];
-
-        public bool AddItem(ISong song)
+        public bool AddItem(IPlaylist song)
         {
             if (song == null)
                 return false;
-            songs.Add(song);
+            _playlists.Add(song);
             ItemsAddedEventArgs args = new()
             {
-                startIndex = songs.Count - 1,
+                startIndex = _playlists.Count - 1,
                 count = 1,
             };
             ItemsAdded?.Invoke(args);
             return true;
         }
 
-        public bool AddItems(List<ISong> songList)
+        public bool AddItems(List<IPlaylist> songList)
         {
-            if (songs == null)
+            if (_playlists == null)
                 return false;
             ItemsAddedEventArgs args = new()
             {
-                startIndex = songs.Count,
+                startIndex = _playlists.Count,
                 count = songList.Count,
             };
-            songs.AddRange(songList);
+            _playlists.AddRange(songList);
             ItemsAdded?.Invoke(args);
             return true;
         }
 
-        public bool InsertItemAt(ISong song, int index)
+        public bool InsertItemAt(IPlaylist song, int index)
         {
             if (song == null || index >= ItemCount || index < 0)
                 return false;
-            songs.Insert(index, song);
+            _playlists.Insert(index, song);
             ItemsAddedEventArgs args = new()
             {
                 startIndex = index,
@@ -80,26 +81,26 @@ namespace Musikspieler.Scripts
             return true;
         }
 
-        public bool InsertItemsAt(List<ISong> songs, int index)
+        public bool InsertItemsAt(List<IPlaylist> _playlist, int index)
         {
-            if (songs == null || index >= ItemCount || index < 0 || songs.Count < 1)
+            if (_playlist == null || index >= ItemCount || index < 0 || _playlist.Count < 1)
                 return false;
-            songs.InsertRange(index, songs);
+            _playlist.InsertRange(index, _playlist);
             ItemsAddedEventArgs args = new()
             {
                 startIndex = index,
-                count = songs.Count,
+                count = _playlist.Count,
             };
             ItemsAdded?.Invoke(args);
             return true;
         }
 
-        public bool RemoveItem(ISong song)
+        public bool RemoveItem(IPlaylist song)
         {
-            int index = songs.IndexOf(song);
+            int index = _playlists.IndexOf(song);
             if (index < 0)
                 return false;
-            songs.RemoveAt(index);
+            _playlists.RemoveAt(index);
             ItemsRemovedEventArgs args = new()
             {
                 startIndex = index,
@@ -113,7 +114,7 @@ namespace Musikspieler.Scripts
         {
             if (index >= ItemCount || index < 0)
                 return false;
-            songs.RemoveAt(index);
+            _playlists.RemoveAt(index);
             ItemsRemovedEventArgs args = new()
             {
                 startIndex = index,
@@ -127,7 +128,7 @@ namespace Musikspieler.Scripts
         {
             if (startIndex + count >= ItemCount || startIndex < 0)
                 return false;
-            songs.RemoveRange(startIndex, count);
+            _playlists.RemoveRange(startIndex, count);
             ItemsRemovedEventArgs args = new()
             {
                 startIndex = startIndex,

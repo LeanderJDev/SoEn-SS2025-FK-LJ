@@ -37,7 +37,7 @@ namespace Musikspieler.Scripts
         public bool RemoveItemAt(int index);
         public bool RemoveItemsAt(int startIndex, int count);
 
-        //how many items could be added
+        //how many itemObjects could be added
         public int BufferSizeLeft { get; }
     }
 

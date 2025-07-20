@@ -9,6 +9,13 @@ namespace Musikspieler.Scripts.RecordView
         {
             base._Ready();
 
+            //Animationfunctions setzen
+
+
+
+
+
+            /*
             //NUR FÜR TESTZWECKE
             GD.Print("RecordView created");
             List<ISong> songs = new(100);
@@ -16,9 +23,10 @@ namespace Musikspieler.Scripts.RecordView
             {
                 songs.Add(new Song(Utility.RandomString(10)));
             }
-            Playlist playlist = new("Playlist");
-            Playlist = playlist;
+            ItemList playlist = new("ItemList");
+            ItemList = playlist;
             playlist.AddItems(songs);
+            */
         }
     }
 }

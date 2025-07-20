@@ -10,258 +10,49 @@ namespace Musikspieler.Scripts.RecordView
         [Export] protected CollisionShape3D viewBounds;
         public ScrollViewContentContainer ScrollContainer => (ScrollViewContentContainer)_scrollContainer;
 
-        protected List<ViewItem<T>> items;
+        protected readonly List<ViewItemGeneric<T>> itemObjects = [];
 
-        public int ItemCount => items.Count;
+        public int ItemCount => itemObjects.Count;
 
-        public ViewItem<T> this[int index]
+        public ViewItemGeneric<T> this[int index]
         {
-            get { return items[index]; }
+            get { return itemObjects[index]; }
         }
 
-        public override bool IsItemListAssigned => Playlist != null;
+        public override bool IsItemListAssigned => ItemList != null;
 
-        private IItemList<T> _playlist;
-        public IItemList<T> Playlist
+        private IItemList<T> _itemList;
+        public IItemList<T> ItemList
         {
-            get => _playlist;
+            get => _itemList;
             set
             {
-                if (_playlist != null)
+                if (_itemList != null)
                 {
-                    _playlist.ItemsAdded -= OnSongsAdded;
-                    _playlist.ItemsRemoved -= OnSongsRemoved;
+                    _itemList.ItemsAdded -= OnItemsAdded;
+                    _itemList.ItemsRemoved -= OnItemsRemoved;
                     for (int i = 0; i < ItemCount; i++)
                     {
-                        items[i].QueueFree();
+                        itemObjects[i].QueueFree();
                     }
-                    items = null;
+                    itemObjects.Clear();
                 }
-                _playlist = value;
-                if (_playlist != null)
+                _itemList = value;
+                if (_itemList != null)
                 {
-                    items = new(_playlist.ItemCount);
-                    for (int i = 0; i < _playlist.ItemCount; i++)
+                    for (int i = 0; i < _itemList.ItemCount; i++)
                     {
-                        items.Add(ViewItem<T>.InstantiateAndAssign(this, i));
+                        itemObjects.Add(ViewItemGeneric<T>.InstantiateAndAssign(this, i));
                     }
-                    _playlist.ItemsAdded += OnSongsAdded;
-                    _playlist.ItemsRemoved += OnSongsRemoved;
+                    _itemList.ItemsAdded += OnItemsAdded;
+                    _itemList.ItemsRemoved += OnItemsRemoved;
                 }
             }
-        }
-
-        private bool ignoreSongsAddedEvent = false;
-        private bool ignoreSongsRemovedEvent = false;
-
-        public event Action<PlaylistChangedEventArgs> PlaylistChanged = delegate { };
-
-        public struct PlaylistChangedEventArgs
-        {
-            public readonly bool RecordsRemoved => changeToView != null;
-            public readonly bool RecordsAdded => changeToView == null;
-
-            public List<ViewItem<T>> packages;
-            public ScrollView<T> changeToView;
-        }
-
-        private void OnSongsAdded(ItemsAddedEventArgs args)
-        {
-            if (ignoreSongsAddedEvent)
-                return;
-
-            List<ViewItem<T>> newPackages = new(args.count);
-            for (int i = 0; i < args.count; i++)
-            {
-                ViewItem<T> package = ViewItem<T>.InstantiateAndAssign(this, i);
-                newPackages.Add(package);
-                ScrollContainer.AddChild(package);
-            }
-            if (args.startIndex >= ItemCount)
-                items.AddRange(newPackages);
-            else
-                items.InsertRange(args.startIndex, newPackages);
-            PlaylistChanged?.Invoke(new()
-            {
-                packages = newPackages,
-                changeToView = null,
-            });
-            UpdateAllPackageTransforms();
-        }
-
-        private void OnSongsRemoved(ItemsRemovedEventArgs args)
-        {
-            if (ignoreSongsRemovedEvent)
-                return;
-
-            List<ViewItem<T>> packagesToDelete = new(args.count);
-            for (int i = 0; i < args.count; i++)
-            {
-                packagesToDelete.Add(items[args.startIndex + i]);
-                //package.QueueFree(); //macht jetzt der garbage bin
-            }
-            items.RemoveRange(args.startIndex, args.count);
-            PlaylistChanged?.Invoke(new()
-            {
-                packages = packagesToDelete,
-                //changeToView = GarbageBin<T>.Instance,
-            });
-            UpdateAllPackageTransforms();
-        }
-
-        public int IndexOf(ViewItem<T> recordPackage)
-        {
-            return items.IndexOf(recordPackage);
-        }
-        public ShaderMaterial CutoffMaterialInstance { get; private set; }
-
-        public override bool MoveRecord(int index, View targetView)
-        {
-            if (targetView is ScrollView<T> scrollView)
-            {
-                return MoveRecords(index, 1, scrollView, null);
-            }
-            else
-            {
-                return MoveRecords(index, 1, targetView, null);
-            }
-        }
-
-        /// <summary>
-        /// Move the open Record to another View, which also moves it to another underlaying Playlist.
-        /// </summary>
-        /// <returns>Returns false if the record could not be added to the target playlist.</returns>
-        public bool MoveRecord(ScrollView<T> targetView)
-        {
-            return MoveRecords(GapIndex, 1, targetView, null);
-        }
-
-        public bool MoveRecords(int index, int count, View targetView, int? targetIndex = null)
-        {
-            if (targetView is ScrollView<T> scrollView)
-                return MoveRecords(index, count, scrollView, targetIndex);
-
-            MoveChecks(index, count, targetView, targetIndex);
-
-            //do stuff
-            //TODO
-
-            //hier landet man theoretisch nur, wenn man etwas in den Mülleimer schmeißt,
-            //da es bisher nur dieses Objekt gibt, was tatsächlich mehrere Typen an Items annimmt.
-
-            return true;
-        }
-
-        private void MoveChecks(int index, int count, View targetView, int? targetIndex = null)
-        {
-            ArgumentNullException.ThrowIfNull(targetView, nameof(targetView));
-
-            if (_playlist == null)
-                throw new NullReferenceException($"The ScrollView {nameof(_playlist)} is null.");
-
-            if (!targetView.IsItemListAssigned)
-                throw new NullReferenceException($"The targetView has no ItemList assigned.");
-
-            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(count, nameof(count));
-
-            ArgumentOutOfRangeException.ThrowIfNegative(index, nameof(index));
-
-            if (targetIndex.HasValue)
-                ArgumentOutOfRangeException.ThrowIfNegative(targetIndex.Value, nameof(targetIndex));
-        }
-
-        /// <summary>
-        /// Move a set of Records to another View, which also moves them to another underlaying Playlist.
-        /// </summary>
-        /// <param name="targetIndex">Leave null to add it into the open gap.</param>
-        /// <returns>Returns false if the records could not be added to the target playlist.</returns>
-        public bool MoveRecords(int index, int count, ScrollView<T> targetView, int? targetIndex = null)
-        {
-            MoveChecks(index, count, targetView, targetIndex);
-
-            if (targetView._playlist.BufferSizeLeft < count)
-            {
-                GD.Print("Failed to Move a RecordPackage because the target playlist does not have enough space.");
-                return false;
-            }
-
-            List<ViewItem<T>> packagesToRemove = new(count);
-            for (int i = 0; i < count; i++)
-            {
-                packagesToRemove.Add(items[index + i]);
-                items[index + i] = null;
-            }
-
-            if (targetIndex.HasValue)
-                targetIndex = Math.Clamp(targetIndex.Value, 0, ItemCount);
-            else
-            {
-                if (targetView.GapIndex <= 0)
-                {
-                    targetIndex = 0;
-                }
-                else if (targetView.GapIndex >= targetView.ItemCount)
-                {
-                    //einfach hinten anfügen
-                    targetIndex = targetView.ItemCount;
-                }
-                //Wenn man auf eine Package im View zeigt, erwartet man, dass sie davor gelegt wird, und nicht ersetzt (was sie dahinter legen würde).
-                //Deshalb wird getestet, ob der aktuelle Slot gerade frei ist. Es wird der davor genommen, falls nicht.
-                else if (targetView.GapIndex >= 0 && targetView.items[targetView.GapIndex] == null)
-                {
-                    targetIndex = targetView.GapIndex;
-                }
-                else
-                {
-                    targetIndex = targetView.GapIndex + 1;
-                }
-            }
-
-            ignoreSongsRemovedEvent = true;
-            targetView.ignoreSongsAddedEvent = true;
-            for (int i = 0; i < count; i++)
-            {
-                ViewItem<T> package = packagesToRemove[i];
-                if (!_playlist.RemoveItem(package.song))
-                    continue;
-
-                items[index + i] = null;
-
-                if (targetIndex.Value == targetView.ItemCount)
-                {
-                    targetView._playlist.AddItem(package.song);
-                    targetView.items.Add(package);
-                }
-                else
-                {
-                    targetView._playlist.InsertItemAt(package.song, targetIndex.Value);
-                    targetView.items.Insert(targetIndex.Value, package);
-                }
-            }
-
-            //nicht RemoveRange verwenden, da evtl. in die gleiche Liste schon etwas eingefügt wurde, was alles verschiebt
-            //wenn man vorher alles herauslöscht, geht die Lücke verloren, die ja angibt
-            items.RemoveAll(x => x == null);
-            ignoreSongsRemovedEvent = false;
-            targetView.ignoreSongsAddedEvent = false;
-            PlaylistChanged?.Invoke(new()
-            {
-                packages = packagesToRemove,
-                changeToView = targetView,      //Remove, so move to target View
-            });
-            targetView.PlaylistChanged?.Invoke(new()
-            {
-                packages = packagesToRemove,
-                changeToView = null,            //Add, so move to none
-            });
-            UpdateAllPackageTransforms();
-            targetView.UpdateAllPackageTransforms();
-            return true;
         }
 
         // Setup Settings
-        private const float recordPackageWidth = 0.25f;     //als wie breit eine recordPackage behandelt wird
-        private const float scrollAreaSize = 0.3f;          //wie groß der Bereich ist, in dem gescrollt werden kann (link und rechts, zw. 0 und 1)
+        private const float itemObjectWidth = 0.25f;        //als wie breit eine item behandelt wird
+        private const float scrollAreaSize = 0.3f;          //wie groÃŸ der Bereich ist, in dem gescrollt werden kann (link und rechts, zw. 0 und 1)
         private const float flipThresholdOffset = -0.2f;    //um wie viel das Maus-spiel verschoben ist
         private const float flipThreshold = 1.7f;           //wie viel spiel die der Mauszeiger hat
 
@@ -279,86 +70,218 @@ namespace Musikspieler.Scripts.RecordView
         public IAnimationXFunction FlickThroughRotationXAnimation { get; set; } = new BinaryFlickThroughRotationXAnimationFunction();
         public IAnimationYFunction FlickThroughRotationYAnimation { get; set; } = new SubtleRotationYAnimationFunction();
 
-        /// <summary>
-        /// Eine Interface, um die Blätter-Animation zu bestimmen.
-        /// </summary>
-        /// Es wurde ein Interface einem Delegaten vorgezogen, damit die Animationen evtl. eigene Einstellungen speichern können, oder können interne Daten pro gerenderten Frame anpassen, z.B. für Physik-Modelle.
-        /// Ein Interface ist wesentlich erweiterbarer.
-        public interface IAnimationXFunction
+        private bool ignoreItemsAddedEvent = false;
+        private bool ignoreItemsRemovedEvent = false;
+
+        public event Action<PlaylistChangedEventArgs> ItemListChanged = delegate { };
+
+        public struct PlaylistChangedEventArgs
         {
-            /// <summary>
-            /// Wie nah darf die Gap an den Rand des RecordViews kommen? Um zu vermeiden, dass das Aktuell offene RecordPackage nur halb zu sehen ist.
-            /// Da das vom Winkel des Packages abhängt muss es hier definiert sein.
-            /// Zur positiven Seite hin.
-            /// </summary>
-            public float ForwardGapToViewBoundryMargin { get; }
+            public readonly bool ItemsRemoved => changeToView != null;
+            public readonly bool ItemsAdded => changeToView == null;
 
-            /// <summary>
-            /// Wie nah darf die Gap an den Rand des RecordViews kommen? Um zu vermeiden, dass das Aktuell offene RecordPackage nur halb zu sehen ist.
-            /// Da das vom Winkel des Packages abhängt muss es hier definiert sein.
-            /// Zur negativen Seite hin.
-            /// </summary>
-            public float BackwardGapToViewBoundryMargin { get; }
-
-            /// <summary>
-            /// Eine Funktion, die den Winkel um die X-Achse für jede RecordPackage beschreibt, abhängig vom Abstand des Objektes zur Mausposition.
-            /// </summary>
-            public float AnimationFunction(Vector2 relativeMousePos);
-        }
-
-        public interface IAnimationYFunction
-        {
-            /// <summary>
-            /// Eine Funktion, die den Winkel um die Y-Achse für jede RecordPackage beschreibt, abhängig vom Abstand des Objektes zur Mausposition.
-            /// </summary>
-            public float AnimationFunction(Vector2 relativeMousePos);
-        }
-
-        public struct BinaryFlickThroughRotationXAnimationFunction : IAnimationXFunction
-        {
-            public readonly float ForwardGapToViewBoundryMargin => 0.3f;
-            public readonly float BackwardGapToViewBoundryMargin => 0.9f;
-
-            public readonly float AnimationFunction(Vector2 relativeMousePos)
-            {
-                float maxXAngle = Mathf.DegToRad(50);
-
-                return relativeMousePos.Y < 0 ? maxXAngle * 0.4f : -maxXAngle;
-            }
-        }
-
-        public struct LeaningFlickThroughRotationXAnimationFunction : IAnimationXFunction
-        {
-            public readonly float ForwardGapToViewBoundryMargin => 1.1f;    //outdated
-            public readonly float BackwardGapToViewBoundryMargin => 1.1f;   //outdated
-
-            public readonly float AnimationFunction(Vector2 relativeMousePos)
-            {
-                float maxXAngle = Mathf.DegToRad(50);
-                const float gapWidth = 4.0f;
-                const float backSideOffset = 2.5f;
-
-                if (relativeMousePos.Y < 0) relativeMousePos.Y -= backSideOffset;
-                relativeMousePos.Y = Mathf.Clamp(relativeMousePos.Y, -gapWidth, gapWidth);
-                return -0.5f * (Mathf.Cos(Mathf.Pi / gapWidth * relativeMousePos.Y) + 1) * Mathf.Sign(relativeMousePos.Y) * maxXAngle;
-            }
-        }
-
-        public struct SubtleRotationYAnimationFunction : IAnimationYFunction
-        {
-            public readonly float AnimationFunction(Vector2 relativeMousePos)
-            {
-                float maxYAngle = Mathf.DegToRad(6);
-
-                Vector2 vNorm = relativeMousePos.Normalized();
-                return Mathf.Min(Mathf.Abs(vNorm.X) / (100 * Mathf.Max(relativeMousePos.Length(), 0.3f)), maxYAngle) * Mathf.Sign(vNorm.Y * vNorm.X);
-            }
+            public List<ViewItemGeneric<T>> items;
+            public ScrollView<T> changeToView;
         }
 
         public override void _Ready()
         {
-            CutoffMaterialInstance = (ShaderMaterial)ViewItem<T>.DefaultMaterial.Duplicate();
+            CutoffMaterialInstance = (ShaderMaterial)ViewItemGeneric<T>.DefaultMaterial.Duplicate();
             base._Ready();
+        }
+
+        private void OnItemsAdded(ItemsAddedEventArgs args)
+        {
+            if (ignoreItemsAddedEvent)
+                return;
+
+            List<ViewItemGeneric<T>> newItems = new(args.count);
+            for (int i = 0; i < args.count; i++)
+            {
+                ViewItemGeneric<T> item = ViewItemGeneric<T>.InstantiateAndAssign(this, i);
+                newItems.Add(item);
+                ScrollContainer.AddChild(item);
+            }
+            if (args.startIndex >= ItemCount)
+                itemObjects.AddRange(newItems);
+            else
+                itemObjects.InsertRange(args.startIndex, newItems);
+            ItemListChanged?.Invoke(new()
+            {
+                items = newItems,
+                changeToView = null,
+            });
+            UpdateAllItemTransforms();
+        }
+
+        private void OnItemsRemoved(ItemsRemovedEventArgs args)
+        {
+            if (ignoreItemsRemovedEvent)
+                return;
+
+            List<ViewItemGeneric<T>> itemsToDelete = new(args.count);
+            for (int i = 0; i < args.count; i++)
+            {
+                itemsToDelete.Add(itemObjects[args.startIndex + i]);
+                //item.QueueFree(); //macht jetzt der garbage bin
+            }
+            itemObjects.RemoveRange(args.startIndex, args.count);
+            ItemListChanged?.Invoke(new()
+            {
+                items = itemsToDelete,
+                //changeToView = GarbageBin<T>.Instance,
+            });
+            UpdateAllItemTransforms();
+        }
+
+        public int IndexOf(ViewItemGeneric<T> item)
+        {
+            return itemObjects.IndexOf(item);
+        }
+        public ShaderMaterial CutoffMaterialInstance { get; private set; }
+
+        public override bool MoveItem(int index, View targetView)
+        {
+            if (targetView is ScrollView<T> scrollView)
+            {
+                return MoveItems(index, 1, scrollView, null);
+            }
+            else
+            {
+                return MoveItems(index, 1, targetView, null);
+            }
+        }
+
+        /// <summary>
+        /// Move the open Record to another View, which also moves it to another underlaying ItemList.
+        /// </summary>
+        /// <returns>Returns false if the record could not be added to the target playlist.</returns>
+        public bool MoveItem(ScrollView<T> targetView)
+        {
+            return MoveItems(GapIndex, 1, targetView, null);
+        }
+
+        public bool MoveItems(int index, int count, View targetView, int? targetIndex = null)
+        {
+            if (targetView is ScrollView<T> scrollView)
+                return MoveItems(index, count, scrollView, targetIndex);
+
+            MoveChecks(index, count, targetView, targetIndex);
+
+            //do stuff
+            //TODO
+
+            //hier landet man theoretisch nur, wenn man etwas in den MÃ¼lleimer schmeiÃŸt,
+            //da es bisher nur dieses Objekt gibt, was tatsÃ¤chlich mehrere Typen an Items annimmt.
+
+            return true;
+        }
+
+        private void MoveChecks(int index, int count, View targetView, int? targetIndex = null)
+        {
+            ArgumentNullException.ThrowIfNull(targetView, nameof(targetView));
+
+            if (ItemList == null)
+                throw new NullReferenceException($"The ScrollView {nameof(ItemList)} is null.");
+
+            if (!targetView.IsItemListAssigned)
+                throw new NullReferenceException($"The targetView has no ItemList assigned.");
+
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(count, nameof(count));
+
+            ArgumentOutOfRangeException.ThrowIfNegative(index, nameof(index));
+
+            if (targetIndex.HasValue)
+                ArgumentOutOfRangeException.ThrowIfNegative(targetIndex.Value, nameof(targetIndex));
+        }
+
+        /// <summary>
+        /// Move a set of Records to another View, which also moves them to another underlaying ItemList.
+        /// </summary>
+        /// <param name="targetIndex">Leave null to add it into the open gap.</param>
+        /// <returns>Returns false if the records could not be added to the target playlist.</returns>
+        public bool MoveItems(int index, int count, ScrollView<T> targetView, int? targetIndex = null)
+        {
+            MoveChecks(index, count, targetView, targetIndex);
+
+            if (targetView.ItemList.BufferSizeLeft < count)
+            {
+                GD.Print("Failed to move an Item because the target itemlist does not have enough space.");
+                return false;
+            }
+
+            List<ViewItemGeneric<T>> itemsToRemove = new(count);
+            for (int i = 0; i < count; i++)
+            {
+                itemsToRemove.Add(itemObjects[index + i]);
+                itemObjects[index + i] = null;
+            }
+
+            if (targetIndex.HasValue)
+                targetIndex = Math.Clamp(targetIndex.Value, 0, ItemCount);
+            else
+            {
+                if (targetView.GapIndex <= 0)
+                {
+                    targetIndex = 0;
+                }
+                else if (targetView.GapIndex >= targetView.ItemCount)
+                {
+                    //einfach hinten anfÃ¼gen
+                    targetIndex = targetView.ItemCount;
+                }
+                //Wenn man auf eine Package im View zeigt, erwartet man, dass sie davor gelegt wird, und nicht ersetzt (was sie dahinter legen wÃ¼rde).
+                //Deshalb wird getestet, ob der aktuelle Slot gerade frei ist. Es wird der davor genommen, falls nicht.
+                else if (targetView.GapIndex >= 0 && targetView.itemObjects[targetView.GapIndex] == null)
+                {
+                    targetIndex = targetView.GapIndex;
+                }
+                else
+                {
+                    targetIndex = targetView.GapIndex + 1;
+                }
+            }
+
+            ignoreItemsRemovedEvent = true;
+            targetView.ignoreItemsAddedEvent = true;
+            for (int i = 0; i < count; i++)
+            {
+                ViewItemGeneric<T> item = itemsToRemove[i];
+                if (!_itemList.RemoveItem(item.song))
+                    continue;
+
+                itemObjects[index + i] = null;
+
+                if (targetIndex.Value == targetView.ItemCount)
+                {
+                    targetView._itemList.AddItem(item.song);
+                    targetView.itemObjects.Add(item);
+                }
+                else
+                {
+                    targetView._itemList.InsertItemAt(item.song, targetIndex.Value);
+                    targetView.itemObjects.Insert(targetIndex.Value, item);
+                }
+            }
+
+            //nicht RemoveRange verwenden, da evtl. in die gleiche Liste schon etwas eingefÃ¼gt wurde, was alles verschiebt
+            //wenn man vorher alles herauslÃ¶scht, geht die LÃ¼cke verloren, die ja angibt
+            itemObjects.RemoveAll(x => x == null);
+            ignoreItemsRemovedEvent = false;
+            targetView.ignoreItemsAddedEvent = false;
+            ItemListChanged?.Invoke(new()
+            {
+                items = itemsToRemove,
+                changeToView = targetView,      //Remove, so move to target View
+            });
+            targetView.ItemListChanged?.Invoke(new()
+            {
+                items = itemsToRemove,
+                changeToView = null,            //Add, so move to none
+            });
+            UpdateAllItemTransforms();
+            targetView.UpdateAllItemTransforms();
+            return true;
         }
 
         //containerMousePos auf der Boundary
@@ -377,7 +300,7 @@ namespace Musikspieler.Scripts.RecordView
             Vector3 hitPos = (Vector3)result["position"];
             Vector3 localPos = viewBounds.GlobalTransform.AffineInverse() * hitPos;
 
-            //raycast hit nützt uns nur, wenn wir die Oberseite getroffen haben
+            //raycast hit nÃ¼tzt uns nur, wenn wir die Oberseite getroffen haben
             const float allowedInaccuracy = 0.05f;
 
             if (localPos.Y > Bounds.Y * (0.5f - allowedInaccuracy))
@@ -388,12 +311,12 @@ namespace Musikspieler.Scripts.RecordView
 
         private void Scroll(float gaps)
         {
-            float newPos = ScrollContainer.Position.Z - (gaps * recordPackageWidth);
+            float newPos = ScrollContainer.Position.Z - (gaps * itemObjectWidth);
 
-            //so viel muss mindestens in beide richtungen gescrollt werden können, sonst erreicht man nicht alles
-            float minimumScrollStop = ItemCount * 0.5f * recordPackageWidth - Bounds.Z * 0.5f;
+            //so viel muss mindestens in beide richtungen gescrollt werden kÃ¶nnen, sonst erreicht man nicht alles
+            float minimumScrollStop = ItemCount * 0.5f * itemObjectWidth - Bounds.Z * 0.5f;
 
-            //Es wird bis hierher erlaubt zu scrollen: Es wird zB. 30% (0.3f) der Bounds.Z-Länge frei sein, wenn das Ende erreicht ist.
+            //Es wird bis hierher erlaubt zu scrollen: Es wird zB. 30% (0.3f) der Bounds.Z-LÃ¤nge frei sein, wenn das Ende erreicht ist.
             const float relativeScrollStopOffset = 0.3f;
 
             float additionalScrollLength = Bounds.Z * relativeScrollStopOffset;
@@ -405,7 +328,7 @@ namespace Musikspieler.Scripts.RecordView
             float scrollMin = -scrollStopLength - FlickThroughRotationXAnimation.BackwardGapToViewBoundryMargin;
 
             if (scrollMin > scrollMax)
-                //die playlist ist zu wenig gefüllt, scrollen ist aus
+                //die playlist ist zu wenig gefÃ¼llt, scrollen ist aus
                 newPos = 0;
             else
                 newPos = Mathf.Clamp(newPos, scrollMin, scrollMax);
@@ -442,10 +365,11 @@ namespace Musikspieler.Scripts.RecordView
             if (ItemCount == 0)
                 return null;
 
-            var package = items[Math.Clamp(GapIndex, 0, ItemCount - 1)];
+            var package = itemObjects[Math.Clamp(GapIndex, 0, ItemCount - 1)];
             return package;
         }
 
+        //save data between frames
         private Vector2 lastMousePos;
         private float currentFlipOffset;
 
@@ -482,35 +406,34 @@ namespace Musikspieler.Scripts.RecordView
             float mouseZDelta = containerMousePos.Y - lastMousePos.Y;
             currentFlipOffset = Mathf.Clamp(currentFlipOffset + mouseZDelta, Mathf.Min(-flipThreshold * 0.5f + flipThresholdOffset, -currentFlipOffset), Mathf.Max(flipThreshold * 0.5f + flipThresholdOffset, currentFlipOffset));
             lastMousePos = containerMousePos;
-            _centeredGapIndex = (containerMousePos.Y - currentFlipOffset) / recordPackageWidth;
+            _centeredGapIndex = (containerMousePos.Y - currentFlipOffset) / itemObjectWidth;
 
-            UpdateAllPackageTransforms();
+            UpdateAllItemTransforms();
         }
 
-        public void UpdateAllPackageTransforms()
+        public void UpdateAllItemTransforms()
         {
-            for (int i = 0; i < _playlist.ItemCount; i++)
+            for (int i = 0; i < ItemCount; i++)
             {
-                UpdatePackageTransform(i);
+                UpdateItemTransform(i);
             }
         }
 
-        public void UpdatePackageTransform(int index)
+        public void UpdateItemTransform(int index)
         {
-            var package = items[index];
+            var item = itemObjects[index];
 
-            if (package.IsGettingDragged)
+            if (item.IsGettingDragged)
                 return;
 
-            Vector2 packageToMouse = new(lastMousePos.X - package.Position.X, _centeredGapIndex - (package.ViewIndex - ItemCount / 2));
+            Vector2 itemToMouse = new(lastMousePos.X - item.Position.X, _centeredGapIndex - (item.ViewIndex - ItemCount / 2));
 
-            package.Position = new(0, 0, (package.ViewIndex - (ItemCount / 2)) * recordPackageWidth);
+            item.Position = new(0, 0, (item.ViewIndex - (ItemCount / 2)) * itemObjectWidth);
 
-            float xRotation = FlickThroughRotationXAnimation.AnimationFunction(packageToMouse);
-            float yRotation = FlickThroughRotationYAnimation.AnimationFunction(packageToMouse);
+            float xRotation = FlickThroughRotationXAnimation.AnimationFunction(itemToMouse);
+            float yRotation = FlickThroughRotationYAnimation.AnimationFunction(itemToMouse);
 
-            package.Rotation = new Vector3(xRotation, yRotation, 0);
+            item.Rotation = new Vector3(xRotation, yRotation, 0);
         }
-
     }
 }
