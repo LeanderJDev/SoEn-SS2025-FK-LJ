@@ -1,7 +1,8 @@
-[gd_scene load_steps=16 format=3 uid="uid://cem353j2urtor"]
+[gd_scene load_steps=17 format=3 uid="uid://cem353j2urtor"]
 
 [ext_resource type="ArrayMesh" uid="uid://bd583cu20bsvy" path="res://assets/3D/RecordOnPlayer.res" id="1_muem4"]
 [ext_resource type="ArrayMesh" uid="uid://b843msk64uoca" path="res://assets/3D/ArmArm.res" id="2_dp3eg"]
+[ext_resource type="Material" uid="uid://bqpxt6ib8ydpc" path="res://graphics/vinylShaded.tres" id="2_muem4"]
 [ext_resource type="ArrayMesh" uid="uid://0v8jwt5bkgos" path="res://assets/3D/ArmArm_001.res" id="3_0ld40"]
 [ext_resource type="ArrayMesh" uid="uid://bkmyqypfsmofg" path="res://assets/3D/PlayerBody.res" id="4_gqmmt"]
 [ext_resource type="ArrayMesh" uid="uid://csv7r343okxuk" path="res://assets/3D/PlayerCable_001.res" id="5_yc10j"]
@@ -24,6 +25,7 @@
 transform = Transform3D(100, 0, 0, 0, -4.37114e-06, 100, 0, -100, -4.37114e-06, 0, 0, 0)
 mesh = ExtResource("1_muem4")
 skeleton = NodePath("")
+surface_material_override/0 = ExtResource("2_muem4")
 
 [node name="ArmBase" type="MeshInstance3D" parent="MusicPlayer"]
 transform = Transform3D(-84.4401, 53.5711, 2.34167e-06, 0, -4.37114e-06, 100, 53.5711, 84.4401, 3.691e-06, 0.845739, 0.155946, -0.86766)
