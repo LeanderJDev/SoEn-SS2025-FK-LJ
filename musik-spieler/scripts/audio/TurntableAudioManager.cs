@@ -10,7 +10,7 @@ namespace Musikspieler.Scripts.Audio
         private Turntable turntable;
         private Song currentSong;
         private Thread thread;
-        private bool threadRunning;
+        private volatile bool threadRunning;
         public ITurntable Turntable => turntable;
 
         public void SetSong(Song song)

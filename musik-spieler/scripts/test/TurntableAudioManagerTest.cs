@@ -95,8 +95,9 @@ namespace Musikspieler.Scripts.Test
                     if (rightDragPreviousMotorState)
                     {
                         turntableAudioManager.Turntable.SetMotorState(true);
-                            turntableAudioManager.Turntable.BoostSpeed(0.3f);
+                        turntableAudioManager.Turntable.BoostSpeed(0.3f);
                     }
+                    turntableAudioManager.Turntable.EndScratch();
                     GD.Print("Drag stopped\n\n");
                 }
             }
@@ -144,19 +145,18 @@ namespace Musikspieler.Scripts.Test
             {
                 Vector2 mousePos = GetViewport().GetMousePosition();
                 float currentAngle = (mousePos - recordCenter).Angle();
-                float angleDelta = Mathf.Wrap(currentAngle - lastDragAngle, -Mathf.Pi, Mathf.Pi);
-                float scratchSpeed = angleDelta / (2 * Mathf.Pi) / (float)delta;
+                float angleDelta = Mathf.Wrap(currentAngle - lastDragAngle, -Mathf.Pi, Mathf.Pi) / (2 * Mathf.Pi);
+                float scratchSpeed = angleDelta / (float)delta;
 
                 lastDragAngle = currentAngle;
 
-                turntableAudioManager.Turntable.Scratch(angleDelta / (2 * Mathf.Pi), scratchSpeed);
+                turntableAudioManager.Turntable.ScratchTarget(angleDelta);
                 if (Mathf.Abs(scratchSpeed) > 0.001f) GD.Print(scratchSpeed);
             }
 
             if (isLeftHolding)
             {
                 Vector2 mousePos = GetViewport().GetMousePosition();
-                GD.Print(mousePos);
                 float localMousePos = mousePos.X - Position.X;
                 if (localMousePos > 470 && localMousePos < 630)
                 {

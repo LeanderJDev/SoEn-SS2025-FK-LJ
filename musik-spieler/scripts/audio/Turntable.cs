@@ -17,7 +17,8 @@ namespace Musikspieler.Scripts.Audio
         void ChangeMotorSpeed(float speed);
         void Rotate(float loops);
         void MoveArm(float pos);
-        void Scratch(float deltaLoops, float scratchSpeed);
+        void ScratchTarget(float deltaLoops);
+        void EndScratch();
         void BoostSpeed(float fraction);
     }
 
@@ -31,6 +32,10 @@ namespace Musikspieler.Scripts.Audio
         private bool motorRunning;
         private float motorAcceleration = 2.4f; // Kalibrierter Wert
         private float drag = 0.1f; // Kalibrierter Wert
+        private float lerpSpeed = 12f;
+        private bool scratchActive = false;
+        private float targetLoop = 0f;
+        private float lastLoop = 0f;
         public float CurrentLoop => currentLoop;
         public float CurrentSpeed => currentSpeed;
         public float MaxLoops => maxLoops;
@@ -48,19 +53,29 @@ namespace Musikspieler.Scripts.Audio
 
         public void SimulationStep(double delta)
         {
-            // exponentieller Drag
-            float dragPerStep = MathF.Pow(drag, (float)delta);
-            currentSpeed *= dragPerStep;
-
             currentSpeed = Mathf.Min(currentSpeed, 1000f);
 
             if (Mathf.Abs(currentSpeed) == 0.0f)
             {
                 motorRunning = !(targetSpeed == 0);
-                currentSpeed = 0.0f;
             }
 
-            currentLoop += currentSpeed * (float)delta;
+            if (scratchActive)
+            {
+                float lerpAlpha = 1f - MathF.Exp(-lerpSpeed * (float)delta);
+                currentLoop = Mathf.Lerp(currentLoop, targetLoop, lerpAlpha);
+                currentSpeed = (currentLoop - lastLoop) / (float)delta;
+                lastLoop = currentLoop;
+            }
+            else
+            {
+                // exponentieller Drag
+                float dragPerStep = MathF.Pow(drag, (float)delta);
+                currentSpeed *= dragPerStep;
+                currentLoop += currentSpeed * (float)delta;
+                targetLoop = currentLoop;
+            }
+
             if (currentLoop >= maxLoops || currentLoop < 0)
             {
                 StopMotor();
@@ -130,11 +145,15 @@ namespace Musikspieler.Scripts.Audio
             Rotate((int)(pos * maxLoops) - (int)currentLoop);
         }
 
-        public void Scratch(float deltaLoops, float scratchSpeed)
+        public void ScratchTarget(float deltaLoops)
         {
-            float loopDelta = deltaLoops / (Mathf.Pi * 2);
-            currentLoop += loopDelta;
-            currentSpeed = scratchSpeed;
+            targetLoop += deltaLoops;
+            scratchActive = true;
+        }
+
+        public void EndScratch()
+        {
+            scratchActive = false;
         }
 
         public void BoostSpeed(float fraction)
