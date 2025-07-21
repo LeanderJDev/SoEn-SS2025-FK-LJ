@@ -45,7 +45,7 @@ namespace Musikspieler.Scripts.Test
                 GD.PrintErr("TurntableAudioManager not found as child!");
                 return;
             }
-            Song song = new Song("Song", "Album", "Artist", "", sample);
+            Song song = new Song("Song", "Album", "Artist", "", audioStream: sample);
             turntableAudioManager.SetSong(song);
             while (turntableAudioManager.Turntable == null)
             {
