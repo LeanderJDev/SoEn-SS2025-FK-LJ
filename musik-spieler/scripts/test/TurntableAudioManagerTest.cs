@@ -1,6 +1,8 @@
 using System;
+using System.Reflection;
 using Godot;
 using Musikspieler.Scripts.Audio;
+using Musikspieler.Scripts.development;
 
 namespace Musikspieler.Scripts.Test
 {
@@ -22,6 +24,7 @@ namespace Musikspieler.Scripts.Test
     	private float lastLoop = 0;
         private bool rightDragPreviousMotorState = false;
 	    private float lastDragAngle = 0f;
+        private Plot samplePlot;
 
 
         public override async void _Ready()
@@ -30,6 +33,9 @@ namespace Musikspieler.Scripts.Test
             needle = GetNode<Polygon2D>("Needle");
             record = GetNode<Sprite2D>("Record");
             recordCenter = record.GlobalPosition;
+
+            samplePlot = new Plot("Samples", 700, 100, scaleY: 100f, length: 1000);
+            AddChild(samplePlot);
 
             if (turntableAudioManager == null)
             {
@@ -103,6 +109,32 @@ namespace Musikspieler.Scripts.Test
 
         public override void _PhysicsProcess(double delta)
         {
+            // private Felder visualisieren ist lustig
+            // Hole das private Feld "audioPlayer" aus turntableAudioManager
+            var audioPlayerField = turntableAudioManager.GetType().GetField("audioPlayer", BindingFlags.NonPublic | BindingFlags.Instance);
+            var audioPlayer = audioPlayerField.GetValue(turntableAudioManager);
+
+            // Hole das Feld "samples" aus audioPlayer
+            var samplesField = audioPlayer.GetType().GetField("samples", BindingFlags.NonPublic | BindingFlags.Instance);
+            var samples = (Vector2[])samplesField.GetValue(audioPlayer);
+
+            var turntableField = turntableAudioManager.GetType().GetField("turntable", BindingFlags.NonPublic | BindingFlags.Instance);
+            Turntable turntable = (Turntable)turntableField.GetValue(turntableAudioManager);
+
+            int sampleIndex = (int)turntable.GetCurrentSongPosition() * samples.Length;
+
+            // Bereich berechnen, der im letzten Frame gespielt wurde
+            float loopsPlayed = turntableAudioManager.Turntable.CurrentSpeed * (float)delta;
+            int samplesPlayed = Mathf.Abs((int)(loopsPlayed * samples.Length / (float)turntableAudioManager.Turntable.MaxLoops));
+            if (samplesPlayed < 1) samplesPlayed = 1;
+
+            for (int i = 0; i < samplesPlayed; i++)
+            {
+                int idx = (sampleIndex - i + samples.Length) % samples.Length;
+                Vector2 s = samples[idx];
+                samplePlot.AddValue((s.X + s.Y) / 2f);
+            }
+
             QueueRedraw();
             if (isRightHolding)
             {
@@ -139,7 +171,7 @@ namespace Musikspieler.Scripts.Test
         {
             record.Rotation = turntableAudioManager.Turntable.CurrentLoop % 1 * Mathf.Pi * 2;
             needle.Position = new Vector2((1 - (turntableAudioManager.Turntable.CurrentLoop / turntableAudioManager.Turntable.MaxLoops)) * 160 + 470, 294);
-            string info = $"CurrentLoop: {turntableAudioManager.Turntable.CurrentLoop:F5} | CurrentSpeed {turntableAudioManager.Turntable.CurrentSpeed:F3} | MotorRunning: {turntableAudioManager.Turntable.IsMotorRunning}";
+            string info = $"CurrentLoop: {turntableAudioManager.Turntable.CurrentLoop:F5} | CurrentSpeed {turntableAudioManager.Turntable.CurrentSpeed:F7} | MotorRunning: {turntableAudioManager.Turntable.IsMotorRunning}";
             DrawString(_defaultFont, new Vector2(100, 30), info, HorizontalAlignment.Center);
         }
     }

@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://dx8b3pugsccgu" path="res://scripts/test/TurntableAudioManagerTest.cs" id="1_aexrn"]
 [ext_resource type="Script" uid="uid://c8b0fj26s2nje" path="res://scripts/audio/TurntableAudioManager.cs" id="2_c43lj"]
-[ext_resource type="AudioStream" uid="uid://4ajuf5e7w4ph" path="res://assets/Audio/song.wav" id="2_kox1g"]
+[ext_resource type="AudioStream" uid="uid://c1gcf5m3llhm6" path="res://assets/Audio/440.wav" id="2_kox1g"]
 [ext_resource type="Texture2D" uid="uid://jrth7g4cxtwv" path="res://assets/Tests/record.png" id="4_kox1g"]
 
 [node name="Node2D" type="Node2D" node_paths=PackedStringArray("turntableAudioManager")]
