@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 
 namespace Musikspieler.Scripts.RecordView
 {
@@ -88,7 +89,7 @@ namespace Musikspieler.Scripts.RecordView
         private void GrabRecord(View recordView)
         {
             GD.Print("grab");
-            currentlyGrabbed = recordView.Grab();
+            currentlyGrabbed = recordView.AutoGrabItem();
             if (currentlyGrabbed == null)
                 return;
 
@@ -100,6 +101,9 @@ namespace Musikspieler.Scripts.RecordView
             GD.Print("put");
             if (currentlyGrabbed == null)
                 throw new Exception("Cannot put Record \"null\" into a RecordView.");
+
+            if (recordView == null)
+                throw new Exception();
 
             currentlyGrabbed.Move(recordView);
             currentlyGrabbed.IsGettingDragged = false;

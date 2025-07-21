@@ -9,8 +9,8 @@ size = Vector3(93.9678, 0.187256, 78.6123)
 [node name="DrawerTest" type="Node3D"]
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(0.227557, -0.923941, 0.30749, -0.0270751, 0.309649, 0.950465, -0.973388, -0.22461, 0.045447, 5.21213, 16.6673, 11.5907)
-fov = 64.3
+transform = Transform3D(-4.37114e-08, -0.978867, 0.204496, 0, 0.204496, 0.978867, -1, 4.27877e-08, -8.93881e-09, 10.8247, 47.0391, -0.0122404)
+fov = 10.6
 
 [node name="DrawerView" parent="." instance=ExtResource("1_4ndqm")]
 
@@ -21,11 +21,10 @@ script = ExtResource("2_htoij")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="RecordGrabHandler"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.29777, 0)
-visible = false
 shape = SubResource("BoxShape3D_tfysl")
 
 [node name="Light" type="DirectionalLight3D" parent="."]
-transform = Transform3D(-0.546002, -0.814999, 0.194057, 0.746652, -0.368315, 0.553945, -0.379991, 0.447348, 0.809621, 0, 15.7683, 0)
+transform = Transform3D(0.141083, 0.914936, 0.378137, 0.408327, -0.401733, 0.819683, 0.901867, 0.0387606, -0.430271, 0, 15.7683, -0.561996)
 light_energy = 0.747
 shadow_enabled = true
 shadow_opacity = 0.64

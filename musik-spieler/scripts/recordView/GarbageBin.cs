@@ -20,8 +20,10 @@ namespace Musikspieler.Scripts.RecordView
 
         public override bool IsItemListAssigned => true;
 
-        public override ViewItem Grab() => null;     //der Muelleimer gibt nie etwas her
-
         public override bool MoveItem(int index, View targetView) => false;  //man kann nichts rausnehmen
+
+        public override ViewItem GrabItem() => null;     //der Muelleimer gibt nie etwas her
+
+        public override ViewItem AutoGrabItem() => null;     //der Muelleimer gibt nie etwas her
     }
 }

@@ -16,7 +16,7 @@ namespace Musikspieler.Scripts.RecordView
                 Animations.SelectedOffsetXAnimationFucntion
             );
 
-            itemObjectWidth = 5f;
+            itemObjectWidth = 3f;
             scrollAreaSize = 0.3f;
             flipThresholdOffset = 0f;
             flipThreshold = 0f;

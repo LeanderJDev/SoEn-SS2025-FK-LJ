@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Net.WebSockets;
 
 namespace Musikspieler.Scripts.RecordView
 {
@@ -21,8 +22,6 @@ namespace Musikspieler.Scripts.RecordView
         }
 
         public override bool IsItemListAssigned => ItemList != null;
-
-        protected Mask<CollisionMask> mask;
 
         private IItemList<T> _itemList;
         public IItemList<T> ItemList
@@ -78,7 +77,7 @@ namespace Musikspieler.Scripts.RecordView
         public int GapIndex => Math.Clamp((int)(_centeredGapIndex + (ItemCount / 2)), -1, ItemCount);
         private float _centeredGapIndex;
 
-        private Vector3 Bounds => ((BoxShape3D)viewBounds.Shape).Size;
+        public Vector3 Bounds => ((BoxShape3D)viewBounds.Shape).Size;
 
         public Animations Animation { get; set; }
 
@@ -153,14 +152,7 @@ namespace Musikspieler.Scripts.RecordView
 
         public override bool MoveItem(int index, View targetView)
         {
-            if (targetView is ScrollView<T> scrollView)
-            {
-                return MoveItems(index, 1, scrollView, null);
-            }
-            else
-            {
-                return MoveItems(index, 1, targetView, null);
-            }
+            return MoveItems(index, 1, targetView, null);
         }
 
         /// <summary>
@@ -174,8 +166,19 @@ namespace Musikspieler.Scripts.RecordView
 
         public bool MoveItems(int index, int count, View targetView, int? targetIndex = null)
         {
+            GD.Print("targetView type:");
+            GD.Print(targetView.GetType());
+            
             if (targetView is ScrollView<T> scrollView)
                 return MoveItems(index, count, scrollView, targetIndex);
+
+            GD.Print("targetView.Grab() type:");
+            GD.Print(targetView.GrabItem().GetType());
+            if (targetIndex == null && targetView.GrabItem() is IItemAndView itemAndView)
+            {
+                GD.Print(itemAndView.ChildView.GetType());
+                return MoveItems(index, count, itemAndView.ChildView);
+            }
 
             MoveChecks(index, count, targetView, targetIndex);
 
@@ -186,7 +189,7 @@ namespace Musikspieler.Scripts.RecordView
             //da es bisher nur dieses Objekt gibt, was tatsächlich mehrere Typen an Items annimmt.
 
             GD.Print("moving item to view of different item type, currently unsupported, aborting.");
-
+            throw new Exception();
             return false;
         }
 
@@ -302,7 +305,7 @@ namespace Musikspieler.Scripts.RecordView
         {
             //getroffen?
             if (!Utility.CameraRaycast(GetViewport().GetCamera3D(), mask, out var result))
-            return null;
+                return null;
 
             //unseres getroffen?
             if ((Node)result["collider"] != viewBounds.GetParent())
@@ -357,11 +360,15 @@ namespace Musikspieler.Scripts.RecordView
             {
                 if (mouseEvent.ButtonIndex == MouseButton.WheelUp)
                 {
+                    if (!CheckIfViewUnderCursor(mask, out View view) || view != this)
+                        return;
                     if (mouseEvent.Pressed)
                         OnScrollInput(-1f);
                 }
                 else if (mouseEvent.ButtonIndex == MouseButton.WheelDown)
                 {
+                    if (!CheckIfViewUnderCursor(mask, out View view) || view != this)
+                        return;
                     if (mouseEvent.Pressed)
                         OnScrollInput(1f);
                 }
@@ -371,13 +378,29 @@ namespace Musikspieler.Scripts.RecordView
         /// <summary>
         /// Wird aufgerufen vom GrabHandler, so wird ein Package herausgezogen. Es wird nur bewegt, nicht entfernt!
         /// </summary>
-        public override ViewItem Grab()
+        public override ViewItem AutoGrabItem()
         {
             if (ItemCount == 0)
                 return null;
 
-            var package = itemObjects[Math.Clamp(GapIndex, 0, ItemCount - 1)];
-            return package;
+            var item = itemObjects[Math.Clamp(GapIndex, 0, ItemCount - 1)];
+
+            if (item is IItemAndView itemAndView && itemAndView.ChildView.IsUnderCursor)
+            {
+                return itemAndView.ChildView.AutoGrabItem();
+            }
+            return item;
+        }
+
+        /// <summary>
+        /// Wird aufgerufen vom GrabHandler, so wird ein Package herausgezogen. Es wird nur bewegt, nicht entfernt!
+        /// </summary>
+        public override ViewItem GrabItem()
+        {
+            if (ItemCount == 0)
+                return null;
+
+            return itemObjects[Math.Clamp(GapIndex, 0, ItemCount - 1)];
         }
 
         //save data between frames
