@@ -1,7 +1,7 @@
 using Godot;
 using System;
 
-namespace Musikspieler.Scripts
+namespace Musikspieler.Scripts.RecordView
 {
     public partial class SmoothMovingObject : Node3D
     {
@@ -12,7 +12,7 @@ namespace Musikspieler.Scripts
             set
             {
                 if (SmoothDamp.PositionParameters is null)
-                    base.Scale = value;
+                    base.Position = value;
                 else
                     MovementState.targetPosition = value;
             }
@@ -24,7 +24,7 @@ namespace Musikspieler.Scripts
             set
             {
                 if (SmoothDamp.RotationParameters is null)
-                    base.Scale = value;
+                    base.Rotation = value;
                 else
                     MovementState.targetRotation = value;
             }
@@ -69,8 +69,6 @@ namespace Musikspieler.Scripts
         /// <summary>
         /// Teleport to specific targets immediately.
         /// </summary>
-        /// <param name="pos"></param>
-        /// <param name="rot"></param>
         public void Teleport(Vector3? pos, Vector3? rot, Vector3? scale)
         {
             if (pos.HasValue)
@@ -100,9 +98,32 @@ namespace Musikspieler.Scripts
             base.Scale = Scale;
         }
 
+        public void SmoothReparent(Node3D newParent)
+        {
+            // Alte Ziel-Transforms in globalen Raum bringen
+            GD.Print(ToGlobal(MovementState.targetPosition));
+            Vector3 globalTargetPos = GlobalTransform * MovementState.targetPosition;
+            Vector3 globalTargetRot = GlobalTransform.Basis * MovementState.targetRotation;
+            Vector3 globalTargetScale = GlobalTransform.Basis.Scale * MovementState.targetScale;
+
+            // Reparent
+            Reparent(newParent, true);
+
+            // Neue local targets relativ zu neuem Parent berechnen
+            MovementState.targetPosition = GlobalTransform.AffineInverse() * globalTargetPos;
+            MovementState.targetRotation = GlobalTransform.Basis.Inverse() * globalTargetRot;
+            MovementState.targetScale = GlobalTransform.Basis.Scale.Inverse() * globalTargetScale;
+        }
+
         public SmoothMovingObject()
         {
             _movementState = new(this);
+        }
+
+        public override void _Ready()
+        {
+            base._Ready();
+            RequestReady();
         }
     }
 }

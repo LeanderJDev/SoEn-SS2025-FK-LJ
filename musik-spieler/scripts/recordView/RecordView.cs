@@ -1,64 +1,301 @@
 using Godot;
-using Godot.Collections;
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
 
-namespace Musikspieler.Scripts
+namespace Musikspieler.Scripts.RecordView
 {
     public partial class RecordView : Node3D
     {
-        [Export] RecordContainer recordsContainer;
+        [Export] Node3D _recordsContainer;
         [Export] CollisionShape3D recordViewBounds;
-        [Export] ShaderMaterial BaseRecordMaterial;
 
-        private readonly List<RecordPackageSlot> recordPackageObjects = [];
-        private int RecordCount => recordPackageObjects.Count;
+        public RecordContainer RecordsContainer => (RecordContainer)_recordsContainer;
 
-        private struct RecordPackageSlot
+        private int RecordCount => packages.Count;
+
+        public ShaderMaterial CutoffMaterialInstance { get; private set; }
+
+        private IPlaylist _playlist;
+        public IPlaylist Playlist
         {
-            public int index;                       //has to be updated if list changes
-            public RecordPackage packageObject;     //can be null if outside the window! changes dynamically.
-            public bool isPending;                  //if the package is currently in the air -> due to animation this is true for longer than isDragged
-            public bool isDragged;                  //if the package is currently dragged around
-            //public Song song;                       //muss eigentlich zu RecordPackage verschoben werden
+            get => _playlist;
+            set
+            {
+                if (_playlist != null)
+                {
+                    _playlist.SongsAdded -= OnSongsAdded;
+                    _playlist.SongsRemoved -= OnSongsRemoved;
+                    for (int i = 0; i < RecordCount; i++)
+                    {
+                        packages[i].QueueFree();
+                    }
+                    packages = null;
+                }
+                _playlist = value;
+                if (_playlist != null)
+                {
+                    packages = new(_playlist.SongCount);
+                    for (int i = 0; i < _playlist.SongCount; i++)
+                    {
+                        packages.Add(RecordPackage.InstantiateAndAssign(this, i));
+                    }
+                    _playlist.SongsAdded += OnSongsAdded;
+                    _playlist.SongsRemoved += OnSongsRemoved;
+                }
+            }
         }
 
-        private ShaderMaterial materialInstance;
+        private List<RecordPackage> packages;
+
+        public int SongCount => packages.Count;
+
+        public RecordPackage this[int index]
+        {
+            get { return packages[index]; }
+        }
+
+        public event Action<PlaylistChangedEventArgs> PlaylistChanged = delegate { };
+
+        public struct PlaylistChangedEventArgs
+        {
+            public readonly bool RecordsRemoved => changeToView != null;
+            public readonly bool RecordsAdded => changeToView == null;
+
+            public List<RecordPackage> packages;
+            public RecordView changeToView;
+        }
+
+        private bool ignoreSongsAddedEvent = false;
+        private bool ignoreSongsRemovedEvent = false;
+
+        private void OnSongsAdded(SongsAddedEventArgs args)
+        {
+            if (ignoreSongsAddedEvent)
+                return;
+
+            List<RecordPackage> newPackages = new(args.count);
+            for (int i = 0; i < args.count; i++)
+            {
+                RecordPackage package = RecordPackage.InstantiateAndAssign(this, i);
+                newPackages.Add(package);
+                RecordsContainer.AddChild(package);
+            }
+            if (args.startIndex >= RecordCount)
+                packages.AddRange(newPackages);
+            else
+                packages.InsertRange(args.startIndex, newPackages);
+            PlaylistChanged?.Invoke(new()
+            {
+                packages = newPackages,
+                changeToView = null,
+            });
+            UpdateAllPackageTransforms();
+        }
+
+        private void OnSongsRemoved(SongsRemovedEventArgs args)
+        {
+            if (ignoreSongsRemovedEvent)
+                return;
+
+            List<RecordPackage> packagesToDelete = new(args.count);
+            for (int i = 0; i < args.count; i++)
+            {
+                packagesToDelete.Add(packages[args.startIndex + i]);
+                //package.QueueFree(); //macht jetzt der garbage bin
+            }
+            packages.RemoveRange(args.startIndex, args.count);
+            PlaylistChanged?.Invoke(new()
+            {
+                packages = packagesToDelete,
+                changeToView = RecordGrabHandler.Instance.GarbageBin,
+            });
+            UpdateAllPackageTransforms();
+        }
+
+        public int IndexOf(RecordPackage recordPackage)
+        {
+            return packages.IndexOf(recordPackage);
+        }
+
+        /// <summary>
+        /// Move the open Record to another View, which also moves it to another underlaying Playlist.
+        /// </summary>
+        /// <returns>Returns false if the record could not be added to the target playlist.</returns>
+        public bool MoveRecord(RecordView targetView)
+        {
+            return MoveRecords(GapIndex, 1, targetView, null);
+        }
+
+        /// <summary>
+        /// Move a Record to another View, which also moves it to another underlaying Playlist.
+        /// </summary>
+        /// <param name="targetIndex">Leave null to add it into the open gap.</param>
+        /// <returns>Returns false if the record could not be added to the target playlist.</returns>
+        public bool MoveRecord(RecordPackage recordPackage, RecordView targetView, int? targetIndex = null)
+        {
+            int index = IndexOf(recordPackage);
+            if (index < 0)
+                return false;
+
+            return MoveRecords(index, 1, targetView, targetIndex);
+        }
+
+        /// <summary>
+        /// Move a set of Records to another View, which also moves them to another underlaying Playlist.
+        /// </summary>
+        /// <param name="targetIndex">Leave null to add it into the open gap.</param>
+        /// <returns>Returns false if the records could not be added to the target playlist.</returns>
+        public bool MoveRecords(int index, int count, RecordView targetView, int? targetIndex = null)
+        {
+            if (targetView == null)
+                throw new Exception("The target RecordView is \"null\"");
+
+            if (_playlist == null)
+                throw new Exception("The current playlist is \"null\"");
+
+            if (targetView._playlist == null)
+                throw new Exception("The target playlist is \"null\"");
+
+            if (targetView._playlist.BufferSizeLeft < count)
+            {
+                GD.Print("Failed to Move a RecordPackage because the target playlist does not have enough space.");
+                return false;
+            }
+
+            List<RecordPackage> packagesToRemove = new(count);
+            for (int i = 0; i < count; i++)
+            {
+                packagesToRemove.Add(packages[index + i]);
+                packages[index + i] = null;
+            }
+
+            if (targetIndex.HasValue)
+                targetIndex = Math.Clamp(targetIndex.Value, 0, RecordCount);
+            else
+            {
+                if (targetView.GapIndex <= 0)
+                {
+                    targetIndex = 0;
+                }
+                else if (targetView.GapIndex >= targetView.RecordCount)
+                {
+                    //einfach hinten anfügen
+                    targetIndex = targetView.RecordCount;
+                }
+                //Wenn man auf eine Package im View zeigt, erwartet man, dass sie davor gelegt wird, und nicht ersetzt (was sie dahinter legen würde).
+                //Deshalb wird getestet, ob der aktuelle Slot gerade frei ist. Es wird der davor genommen, falls nicht.
+                else if (targetView.GapIndex >= 0 && targetView.packages[targetView.GapIndex] == null)
+                {
+                    targetIndex = targetView.GapIndex;
+                }
+                else
+                {
+                    targetIndex = targetView.GapIndex + 1;
+                }
+            }
+
+            ignoreSongsRemovedEvent = true;
+            targetView.ignoreSongsAddedEvent = true;
+            for (int i = 0; i < count; i++)
+            {
+                RecordPackage package = packagesToRemove[i];
+                if (!_playlist.RemoveSong(package.song))
+                    continue;
+
+                packages[index + i] = null;
+
+                if (targetIndex.Value == targetView.RecordCount)
+                {
+                    targetView._playlist.AddSong(package.song);
+                    targetView.packages.Add(package);
+                }
+                else
+                {
+                    targetView._playlist.InsertSongAt(package.song, targetIndex.Value);
+                    targetView.packages.Insert(targetIndex.Value, package);
+                }
+            }
+
+            //nicht RemoveRange verwenden, da evtl. in die gleiche Liste schon etwas eingefügt wurde, was alles verschiebt
+            //wenn man vorher alles herauslöscht, geht die Lücke verloren, die ja angibt
+            packages.RemoveAll(x => x == null);
+            ignoreSongsRemovedEvent = false;
+            targetView.ignoreSongsAddedEvent = false;
+            PlaylistChanged?.Invoke(new()
+            {
+                packages = packagesToRemove,
+                changeToView = targetView,      //Remove, so move to target View
+            });
+            targetView.PlaylistChanged?.Invoke(new()
+            {
+                packages = packagesToRemove,
+                changeToView = null,            //Add, so move to none
+            });
+            UpdateAllPackageTransforms();
+            targetView.UpdateAllPackageTransforms();
+            return true;
+        }
 
         // Setup Settings
         private const float recordPackageWidth = 0.25f;     //als wie breit eine recordPackage behandelt wird
         private const float scrollAreaSize = 0.3f;          //wie groß der Bereich ist, in dem gescrollt werden kann (link und rechts, zw. 0 und 1)
-        private const float flipThresholdOffset = -0.7f;    //um wie viel das Maus-spiel verschoben ist
+        private const float flipThresholdOffset = -0.2f;    //um wie viel das Maus-spiel verschoben ist
         private const float flipThreshold = 1.7f;           //wie viel spiel die der Mauszeiger hat
 
         // User Settings
-        public bool useAutoScroll = true;                   //ob, wenn die Maus an die Kanten des RecordViews kommt, automatsich gescrollt werden soll
+        public bool useAutoScroll = true;                   //ob, wenn die Maus an die Kanten des RecordViews kommt, automatisch gescrollt werden soll
         public float autoScrollSensitivity = 40f;           //wie schnell es auto-scrollt
-        public float scrollSensitivity = 0.9f;             //wie schnell es mit der Maus scrollt
+        public float scrollSensitivity = 1f;                //wie schnell es mit der Maus scrollt
 
 
-        public int GapIndex => (int)_gapIndex;
-        private float _gapIndex;
+        public int GapIndex => Math.Clamp((int)(_centeredGapIndex + (RecordCount / 2)), -1, RecordCount);
+        private float _centeredGapIndex;
 
         private Vector3 Bounds => ((BoxShape3D)recordViewBounds.Shape).Size;
 
-        public IAnimationFunction FlickThroughRotationXAnimation { get; set; } = new BinaryFlickThroughRotationXAnimationFunction();
-        public IAnimationFunction FlickThroughRotationYAnimation { get; set; } = new SubtleRotationYAnimationFunction();
+        public IAnimationXFunction FlickThroughRotationXAnimation { get; set; } = new BinaryFlickThroughRotationXAnimationFunction();
+        public IAnimationYFunction FlickThroughRotationYAnimation { get; set; } = new SubtleRotationYAnimationFunction();
 
         /// <summary>
         /// Eine Interface, um die Blätter-Animation zu bestimmen.
         /// </summary>
         /// Es wurde ein Interface einem Delegaten vorgezogen, damit die Animationen evtl. eigene Einstellungen speichern können, oder können interne Daten pro gerenderten Frame anpassen, z.B. für Physik-Modelle.
         /// Ein Interface ist wesentlich erweiterbarer.
-        public interface IAnimationFunction
+        public interface IAnimationXFunction
         {
+            /// <summary>
+            /// Wie nah darf die Gap an den Rand des RecordViews kommen? Um zu vermeiden, dass das Aktuell offene RecordPackage nur halb zu sehen ist.
+            /// Da das vom Winkel des Packages abhängt muss es hier definiert sein.
+            /// Zur positiven Seite hin.
+            /// </summary>
+            public float ForwardGapToViewBoundryMargin { get; }
+
+            /// <summary>
+            /// Wie nah darf die Gap an den Rand des RecordViews kommen? Um zu vermeiden, dass das Aktuell offene RecordPackage nur halb zu sehen ist.
+            /// Da das vom Winkel des Packages abhängt muss es hier definiert sein.
+            /// Zur negativen Seite hin.
+            /// </summary>
+            public float BackwardGapToViewBoundryMargin { get; }
+
+            /// <summary>
+            /// Eine Funktion, die den Winkel um die X-Achse für jede RecordPackage beschreibt, abhängig vom Abstand des Objektes zur Mausposition.
+            /// </summary>
             public float AnimationFunction(Vector2 relativeMousePos);
         }
 
-        public struct BinaryFlickThroughRotationXAnimationFunction : IAnimationFunction
+        public interface IAnimationYFunction
         {
+            /// <summary>
+            /// Eine Funktion, die den Winkel um die Y-Achse für jede RecordPackage beschreibt, abhängig vom Abstand des Objektes zur Mausposition.
+            /// </summary>
+            public float AnimationFunction(Vector2 relativeMousePos);
+        }
+
+        public struct BinaryFlickThroughRotationXAnimationFunction : IAnimationXFunction
+        {
+            public readonly float ForwardGapToViewBoundryMargin => 0.3f;
+            public readonly float BackwardGapToViewBoundryMargin => 0.9f;
+
             public readonly float AnimationFunction(Vector2 relativeMousePos)
             {
                 float maxXAngle = Mathf.DegToRad(50);
@@ -67,8 +304,11 @@ namespace Musikspieler.Scripts
             }
         }
 
-        public struct LeaningFlickThroughRotationXAnimationFunction : IAnimationFunction
+        public struct LeaningFlickThroughRotationXAnimationFunction : IAnimationXFunction
         {
+            public readonly float ForwardGapToViewBoundryMargin => 1.1f;    //outdated
+            public readonly float BackwardGapToViewBoundryMargin => 1.1f;   //outdated
+
             public readonly float AnimationFunction(Vector2 relativeMousePos)
             {
                 float maxXAngle = Mathf.DegToRad(50);
@@ -81,7 +321,7 @@ namespace Musikspieler.Scripts
             }
         }
 
-        public struct SubtleRotationYAnimationFunction : IAnimationFunction
+        public struct SubtleRotationYAnimationFunction : IAnimationYFunction
         {
             public readonly float AnimationFunction(Vector2 relativeMousePos)
             {
@@ -90,6 +330,22 @@ namespace Musikspieler.Scripts
                 Vector2 vNorm = relativeMousePos.Normalized();
                 return Mathf.Min(Mathf.Abs(vNorm.X) / (100 * Mathf.Max(relativeMousePos.Length(), 0.3f)), maxYAngle) * Mathf.Sign(vNorm.Y * vNorm.X);
             }
+        }
+
+        public override void _Ready()
+        {
+            CutoffMaterialInstance = (ShaderMaterial)RecordPackage.defaultMaterial.Duplicate();
+
+            //NUR FÜR TESTZWECKE
+            GD.Print("RecordView created");
+            List<ISong> songs = new(100);
+            for (int i = 0; i < 100; i++)
+            {
+                songs.Add(new Song(Utility.RandomString(10)));
+            }
+            Playlist playlist = new();
+            Playlist = playlist;
+            playlist.AddSongs(songs);
         }
 
         //containerMousePos auf der Boundary
@@ -108,44 +364,44 @@ namespace Musikspieler.Scripts
             Vector3 hitPos = (Vector3)result["position"];
             Vector3 localPos = recordViewBounds.GlobalTransform.AffineInverse() * hitPos;
 
-            //raycast hit nützt uns nur, wenn wir die oberseite getroffen haben
+            //raycast hit nützt uns nur, wenn wir die Oberseite getroffen haben
             const float allowedInaccuracy = 0.05f;
 
-            if (localPos.Y > Bounds.Y * (1 - allowedInaccuracy))
+            if (localPos.Y > Bounds.Y * (0.5f - allowedInaccuracy))
                 return new Vector2(localPos.X, localPos.Z);
             else
                 return null;
         }
 
-        public void SetPlaylist(Playlist playlist)
+        private void Scroll(float gaps)
         {
+            float newPos = RecordsContainer.Position.Z - (gaps * recordPackageWidth);
 
-        }
+            //so viel muss mindestens in beide richtungen gescrollt werden können, sonst erreicht man nicht alles
+            float minimumScrollStop = RecordCount * 0.5f * recordPackageWidth - Bounds.Z * 0.5f;
 
-        private void Scroll(float lines)
-        {
-            recordsContainer.Position -= new Vector3(0, 0, lines * scrollSensitivity);
+            //Es wird bis hierher erlaubt zu scrollen: Es wird zB. 30% (0.3f) der Bounds.Z-Länge frei sein, wenn das Ende erreicht ist.
+            const float relativeScrollStopOffset = 0.3f;
+
+            float additionalScrollLength = Bounds.Z * relativeScrollStopOffset;
+
+            float scrollStopLength = minimumScrollStop + additionalScrollLength;
+
+            //die margins der Gap noch aufrechen, da man sonst evtl. Packages am Rand nicht mehr erreicht
+            float scrollMax = scrollStopLength + FlickThroughRotationXAnimation.ForwardGapToViewBoundryMargin;
+            float scrollMin = -scrollStopLength - FlickThroughRotationXAnimation.BackwardGapToViewBoundryMargin;
+
+            if (scrollMin > scrollMax)
+                //die playlist ist zu wenig gefüllt, scrollen ist aus
+                newPos = 0;
+            else
+                newPos = Mathf.Clamp(newPos, scrollMin, scrollMax);
+            RecordsContainer.Position = new Vector3(RecordsContainer.Position.X, RecordsContainer.Position.Y, newPos);
         }
 
         private void OnScrollInput(float lines)
         {
-
-        }
-
-        private void OnLeftClickInput(bool pressed)
-        {
-            if (pressed)
-            {
-                var packageSlot = recordPackageObjects[(int)_gapIndex];
-                packageSlot.isPending = true;
-                packageSlot.isDragged = true;
-                recordPackageObjects.RemoveAt((int)_gapIndex);
-                packageSlot.packageObject.Reparent(GetTree().Root, true);
-                packageSlot.packageObject.Teleport();
-                packageSlot.packageObject.MeshInstance.MaterialOverride = BaseRecordMaterial;
-
-                //inform a handler that a record is dragged here
-            }
+            Scroll(lines * scrollSensitivity);
         }
 
         public override void _Input(InputEvent @event)
@@ -162,37 +418,45 @@ namespace Musikspieler.Scripts
                     if (mouseEvent.Pressed)
                         OnScrollInput(1f);
                 }
-                else if (mouseEvent.ButtonIndex == MouseButton.Left)
-                {
-                    OnLeftClickInput(mouseEvent.Pressed);
-                }
             }
         }
 
-        public override void _Ready()
+        /// <summary>
+        /// Wird aufgerufen vom GrabHandler, so wird ein Package herausgezogen. Es wird nur bewegt, nicht entfernt!
+        /// </summary>
+        public RecordPackage Grab()
         {
+            if (RecordCount == 0)
+                return null;
 
+            var package = packages[Math.Clamp(GapIndex, 0, RecordCount - 1)];
+            return package;
         }
 
-        private float lastMouseY;
+        private Vector2 lastMousePos;
         private float currentFlipOffset;
 
         public override void _Process(double delta)
         {
+            CutoffMaterialInstance.SetShaderParameter("box_transform", recordViewBounds.GlobalTransform);
+            CutoffMaterialInstance.SetShaderParameter("box_size", ((BoxShape3D)recordViewBounds.Shape).Size);
+
+            base._Process(delta);
             Vector2? boundaryMousePos = GetBoundaryMousePosition();
 
             if (boundaryMousePos == null)
                 return;
 
-            Transform3D transform = recordsContainer.GlobalTransform.AffineInverse() * recordViewBounds.GlobalTransform;
+            Transform3D transform = RecordsContainer.GlobalTransform.AffineInverse() * recordViewBounds.GlobalTransform;
             Vector2 containerMousePos;
             if (useAutoScroll)
             {
-                float scroll = autoScrollSensitivity * (float)delta * (boundaryMousePos.Value.Y - Mathf.Sign(boundaryMousePos.Value.Y) * (0.5f - scrollAreaSize));
-                Scroll(scroll);
-                float scrollArea = Bounds.Z * (0.5f - scrollAreaSize);
-                float clamped = Mathf.Clamp(boundaryMousePos.Value.Y, -scrollArea, scrollArea);
-
+                float normalizedBoundaryPos = boundaryMousePos.Value.Y / Bounds.Z;
+                float scroll = Mathf.Max(Mathf.Abs(normalizedBoundaryPos) - (0.5f - scrollAreaSize), 0) * Mathf.Sign(normalizedBoundaryPos);
+                Scroll(scroll * (float)delta * autoScrollSensitivity);
+                float flipAreaMax = Bounds.Z *  0.5f - FlickThroughRotationXAnimation.ForwardGapToViewBoundryMargin;
+                float flipAreaMin = Bounds.Z * -0.5f + FlickThroughRotationXAnimation.BackwardGapToViewBoundryMargin;
+                float clamped = Mathf.Clamp(boundaryMousePos.Value.Y, flipAreaMin, flipAreaMax);
                 Vector3 localPos = transform * new Vector3(boundaryMousePos.Value.X, 0, clamped);
                 containerMousePos = new(localPos.X, localPos.Z);
             }
@@ -202,64 +466,37 @@ namespace Musikspieler.Scripts
                 containerMousePos = new(localPos.X, localPos.Z);
             }
 
-            float mouseZDelta = containerMousePos.Y - lastMouseY;
-            currentFlipOffset = Mathf.Clamp(currentFlipOffset + mouseZDelta, -flipThreshold * 0.5f + flipThresholdOffset, flipThreshold * 0.5f + flipThresholdOffset);
-            lastMouseY = containerMousePos.Y;
+            float mouseZDelta = containerMousePos.Y - lastMousePos.Y;
+            currentFlipOffset = Mathf.Clamp(currentFlipOffset + mouseZDelta, Mathf.Min(-flipThreshold * 0.5f + flipThresholdOffset, -currentFlipOffset), Mathf.Max(flipThreshold * 0.5f + flipThresholdOffset, currentFlipOffset));
+            lastMousePos = containerMousePos;
+            _centeredGapIndex = (containerMousePos.Y - currentFlipOffset) / recordPackageWidth;
 
-            _gapIndex = (containerMousePos.Y - currentFlipOffset) / (recordPackageWidth * RecordCount);
-
-            for (int i = 0; i < recordPackageObjects.Count; i++)
-            {
-                Vector3 packagePosition = recordPackageObjects[i].packageObject.Position;
-                Vector2 packageToMouse = containerMousePos - new Vector2(packagePosition.X, packagePosition.Z);
-                UpdatePackageTransforms(recordPackageObjects[i], packageToMouse);
-            }
-
-            materialInstance.SetShaderParameter("box_transform", recordViewBounds.GlobalTransform);
-            materialInstance.SetShaderParameter("box_size", ((BoxShape3D)recordViewBounds.Shape).Size);
+            UpdateAllPackageTransforms();
         }
 
-        private void UpdatePackageTransforms(RecordPackageSlot packageSlot, Vector2 packageToMouse)
+        public void UpdateAllPackageTransforms()
         {
-            if (packageSlot.isPending)
+            for (int i = 0; i < _playlist.SongCount; i++)
             {
-                if (!packageSlot.isDragged && packageSlot.packageObject.IsCloseToTargetPosition)
-                {
-                    packageSlot.isPending = false;
-                    packageSlot.packageObject.MeshInstance.MaterialOverride = materialInstance;
-                }
-                return;
+                UpdatePackageTransform(i);
             }
+        }
 
-            packageSlot.packageObject.Position = new(0, 0, (packageSlot.index - (recordPackageObjects.Count / 2)) * recordPackageWidth);
+        public void UpdatePackageTransform(int index)
+        {
+            var package = packages[index];
+
+            if (package.IsGettingDragged)
+                return;
+
+            Vector2 packageToMouse = new(lastMousePos.X - package.Position.X, _centeredGapIndex - (package.ViewIndex - RecordCount / 2));
+
+            package.Position = new(0, 0, (package.ViewIndex - (RecordCount / 2)) * recordPackageWidth);
 
             float xRotation = FlickThroughRotationXAnimation.AnimationFunction(packageToMouse);
             float yRotation = FlickThroughRotationYAnimation.AnimationFunction(packageToMouse);
 
-            packageSlot.packageObject.Rotation = new Vector3(xRotation, yRotation, 0);
+            package.Rotation = new Vector3(xRotation, yRotation, 0);
         }
     }
-}
-
-public class Playlist
-{
-    private readonly List<Song> songs = [];
-
-    public ImmutableArray<Song> GetAllSongs()
-    {
-        return songs.ToImmutableArray();
-    }
-
-    public IEnumerable<Song> GetEnumerable()
-    {
-        for (int i = 0; i < songs.Count; i++)
-        {
-            yield return songs[i];
-        }
-    }
-}
-
-public class Song
-{
-
 }

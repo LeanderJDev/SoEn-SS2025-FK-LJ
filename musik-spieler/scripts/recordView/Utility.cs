@@ -3,7 +3,7 @@ using Godot.Collections;
 using System;
 using System.Linq;
 
-namespace Musikspieler.Scripts
+namespace Musikspieler.Scripts.RecordView
 {
     public class Utility
     {

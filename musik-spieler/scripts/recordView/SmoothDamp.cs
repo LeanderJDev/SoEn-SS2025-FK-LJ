@@ -1,7 +1,7 @@
 using Godot;
 using System;
 
-namespace Musikspieler.Scripts
+namespace Musikspieler.Scripts.RecordView
 {
     /// <summary>
     /// Klasse, die drei Parameter speichert, um SmoothDamp auf allen drei Transform3D-Komponenten auszuführen.
@@ -9,21 +9,21 @@ namespace Musikspieler.Scripts
     /// Als Klasse (nicht struct), damit mehrere Objekte die gleichen Parameter nutzen können, und Änderungen durch die Referenz sofort Effekt haben.
     public class SmoothDamp
     {
-        public SmoothMovementParameters RotationParameters;
         public SmoothMovementParameters PositionParameters;
+        public SmoothMovementParameters RotationParameters;
         public SmoothMovementParameters ScaleParameters;
 
-        public SmoothDamp(SmoothMovementParameters rotationParameters, SmoothMovementParameters positionParameters, SmoothMovementParameters scaleParameters)
+        public SmoothDamp(SmoothMovementParameters positionParameters, SmoothMovementParameters rotationParameters, SmoothMovementParameters scaleParameters)
         {
-            RotationParameters = rotationParameters;
             PositionParameters = positionParameters;
+            RotationParameters = rotationParameters;
             ScaleParameters = scaleParameters;
         }
 
         public SmoothDamp(float positionSmoothTime, float positionMaxSpeed, float rotationSmoothTime, float rotationMaxSpeed, float scaleSmoothTime, float scaleMaxSpeed)
         {
-            RotationParameters = new(positionSmoothTime, positionMaxSpeed);
-            PositionParameters = new(rotationSmoothTime, rotationMaxSpeed);
+            PositionParameters = new(positionSmoothTime, positionMaxSpeed);
+            RotationParameters = new(rotationSmoothTime, rotationMaxSpeed);
             ScaleParameters = new(scaleSmoothTime, scaleMaxSpeed);
         }
 

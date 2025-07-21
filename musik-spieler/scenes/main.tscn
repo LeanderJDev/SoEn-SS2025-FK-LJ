@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3 uid="uid://cem353j2urtor"]
+[gd_scene load_steps=16 format=3 uid="uid://cem353j2urtor"]
 
 [ext_resource type="ArrayMesh" uid="uid://bd583cu20bsvy" path="res://assets/3D/RecordOnPlayer.res" id="1_muem4"]
 [ext_resource type="ArrayMesh" uid="uid://b843msk64uoca" path="res://assets/3D/ArmArm.res" id="2_dp3eg"]
@@ -11,6 +11,7 @@
 [ext_resource type="ArrayMesh" uid="uid://wjc6c7vfv3ke" path="res://assets/3D/ExtenisionCordCable_001.res" id="12_2f3dj"]
 [ext_resource type="ArrayMesh" uid="uid://cjj6tepxxw13s" path="res://assets/3D/ExtensionCordBox.res" id="13_yq6so"]
 [ext_resource type="ArrayMesh" uid="uid://rhdr6ox7h1n3" path="res://assets/3D/ExtensionCordSwitch.res" id="14_fv21b"]
+[ext_resource type="Script" uid="uid://btloxo60hdpxi" path="res://scripts/recordView/RecordGrabHandler.cs" id="15_jkv2x"]
 [ext_resource type="ArrayMesh" uid="uid://bqedbj155v5lv" path="res://assets/3D/Speaker.res" id="15_tel4y"]
 [ext_resource type="ArrayMesh" uid="uid://ce6vyv7jojj3x" path="res://assets/3D/SpeakerCable_001.res" id="16_qkpxi"]
 [ext_resource type="ArrayMesh" uid="uid://bs4xln7o60uli" path="res://assets/3D/SpeakerCablePlug.res" id="17_5q0nq"]
@@ -114,3 +115,6 @@ transform = Transform3D(0.36961, 0.773056, -0.515531, 0.458424, 0.330886, 0.8248
 light_energy = 2.131
 shadow_enabled = true
 shadow_opacity = 0.61
+
+[node name="RecordGrabHandler" type="Node3D" parent="."]
+script = ExtResource("15_jkv2x")

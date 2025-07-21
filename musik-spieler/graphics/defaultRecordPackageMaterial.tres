@@ -1,0 +1,15 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://bjalqaetuxk0s"]
+
+[ext_resource type="Shader" uid="uid://ct7ts4fy7tiw1" path="res://graphics/cutout.gdshader" id="1_t8raf"]
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_t8raf")
+shader_parameter/albedo = Color(0.716821, 0.560345, 0.392103, 1)
+shader_parameter/roughness = 0.62
+shader_parameter/specular = 0.55
+shader_parameter/metallic = 0.0
+shader_parameter/box_transform = Projection(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)
+shader_parameter/box_size = Vector3(1000, 1000, 1000)
+shader_parameter/fade_color = Color(0.501549, 0.377892, 0.243376, 1)
+shader_parameter/transition_width = 0.1
