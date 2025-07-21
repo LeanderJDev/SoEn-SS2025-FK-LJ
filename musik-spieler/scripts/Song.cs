@@ -11,8 +11,8 @@ namespace Musikspieler.Scripts
         private readonly string _album;
         private readonly string _artist;
         private readonly string _mp3Path;
+        private readonly byte[] _coverData;
         private AudioStreamWav _audio;
-        private byte[] _coverData;
 
         // Properties
         public string Name => _name;
@@ -62,6 +62,7 @@ namespace Musikspieler.Scripts
         string Album { get; }
         string Artist { get; }
         string MP3Path { get; }
+        byte[] CoverData { get; }
         AudioStreamWav Audio { get; }
     }
 }
