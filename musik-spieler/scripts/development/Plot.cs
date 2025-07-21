@@ -14,16 +14,18 @@ namespace Musikspieler.Scripts.development
 		private int plotY;
 		private float plotScaleX;
 		private float plotScaleY;
+		private Color plotColor;
 
-		public Plot(string title, int x, int y, float scaleX = 2.0f, float scaleY = 1.0f, int length = 200)
+		public Plot(string title, int x, int y, float scaleX = 1.0f, float scaleY = 1.0f, int length = 200, Color? color = null)
 		{
 			plotLength = length;
 			plotBuffer = new float[plotLength];
 			plotTitle = title;
 			plotX = x;
 			plotY = y;
-			plotScaleX = scaleX;
+			plotScaleX = scaleX * 400f / length;
 			plotScaleY = scaleY;
+			plotColor = color ?? new Color(0, 1, 0, 0.2f);
 		}
 
 		public void AddValue(float value)
@@ -52,12 +54,12 @@ namespace Musikspieler.Scripts.development
 				float y2 = plotY - plotBuffer[idx2] * plotScaleY;
 				p1 = new Vector2(plotX + i * plotScaleX, y1);
 				p2 = new Vector2(plotX + (i + 1) * plotScaleX, y2);
-				DrawLine(p1, p2, new Color(0, 1, 0, 0.2f), 3);
+				DrawLine(p1, p2, plotColor, 3);
 			}
 
 			p1 = new Vector2(plotX + plotScaleX, plotY);
 			p2 = new Vector2(plotX + plotLength * plotScaleX, plotY);
-			DrawLine(p1, p2, new Color(1, 1, 1, 0.2f), 2);
+			DrawLine(p1, p2, new Color(1, 1, 1, 0.5f), 2);
 
 			string info = $"{plotTitle}: {plotBuffer[plotIndex]}";
 			DrawString(_defaultFont, new Vector2(plotX, plotY + plotScaleY * 50), info, HorizontalAlignment.Center);

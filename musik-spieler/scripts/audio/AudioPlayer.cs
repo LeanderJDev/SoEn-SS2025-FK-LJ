@@ -70,7 +70,7 @@ namespace Musikspieler.Scripts.Audio
             generator.MixRate = sampleRate;
             generator.BufferLength = 0.1f; // Nur kurzer Buffer da Playback Live verändert
             Stream = generator;
-            VolumeLinear = 0.3f;
+            VolumeLinear = 1.0f;
             Play();
 
             playback = (AudioStreamGeneratorPlayback)GetStreamPlayback();

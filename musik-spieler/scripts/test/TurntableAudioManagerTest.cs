@@ -25,6 +25,7 @@ namespace Musikspieler.Scripts.Test
         private bool rightDragPreviousMotorState = false;
 	    private float lastDragAngle = 0f;
         private Plot samplePlot;
+        private Plot speedPlot;
 
 
         public override async void _Ready()
@@ -34,8 +35,10 @@ namespace Musikspieler.Scripts.Test
             record = GetNode<Sprite2D>("Record");
             recordCenter = record.GlobalPosition;
 
-            samplePlot = new Plot("Samples", 700, 100, scaleY: 100f, length: 1000);
+            samplePlot = new Plot("Samples", 700, 100, scaleY: 400f, length: 1000);
             AddChild(samplePlot);
+            speedPlot = new Plot("TurntableSpeed", 700, 300, scaleY: 50f, length: 500, color: new Color(0,0,1,0.4f));
+            AddChild(speedPlot);
 
             if (turntableAudioManager == null)
             {
@@ -109,7 +112,7 @@ namespace Musikspieler.Scripts.Test
 
         public override void _PhysicsProcess(double delta)
         {
-            // private Felder visualisieren ist lustig
+            // Das hier ist ein wenig brutal, aber ich wollte möglichst viel Debug Code aus den Klassen rauslassen
             // Hole das private Feld "audioPlayer" aus turntableAudioManager
             var audioPlayerField = turntableAudioManager.GetType().GetField("audioPlayer", BindingFlags.NonPublic | BindingFlags.Instance);
             var audioPlayer = audioPlayerField.GetValue(turntableAudioManager);
@@ -121,18 +124,19 @@ namespace Musikspieler.Scripts.Test
             var turntableField = turntableAudioManager.GetType().GetField("turntable", BindingFlags.NonPublic | BindingFlags.Instance);
             Turntable turntable = (Turntable)turntableField.GetValue(turntableAudioManager);
 
-            int sampleIndex = (int)turntable.GetCurrentSongPosition() * samples.Length;
+            int sampleIndex = (int)(turntable.GetCurrentSongPosition() * samples.Length);
 
             // Bereich berechnen, der im letzten Frame gespielt wurde
             float loopsPlayed = turntableAudioManager.Turntable.CurrentSpeed * (float)delta;
-            int samplesPlayed = Mathf.Abs((int)(loopsPlayed * samples.Length / (float)turntableAudioManager.Turntable.MaxLoops));
-            if (samplesPlayed < 1) samplesPlayed = 1;
+            int samplesPlayed = (int)(Math.Abs(loopsPlayed) * samples.Length / (float)turntableAudioManager.Turntable.MaxLoops);
+            int direction = loopsPlayed >= 0 ? 1 : -1;
 
             for (int i = 0; i < samplesPlayed; i++)
             {
-                int idx = (sampleIndex - i + samples.Length) % samples.Length;
+                int idx = (sampleIndex + direction * i + samples.Length) % samples.Length;
                 Vector2 s = samples[idx];
-                samplePlot.AddValue((s.X + s.Y) / 2f);
+                float normalized = (s.X + s.Y) / 2f;
+                samplePlot.AddValue(normalized);
             }
 
             QueueRedraw();
@@ -161,6 +165,8 @@ namespace Musikspieler.Scripts.Test
                 if (Math.Abs(turntableAudioManager.Turntable.CurrentLoop - lastLoop) > 0.5f)
                     leftMoved = true;
             }
+
+            speedPlot.AddValue(turntableAudioManager.Turntable.CurrentSpeed);
 
             lastLoop = turntableAudioManager.Turntable.CurrentLoop;
         }
