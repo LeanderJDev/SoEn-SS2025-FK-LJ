@@ -1,5 +1,7 @@
 using Godot;
 using System;
+using System.Collections.Generic;
+using System.IO;
 
 namespace Musikspieler.Scripts.Audio
 {

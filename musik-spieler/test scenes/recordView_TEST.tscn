@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://c768lb02k5lwe"]
 
-[ext_resource type="PackedScene" uid="uid://ew28vqpvjn1g" path="res://scenes/recordView.tscn" id="1_sjlo3"]
+[ext_resource type="PackedScene" uid="uid://ew28vqpvjn1g" path="res://scenes/recordView/recordView.tscn" id="1_sjlo3"]
 
 [node name="RecordViewTest" type="Node3D"]
 

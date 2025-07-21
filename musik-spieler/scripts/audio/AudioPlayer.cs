@@ -9,7 +9,6 @@ namespace Musikspieler.Scripts.Audio
         private AudioStreamGenerator generator;
         private AudioStreamGeneratorPlayback playback;
 
-        private int sampleIndex;
         private int sampleRate = 44100;
 
         private Vector2[] samples;
@@ -61,8 +60,7 @@ namespace Musikspieler.Scripts.Audio
 
         public void PlaySample(int index)
         {
-            sampleIndex = index;
-            Vector2 sample = samples[Math.Clamp((int)sampleIndex, 0, samples.Length - 1)];
+            Vector2 sample = samples[Math.Clamp((int)index, 0, samples.Length - 1)];
             playback.PushFrame(sample);
         }
 
