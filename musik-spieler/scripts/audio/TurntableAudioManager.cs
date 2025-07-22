@@ -12,6 +12,7 @@ namespace Musikspieler.Scripts.Audio
         private Thread thread;
         private volatile bool threadRunning;
         public ITurntable Turntable => turntable;
+        public IAudioPlayer AudioPlayer => audioPlayer;
 
         public void SetSong(Song song)
         {

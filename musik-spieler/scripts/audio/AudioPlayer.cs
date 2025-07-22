@@ -3,7 +3,15 @@ using Godot;
 
 namespace Musikspieler.Scripts.Audio
 {
-    public partial class AudioPlayer : AudioStreamPlayer
+    public interface IAudioPlayer
+    {
+        int SampleLength { get; }
+        int SampleRate { get; }
+        int FramesAvailable { get; }
+        float Volume { get; set; }
+    }
+
+    public partial class AudioPlayer : AudioStreamPlayer, IAudioPlayer
     {
         private AudioStream sample;
         private AudioStreamGenerator generator;
@@ -16,6 +24,12 @@ namespace Musikspieler.Scripts.Audio
         public int SampleLength => samples != null ? samples.Length : -1;
         public int SampleRate => sampleRate;
         public int FramesAvailable => playback.GetFramesAvailable();
+
+        public float Volume
+        {
+            get { return VolumeLinear; }
+            set { VolumeLinear = value; }
+        }
 
         public void SetSample(AudioStreamWav sample)
         {

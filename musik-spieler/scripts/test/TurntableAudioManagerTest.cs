@@ -42,7 +42,7 @@ namespace Musikspieler.Scripts.Test
 
             if (turntableAudioManager == null)
             {
-                GD.PrintErr("TurntableAudioManager not found as child!");
+                GD.PrintErr("TurntableAudioManager not set!");
                 return;
             }
             Song song = new Song("Song", "Album", "Artist", "", audioStream: sample);
