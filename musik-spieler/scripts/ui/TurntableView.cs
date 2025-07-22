@@ -33,6 +33,7 @@ namespace Musikspieler.Scripts.UI
 		private bool isRightMouseDown = false;
 
 		private float tonearmYAngleOffset;
+		private float lastRightDragAngle;
 
 		public override void _Ready()
 		{
@@ -42,7 +43,7 @@ namespace Musikspieler.Scripts.UI
 				return;
 			}
 			Song song = new Song("Song", "Album", "Artist", "", audioStream: testAudio);
-            turntableAudioManager.SetSong(song);
+			turntableAudioManager.SetSong(song);
 			turntableAudioManager.Turntable.SetMotorState(true);
 			controller = new TurntableController(turntableAudioManager.Turntable, turntableAudioManager.AudioPlayer);
 
@@ -55,6 +56,11 @@ namespace Musikspieler.Scripts.UI
 			liftXAngle = liftedXAngle - loweredXAngle;
 
 			GD.Print(Tonearm.RotationDegrees);
+		}
+
+		public override void _Process(double delta)
+		{
+			Record.RotateY(turntableAudioManager.Turntable.CurrentLoop % 1 * Mathf.Pi * 2 - Record.Rotation.Y);
 		}
 
 		public override void _Input(InputEvent @event)
@@ -79,7 +85,7 @@ namespace Musikspieler.Scripts.UI
 					if (btn.Pressed && !isRightMouseDown)
 					{
 						isRightMouseDown = true;
-						OnRightMouseDown();
+						OnRightMouseDown(btn.Position);
 					}
 					else
 					{
@@ -119,13 +125,13 @@ namespace Musikspieler.Scripts.UI
 
 		public void OnLeftMouseDrag(Vector2 mousePos)
 		{
-			// TODO Verstehen was hier los ist und Magische Variablen entfernen
 			float angle = MouseAngleCameraRaycast(Tonearm, mousePos);
 			angle = angle - tonearmYAngleOffset;
 			angle = Mathf.Wrap(angle+Mathf.Pi, -Mathf.Pi, Mathf.Pi);
 
 			angle = Mathf.Clamp(angle, innerLimitYAngle, outerLimitYAngle);
-			Tonearm.RotateY(angle - Tonearm.Rotation.Y +Mathf.Pi);
+			// TODO Verstehen was hier los ist und Magische Variablen entfernen
+			Tonearm.RotateY(angle - Tonearm.Rotation.Y + Mathf.Pi);
 
 			// Map angle between recordStartYAngle and innerLimitYAngle to 0..1
 			float pos = Mathf.InverseLerp(recordStartYAngle, innerLimitYAngle, angle);
@@ -133,12 +139,13 @@ namespace Musikspieler.Scripts.UI
 			controller.DragArm(pos);
 		}
 
-		public void OnRightMouseDown()
+		public void OnRightMouseDown(Vector2 mousePos)
 		{
 			if (Utility.CameraRaycast(GetViewport().GetCamera3D(), new Mask<CollisionMask>(CollisionMask.RecordPlatter), out var result))
 			{
 				GD.Print("Platter hit", result["position"]);
 				controller.DragPlatterBegin();
+				lastRightDragAngle = MouseAngleCameraRaycast(Record, mousePos);
 			}
 		}
 		public void OnRightMouseUp()
@@ -147,7 +154,13 @@ namespace Musikspieler.Scripts.UI
 		}
 		public void OnRightMouseDrag(Vector2 mousePos)
 		{
+			float angle = MouseAngleCameraRaycast(Record, mousePos);
+			float angleDelta = Mathf.Wrap(angle - lastRightDragAngle, -Mathf.Pi, Mathf.Pi) / (2 * Mathf.Pi);
+			lastRightDragAngle = angle;
 
+			Record.RotateY(angleDelta);
+
+			controller.DragPlatter(angleDelta);
 		}
 
 		private void OnStopButton()

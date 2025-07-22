@@ -6,12 +6,10 @@
 [sub_resource type="BoxShape3D" id="BoxShape3D_td48w"]
 size = Vector3(2.5, 3, 6)
 
-[node name="RecordView" type="StaticBody3D" node_paths=PackedStringArray("_recordsContainer", "recordViewBounds")]
+[node name="RecordView" type="StaticBody3D"]
 collision_layer = 2
 collision_mask = 2
 script = ExtResource("1_lokm7")
-_recordsContainer = NodePath("Container")
-recordViewBounds = NodePath("Bounds")
 
 [node name="Container" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.32625, 0)
