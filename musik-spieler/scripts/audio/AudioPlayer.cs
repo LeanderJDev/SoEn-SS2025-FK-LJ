@@ -9,6 +9,7 @@ namespace Musikspieler.Scripts.Audio
         int SampleRate { get; }
         int FramesAvailable { get; }
         float Volume { get; set; }
+        bool Paused { get; set; }
     }
 
     public partial class AudioPlayer : AudioStreamPlayer, IAudioPlayer
@@ -29,6 +30,12 @@ namespace Musikspieler.Scripts.Audio
         {
             get { return VolumeLinear; }
             set { VolumeLinear = value; }
+        }
+
+        public bool Paused
+        {
+            get { return StreamPaused; }
+            set { StreamPaused = value; }
         }
 
         public void SetSample(AudioStreamWav sample)

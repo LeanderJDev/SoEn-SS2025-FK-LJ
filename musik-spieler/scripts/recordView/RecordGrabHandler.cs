@@ -37,6 +37,7 @@ namespace Musikspieler.Scripts.RecordView
             base._Ready();
 
             //TODO: garbage bin hier initialisieren/Referenz bekommen
+            // Dafür würde man an sich eine [Export] public Node3D Property benutzen
         }
 
         private void OnLeftClick(bool isPressed)

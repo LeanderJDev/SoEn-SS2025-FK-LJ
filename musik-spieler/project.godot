@@ -25,6 +25,8 @@ project/assembly_name="Musik-Spieler"
 3d_physics/layer_2="RecordViewBounds"
 3d_physics/layer_3="DrawerBounds"
 3d_physics/layer_4="GlobalDragPlane"
+3d_physics/layer_5="ToneArm"
+3d_physics/layer_6="RecordPlatter"
 
 [rendering]
 

@@ -10,6 +10,8 @@ namespace Musikspieler.Scripts.RecordView
         RecordViewBoundary = (1 << 1),
         DrawerViewBoundary = (1 << 2),
         GlobalDragPlane = (1 << 3),
+        ToneArm = (1 << 4),
+        RecordPlatter = (1<<5),
     }
 
     public struct Mask<T> where T : Enum
