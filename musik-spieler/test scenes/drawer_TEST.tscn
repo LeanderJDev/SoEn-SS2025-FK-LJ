@@ -1,7 +1,8 @@
-[gd_scene load_steps=4 format=3 uid="uid://csfur5qn5shnt"]
+[gd_scene load_steps=5 format=3 uid="uid://csfur5qn5shnt"]
 
 [ext_resource type="PackedScene" uid="uid://dmw47iacx017m" path="res://scenes/recordView/drawerView.tscn" id="1_4ndqm"]
 [ext_resource type="Script" uid="uid://btloxo60hdpxi" path="res://scripts/recordView/RecordGrabHandler.cs" id="2_htoij"]
+[ext_resource type="Script" uid="uid://bp8p3bvhtt0te" path="res://scripts/recordView/RaycastHandler.cs" id="3_htoij"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_tfysl"]
 size = Vector3(93.9678, 0.187256, 78.6123)
@@ -28,3 +29,6 @@ transform = Transform3D(0.141083, 0.914936, 0.378137, 0.408327, -0.401733, 0.819
 light_energy = 0.747
 shadow_enabled = true
 shadow_opacity = 0.64
+
+[node name="RaycastHandler" type="Node3D" parent="."]
+script = ExtResource("3_htoij")

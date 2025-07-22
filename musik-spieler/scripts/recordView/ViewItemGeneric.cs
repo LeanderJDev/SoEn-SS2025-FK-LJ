@@ -9,7 +9,6 @@ namespace Musikspieler.Scripts.RecordView
 
         public static ViewItemGeneric<T> InstantiateAndAssign(ScrollView<T> scrollView, int playlistIndex)
         {
-            GD.Print("inst");
             T displayedItem = scrollView.ItemList[playlistIndex];
             var item = (ViewItemGeneric<T>)ItemPrefab.Instantiate();
             item.displayedItem = displayedItem;
@@ -62,11 +61,11 @@ namespace Musikspieler.Scripts.RecordView
             {
                 ArgumentNullException.ThrowIfNull(value);
                 if (_view != null)
-                    _view.ItemListChanged -= OnPlaylistChanged;
+                    _view.ObjectListChanged -= OnPlaylistChanged;
                 if (IsInsideTree() && IsGettingDragged)
                     SmoothReparent(value.ScrollContainer);
                 _view = value;
-                _view.ItemListChanged += OnPlaylistChanged;
+                _view.ObjectListChanged += OnPlaylistChanged;
             }
         }
 
@@ -75,7 +74,7 @@ namespace Musikspieler.Scripts.RecordView
             return View.MoveItem(ViewIndex, targetView);
         }
 
-        private void OnPlaylistChanged(ScrollView<T>.PlaylistChangedEventArgs args)
+        private void OnPlaylistChanged(ScrollView<T>.ItemListChangedEventArgs args)
         {
             if (args.ViewChanged && args.items.Contains(this))
                 View = args.changeToView;

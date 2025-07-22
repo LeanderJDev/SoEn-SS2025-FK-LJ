@@ -1,7 +1,6 @@
 using Godot;
 using System;
 using System.Collections.Generic;
-using System.Linq.Expressions;
 
 namespace Musikspieler.Scripts.RecordView
 {
@@ -89,7 +88,7 @@ namespace Musikspieler.Scripts.RecordView
         private void GrabRecord(View recordView)
         {
             GD.Print("grab");
-            currentlyGrabbed = recordView.AutoGrabItem();
+            currentlyGrabbed = recordView.GrabItem(true);
             if (currentlyGrabbed == null)
                 return;
 
@@ -134,6 +133,7 @@ namespace Musikspieler.Scripts.RecordView
                     OnRightClick(mouseEvent.Pressed);
                 }
             }
+            base._Input(@event);
         }
     }
 }

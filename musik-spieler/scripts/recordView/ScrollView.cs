@@ -1,7 +1,6 @@
 using Godot;
 using System;
 using System.Collections.Generic;
-using System.Net.WebSockets;
 
 namespace Musikspieler.Scripts.RecordView
 {
@@ -23,6 +22,10 @@ namespace Musikspieler.Scripts.RecordView
 
         public override bool IsItemListAssigned => ItemList != null;
 
+        //changes that were made to the list of this view. Also fires when the list object gets changed, and automatically adapts to the new ItemLists events.
+        public event Action<ItemsAddedEventArgs> ItemsAdded;
+        public event Action<ItemsRemovedEventArgs> ItemsRemoved;
+
         private IItemList<T> _itemList;
         public IItemList<T> ItemList
         {
@@ -31,6 +34,8 @@ namespace Musikspieler.Scripts.RecordView
             {
                 if (_itemList != null)
                 {
+                    _itemList.ItemsAdded -= ItemsAdded;
+                    _itemList.ItemsRemoved -= ItemsRemoved;
                     _itemList.ItemsAdded -= OnItemsAdded;
                     _itemList.ItemsRemoved -= OnItemsRemoved;
                     for (int i = 0; i < ItemCount; i++)
@@ -39,6 +44,11 @@ namespace Musikspieler.Scripts.RecordView
                     }
                     GD.Print("why are we here just to suffer");
                     itemObjects.Clear();
+                    ItemsRemoved?.Invoke(new()
+                    {
+                        count = _itemList.ItemCount,
+                        startIndex = 0,
+                    });
                 }
                 _itemList = value;
                 if (_itemList != null)
@@ -51,14 +61,22 @@ namespace Musikspieler.Scripts.RecordView
                         _scrollContainer.AddChild(item);
                     }
                     itemObjects.AddRange(newItems);
-                    ItemListChanged?.Invoke(new()
+                    ObjectListChanged?.Invoke(new()
                     {
                         items = newItems,
                         changeToView = this,
                     });
+
                     UpdateAllItemTransforms();
+                    _itemList.ItemsAdded += ItemsAdded;
+                    _itemList.ItemsRemoved += ItemsRemoved;
                     _itemList.ItemsAdded += OnItemsAdded;
                     _itemList.ItemsRemoved += OnItemsRemoved;
+                    ItemsAdded?.Invoke(new()
+                    {
+                        count = _itemList.ItemCount,
+                        startIndex = 0,
+                    });
                 }
             }
         }
@@ -74,7 +92,13 @@ namespace Musikspieler.Scripts.RecordView
         public float autoScrollSensitivity = 40f;           //wie schnell es auto-scrollt
         public float scrollSensitivity = 1f;                //wie schnell es mit der Maus scrollt
 
+        //clamped to allow -1 and ItemCount, so that insertions can work correctly.
         public int GapIndex => Math.Clamp((int)(_centeredGapIndex + (ItemCount / 2)), -1, ItemCount);
+
+        //clamped to be usable as an indexer.
+        protected int GapIndexClamped => Math.Clamp((int)(_centeredGapIndex + (ItemCount / 2)), 0, ItemCount - 1);
+        public T ItemAtGapIndex => ItemCount == 0 ? default :_itemList[GapIndexClamped];
+        public ViewItemGeneric<T> ObjectAtGapIndex => ItemCount == 0 ? null : itemObjects[GapIndexClamped];
         private float _centeredGapIndex;
 
         public Vector3 Bounds => ((BoxShape3D)viewBounds.Shape).Size;
@@ -84,9 +108,9 @@ namespace Musikspieler.Scripts.RecordView
         private bool ignoreItemsAddedEvent = false;
         private bool ignoreItemsRemovedEvent = false;
 
-        public event Action<PlaylistChangedEventArgs> ItemListChanged = delegate { };
+        public event Action<ItemListChangedEventArgs> ObjectListChanged = delegate { };
 
-        public struct PlaylistChangedEventArgs
+        public struct ItemListChangedEventArgs
         {
             public readonly bool ViewChanged => changeToView != null;
 
@@ -116,7 +140,7 @@ namespace Musikspieler.Scripts.RecordView
                 itemObjects.AddRange(newItems);
             else
                 itemObjects.InsertRange(args.startIndex, newItems);
-            ItemListChanged?.Invoke(new()
+            ObjectListChanged?.Invoke(new()
             {
                 items = newItems,
                 changeToView = null,
@@ -136,7 +160,7 @@ namespace Musikspieler.Scripts.RecordView
                 //displayedItem.QueueFree(); //macht jetzt der garbage bin
             }
             itemObjects.RemoveRange(args.startIndex, args.count);
-            ItemListChanged?.Invoke(new()
+            ObjectListChanged?.Invoke(new()
             {
                 items = itemsToDelete,
                 //changeToView = GarbageBin<T>.Instance,
@@ -173,8 +197,8 @@ namespace Musikspieler.Scripts.RecordView
                 return MoveItems(index, count, scrollView, targetIndex);
 
             GD.Print("targetView.Grab() type:");
-            GD.Print(targetView.GrabItem().GetType());
-            if (targetIndex == null && targetView.GrabItem() is IItemAndView itemAndView)
+            GD.Print(targetView.GrabItem(false).GetType());
+            if (targetIndex == null && targetView.GrabItem(false) is IItemAndView itemAndView)
             {
                 GD.Print(itemAndView.ChildView.GetType());
                 return MoveItems(index, count, itemAndView.ChildView);
@@ -189,7 +213,6 @@ namespace Musikspieler.Scripts.RecordView
             //da es bisher nur dieses Objekt gibt, was tatsächlich mehrere Typen an Items annimmt.
 
             GD.Print("moving item to view of different item type, currently unsupported, aborting.");
-            throw new Exception();
             return false;
         }
 
@@ -285,12 +308,12 @@ namespace Musikspieler.Scripts.RecordView
             itemObjects.RemoveAll(x => x == null);
             ignoreItemsRemovedEvent = false;
             targetView.ignoreItemsAddedEvent = false;
-            ItemListChanged?.Invoke(new()
+            ObjectListChanged?.Invoke(new()
             {
                 items = itemsToRemove,
                 changeToView = targetView,      //Remove, so move to target ChildView
             });
-            targetView.ItemListChanged?.Invoke(new()
+            targetView.ObjectListChanged?.Invoke(new()
             {
                 items = itemsToRemove,
                 changeToView = null,            //Add, so move to none
@@ -378,29 +401,18 @@ namespace Musikspieler.Scripts.RecordView
         /// <summary>
         /// Wird aufgerufen vom GrabHandler, so wird ein Package herausgezogen. Es wird nur bewegt, nicht entfernt!
         /// </summary>
-        public override ViewItem AutoGrabItem()
+        public override ViewItem GrabItem(bool allowGrabChildren)
         {
             if (ItemCount == 0)
                 return null;
 
-            var item = itemObjects[Math.Clamp(GapIndex, 0, ItemCount - 1)];
+            var item = ObjectAtGapIndex;
 
-            if (item is IItemAndView itemAndView && itemAndView.ChildView.IsUnderCursor)
+            if (allowGrabChildren && item is IItemAndView itemAndView && itemAndView.ChildView.IsUnderCursor)
             {
-                return itemAndView.ChildView.AutoGrabItem();
+                return itemAndView.ChildView.GrabItem(true);
             }
             return item;
-        }
-
-        /// <summary>
-        /// Wird aufgerufen vom GrabHandler, so wird ein Package herausgezogen. Es wird nur bewegt, nicht entfernt!
-        /// </summary>
-        public override ViewItem GrabItem()
-        {
-            if (ItemCount == 0)
-                return null;
-
-            return itemObjects[Math.Clamp(GapIndex, 0, ItemCount - 1)];
         }
 
         //save data between frames
@@ -469,6 +481,7 @@ namespace Musikspieler.Scripts.RecordView
                 PackagePos = posZ,
                 relativeMousePos = itemToMouse,
                 isSelected = index == GapIndex,
+                index = index,
             };
 
             AnimationOutput output = Animation.RunAnimationFrame(animationInput);
