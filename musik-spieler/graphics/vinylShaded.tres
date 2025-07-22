@@ -1,0 +1,8 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://bqpxt6ib8ydpc"]
+
+[ext_resource type="Shader" uid="uid://cysdwm8woyu3q" path="res://graphics/vinyl.gdshader" id="1_6a75a"]
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_6a75a")
+shader_parameter/var = 0.335
