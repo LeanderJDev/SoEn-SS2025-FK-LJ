@@ -15,6 +15,8 @@ namespace Musikspieler.Scripts.UI
 		public bool IsPlatterGrabbed => platterGrabbed;
 
 		private bool motorStateBeforeDragPlatter;
+		private const float motorStartThreshold = -0.2f;
+		private bool tonearmAboveRecord = false;
 
 		public TurntableController(ITurntable turntable, IAudioPlayer audioPlayer)
 		{
@@ -25,24 +27,45 @@ namespace Musikspieler.Scripts.UI
 		public void DragArmBegin()
 		{
 			armGrabbed = true;
-			audioPlayer.Paused = true;
+			audioPlayer.Mute = true;
 		}
 
 		public void DragArm(float armPos)
 		{
-			turntable.MoveArm(armPos);
+			if (!turntable.IsMotorRunning && armPos > motorStartThreshold)
+			{
+				turntable.SetMotorState(true);
+			}
+			else if (turntable.IsMotorRunning && armPos < motorStartThreshold)
+			{
+				turntable.SetMotorState(false);
+			}
+			tonearmAboveRecord = 0.0f <= armPos && armPos <= 1.0f;
+			if (tonearmAboveRecord)
+			{
+				turntable.MoveArm(armPos);
+			}
 		}
 
-		public void DragArmEnd()
+		public float DragArmEnd(float armPos)
 		{
 			armGrabbed = false;
-			audioPlayer.Paused = false;
+
+			// Snapping zur Tonarmablage / zur Schallplatte
+			armPos = armPos > motorStartThreshold ? Mathf.Clamp(armPos, 0.0f, 1.0f) : -1;
+
+			// Übernehme Snapping für Turntable
+			DragArm(armPos);
+
+			audioPlayer.Mute = !tonearmAboveRecord;
+			return armPos;
 		}
 
 		public void DragPlatterBegin()
 		{
 			platterGrabbed = true;
 			motorStateBeforeDragPlatter = turntable.IsMotorRunning;
+			turntable.ScratchTarget(0);
 		}
 
 		public void DragPlatter(float angleDelta)

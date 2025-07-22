@@ -9,7 +9,7 @@ namespace Musikspieler.Scripts.Audio
         int SampleRate { get; }
         int FramesAvailable { get; }
         float Volume { get; set; }
-        bool Paused { get; set; }
+        bool Mute { get; set; }
     }
 
     public partial class AudioPlayer : AudioStreamPlayer, IAudioPlayer
@@ -21,6 +21,7 @@ namespace Musikspieler.Scripts.Audio
         private int sampleRate = 44100;
 
         private Vector2[] samples;
+        private float volume;
 
         public int SampleLength => samples != null ? samples.Length : -1;
         public int SampleRate => sampleRate;
@@ -29,13 +30,13 @@ namespace Musikspieler.Scripts.Audio
         public float Volume
         {
             get { return VolumeLinear; }
-            set { VolumeLinear = value; }
+            set { volume = VolumeLinear = value; }
         }
 
-        public bool Paused
+        public bool Mute
         {
-            get { return StreamPaused; }
-            set { StreamPaused = value; }
+            get { return VolumeLinear == 0.0f; }
+            set { VolumeLinear = value ? 0.0f : volume; }
         }
 
         public void SetSample(AudioStreamWav sample)
@@ -91,7 +92,8 @@ namespace Musikspieler.Scripts.Audio
             generator.MixRate = sampleRate;
             generator.BufferLength = 0.1f; // Nur kurzer Buffer da Playback Live verändert
             Stream = generator;
-            VolumeLinear = 1.0f;
+            Volume = 1.0f;
+            Mute = true;
             Play();
 
             playback = (AudioStreamGeneratorPlayback)GetStreamPlayback();

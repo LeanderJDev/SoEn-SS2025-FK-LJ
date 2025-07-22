@@ -21,7 +21,7 @@ namespace Musikspieler.Scripts.UI
 		[Export] public float LoweredXAngle { get; set; }
 		[Export] public AudioStreamWav testAudio { get; set; }
 
-		private Vector2 restTransform;
+		private float restAngleY;
 		private float outerLimitYAngle;
 		private float recordStartYAngle;
 		private float innerLimitYAngle;
@@ -42,25 +42,36 @@ namespace Musikspieler.Scripts.UI
 				GD.PrintErr("TurntableAudioManager not set!");
 				return;
 			}
+
+			#if DEBUG
 			Song song = new Song("Song", "Album", "Artist", "", audioStream: testAudio);
 			turntableAudioManager.SetSong(song);
-			turntableAudioManager.Turntable.SetMotorState(true);
+			#endif
+
 			controller = new TurntableController(turntableAudioManager.Turntable, turntableAudioManager.AudioPlayer);
 
-			restTransform = new Vector2(Tonearm.Rotation.X, Tonearm.Rotation.Y);
+			restAngleY = Tonearm.Rotation.Y;
 			outerLimitYAngle = Mathf.Wrap(Mathf.DegToRad(OuterLimitYAngle), -Mathf.Pi, Mathf.Pi);
 			recordStartYAngle = Mathf.Wrap(Mathf.DegToRad(RecordStartYAngle), -Mathf.Pi, Mathf.Pi);
 			innerLimitYAngle = Mathf.Wrap(Mathf.DegToRad(InnerLimitYAngle), -Mathf.Pi, Mathf.Pi);
 			float liftedXAngle = Mathf.Wrap(Mathf.DegToRad(LiftedXAngle) - Tonearm.Rotation.X, -Mathf.Pi, Mathf.Pi);
 			float loweredXAngle = Mathf.Wrap(Mathf.DegToRad(LoweredXAngle) - Tonearm.Rotation.X, -Mathf.Pi, Mathf.Pi);
-			liftXAngle = liftedXAngle - loweredXAngle;
-
-			GD.Print(Tonearm.RotationDegrees);
+			liftXAngle = loweredXAngle - liftedXAngle;
 		}
 
 		public override void _Process(double delta)
 		{
 			Record.RotateY(turntableAudioManager.Turntable.CurrentLoop % 1 * Mathf.Pi * 2 - Record.Rotation.Y);
+			// Don't apply if Tonearm is grabbed or resting
+			if (
+				!controller.IsArmGrabbed &&
+				Tonearm.Rotation.Y < recordStartYAngle &&
+				Tonearm.Rotation.Y > innerLimitYAngle
+			)
+			{
+				// trust me bro this works
+				Tonearm.RotateY((1 - (turntableAudioManager.Turntable.CurrentLoop / turntableAudioManager.Turntable.MaxLoops)) * (recordStartYAngle - innerLimitYAngle) - (outerLimitYAngle - recordStartYAngle) - Tonearm.Rotation.Y);
+			}
 		}
 
 		public override void _Input(InputEvent @event)
@@ -77,7 +88,7 @@ namespace Musikspieler.Scripts.UI
 					else
 					{
 						isLeftMouseDown = false;
-						OnLeftMouseUp();
+						OnLeftMouseUp(btn.Position);
 					}
 				}
 				if (btn.ButtonIndex == MouseButton.Right)
@@ -105,62 +116,82 @@ namespace Musikspieler.Scripts.UI
 		{
 			if (Utility.CameraRaycast(GetViewport().GetCamera3D(), new Mask<CollisionMask>(CollisionMask.ToneArm), out var result))
 			{
+#if DEBUG
 				GD.Print("ToneArm hit", result["position"]);
-
+#endif
 				Tonearm.RotateObjectLocal(new Vector3(1, 0, 0), liftXAngle);
 
 				tonearmYAngleOffset = MouseAngleCameraRaycast(Tonearm, mousePos) - Tonearm.Rotation.Y;
-				GD.Print(tonearmYAngleOffset);
 				controller.DragArmBegin();
-
 			}
 		}
-		public void OnLeftMouseUp()
+		public void OnLeftMouseUp(Vector2 mousePos)
 		{
 			if (controller.IsArmGrabbed) {
-				controller.DragArmEnd();
+				float angle = MouseAngleCameraRaycast(Tonearm, mousePos);
+				angle = angle - tonearmYAngleOffset;
+				angle = Mathf.Wrap(angle + Mathf.Pi, -Mathf.Pi, Mathf.Pi);
+
+				angle = Mathf.Clamp(angle, innerLimitYAngle, outerLimitYAngle);
+
+				// Map angle between recordStartYAngle and innerLimitYAngle to 0..1
+				float pos = Mathf.InverseLerp(recordStartYAngle, innerLimitYAngle, angle);
+				pos = controller.DragArmEnd(pos);
+				angle = Mathf.Lerp(recordStartYAngle, innerLimitYAngle, pos);
+				if (pos == -1)
+				{
+					angle = restAngleY;
+				}
+				Tonearm.RotateY(angle - Tonearm.Rotation.Y + Mathf.Pi);
 				Tonearm.RotateObjectLocal(new Vector3(1, 0, 0), -liftXAngle);
 			}
 		}
 
 		public void OnLeftMouseDrag(Vector2 mousePos)
 		{
-			float angle = MouseAngleCameraRaycast(Tonearm, mousePos);
-			angle = angle - tonearmYAngleOffset;
-			angle = Mathf.Wrap(angle+Mathf.Pi, -Mathf.Pi, Mathf.Pi);
+			if (controller.IsArmGrabbed)
+			{
+				float angle = MouseAngleCameraRaycast(Tonearm, mousePos);
+				angle = angle - tonearmYAngleOffset;
+				angle = Mathf.Wrap(angle + Mathf.Pi, -Mathf.Pi, Mathf.Pi);
 
-			angle = Mathf.Clamp(angle, innerLimitYAngle, outerLimitYAngle);
-			// TODO Verstehen was hier los ist und Magische Variablen entfernen
-			Tonearm.RotateY(angle - Tonearm.Rotation.Y + Mathf.Pi);
+				angle = Mathf.Clamp(angle, innerLimitYAngle, outerLimitYAngle);
 
-			// Map angle between recordStartYAngle and innerLimitYAngle to 0..1
-			float pos = Mathf.InverseLerp(recordStartYAngle, innerLimitYAngle, angle);
-			pos = Mathf.Clamp(pos, 0f, 1f);
-			controller.DragArm(pos);
+				// Map angle between recordStartYAngle and innerLimitYAngle to 0..1
+				float pos = Mathf.InverseLerp(recordStartYAngle, innerLimitYAngle, angle);
+				controller.DragArm(pos);
+				// TODO Verstehen was hier los ist und Magische Variablen entfernen
+				Tonearm.RotateY(angle - Tonearm.Rotation.Y + Mathf.Pi);
+			}
 		}
 
 		public void OnRightMouseDown(Vector2 mousePos)
 		{
 			if (Utility.CameraRaycast(GetViewport().GetCamera3D(), new Mask<CollisionMask>(CollisionMask.RecordPlatter), out var result))
 			{
+				#if DEBUG
 				GD.Print("Platter hit", result["position"]);
+#endif
 				controller.DragPlatterBegin();
 				lastRightDragAngle = MouseAngleCameraRaycast(Record, mousePos);
 			}
 		}
 		public void OnRightMouseUp()
 		{
-			controller.DragPlatterEnd();
+			if (controller.IsPlatterGrabbed) {
+				controller.DragPlatterEnd();
+			}
 		}
 		public void OnRightMouseDrag(Vector2 mousePos)
 		{
-			float angle = MouseAngleCameraRaycast(Record, mousePos);
-			float angleDelta = Mathf.Wrap(angle - lastRightDragAngle, -Mathf.Pi, Mathf.Pi) / (2 * Mathf.Pi);
-			lastRightDragAngle = angle;
+			if (controller.IsPlatterGrabbed)
+			{
+				float angle = MouseAngleCameraRaycast(Record, mousePos);
+				float angleDelta = -1 * Mathf.Wrap(angle - lastRightDragAngle, -Mathf.Pi, Mathf.Pi) / (2 * Mathf.Pi);
+				lastRightDragAngle = angle;
 
-			Record.RotateY(angleDelta);
-
-			controller.DragPlatter(angleDelta);
+				controller.DragPlatter(angleDelta);
+			}
 		}
 
 		private void OnStopButton()

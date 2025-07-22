@@ -1,10 +1,11 @@
-[gd_scene load_steps=13 format=3 uid="uid://r8anqjhnvlg4"]
+[gd_scene load_steps=14 format=3 uid="uid://r8anqjhnvlg4"]
 
 [ext_resource type="Script" uid="uid://ltvtgitbihw5" path="res://scripts/ui/TurntableView.cs" id="1_3plv3"]
 [ext_resource type="ArrayMesh" uid="uid://bd583cu20bsvy" path="res://assets/3D/RecordOnPlayer.res" id="2_gh1eq"]
 [ext_resource type="AudioStream" uid="uid://4ajuf5e7w4ph" path="res://assets/Audio/song.wav" id="2_j686s"]
 [ext_resource type="ArrayMesh" uid="uid://b843msk64uoca" path="res://assets/3D/ArmArm.res" id="3_j686s"]
 [ext_resource type="ArrayMesh" uid="uid://0v8jwt5bkgos" path="res://assets/3D/ArmArm_001.res" id="4_b3s4p"]
+[ext_resource type="Material" uid="uid://cq35gwcgge41f" path="res://graphics/vinylShaded.tres" id="4_j686s"]
 [ext_resource type="ArrayMesh" uid="uid://bkmyqypfsmofg" path="res://assets/3D/PlayerBody.res" id="5_bdbov"]
 [ext_resource type="ArrayMesh" uid="uid://csv7r343okxuk" path="res://assets/3D/PlayerCable_001.res" id="6_bvq3t"]
 [ext_resource type="ArrayMesh" uid="uid://c68otce7k663d" path="res://assets/3D/PlayerPowerPlug.res" id="7_7qcyi"]
@@ -27,8 +28,8 @@ Record = NodePath("Turntable/Record")
 OuterLimitYAngle = 35.6
 RecordStartYAngle = 16.6
 InnerLimitYAngle = -19.2
-LiftedXAngle = -88.4
-LoweredXAngle = -94.4
+LiftedXAngle = -90.4
+LoweredXAngle = -85.4
 testAudio = ExtResource("2_j686s")
 
 [node name="Turntable" type="Node3D" parent="."]
@@ -41,6 +42,7 @@ collision_mask = 32
 transform = Transform3D(100, 0, 0, 0, -4.37114e-06, 100, 0, -100, -4.37114e-06, 0, 0, 0)
 mesh = ExtResource("2_gh1eq")
 skeleton = NodePath("")
+surface_material_override/0 = ExtResource("4_j686s")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Turntable/Record"]
 shape = SubResource("CylinderShape3D_3plv3")
@@ -51,7 +53,7 @@ mesh = ExtResource("3_j686s")
 skeleton = NodePath("")
 
 [node name="ToneArm" type="StaticBody3D" parent="Turntable"]
-transform = Transform3D(-0.813101, 0.579245, 0.0578163, -8.68281e-09, -0.0993198, 0.995056, 0.582123, 0.80908, 0.080757, 0.845739, 0.0922596, -0.86766)
+transform = Transform3D(-0.813101, 0.580248, 0.0466857, -7.01121e-09, -0.0801989, 0.996779, 0.582123, 0.810481, 0.0652098, 0.845739, 0.0922596, -0.86766)
 collision_layer = 16
 collision_mask = 16
 

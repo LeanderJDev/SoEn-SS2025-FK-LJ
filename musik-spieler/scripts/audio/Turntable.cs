@@ -76,10 +76,17 @@ namespace Musikspieler.Scripts.Audio
                 targetLoop = currentLoop;
             }
 
-            if (currentLoop >= maxLoops || currentLoop < 0)
+            // Dieses Clamping simuliert ein Springen des Tonarms ("Sprung in der Platte")
+            // Es ermöglicht so das freie Drehen der Platte ohne die Animation zu stören
+            if (currentLoop < 0)
             {
-                StopMotor();
-                currentLoop = Mathf.Clamp(currentLoop, 0, maxLoops);
+                currentLoop = 1;
+                targetLoop += 1;
+            }
+            else if (currentLoop >= maxLoops)
+            {
+                currentLoop = MaxLoops - 1;
+                targetLoop -= 1;
             }
 
             if (!motorRunning)
@@ -142,6 +149,8 @@ namespace Musikspieler.Scripts.Audio
 
         public void MoveArm(float pos)
         {
+            currentLoop = Mathf.Clamp(currentLoop, 0, MaxLoops);
+            pos = Mathf.Clamp(pos, 0, 1);
             Rotate((int)(pos * maxLoops) - (int)currentLoop);
         }
 

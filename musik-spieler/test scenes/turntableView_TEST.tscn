@@ -1,0 +1,18 @@
+[gd_scene load_steps=3 format=3 uid="uid://ch35dc6qnsaph"]
+
+[ext_resource type="PackedScene" uid="uid://r8anqjhnvlg4" path="res://scenes/turntableView.tscn" id="1_er2vu"]
+[ext_resource type="Script" uid="uid://drkcrncekyqcc" path="res://scripts/test/TurntableViewTest.cs" id="1_rppv1"]
+
+[node name="TurntableView_TEST" type="Node3D" node_paths=PackedStringArray("turntableView")]
+script = ExtResource("1_rppv1")
+turntableView = NodePath("TurntableView")
+
+[node name="TurntableView" parent="." instance=ExtResource("1_er2vu")]
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, -0.934751, 2.14666, 0)
+projection = 1
+size = 3.0
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.741812, -0.665998, -0.0784961, -0.316432, -0.450826, 0.834642, -0.591258, -0.594309, -0.545171, 0, 2.75709, 2.0606)
