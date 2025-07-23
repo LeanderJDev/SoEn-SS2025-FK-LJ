@@ -3,7 +3,16 @@ using Godot;
 
 namespace Musikspieler.Scripts.Audio
 {
-    public partial class AudioPlayer : AudioStreamPlayer
+    public interface IAudioPlayer
+    {
+        int SampleLength { get; }
+        int SampleRate { get; }
+        int FramesAvailable { get; }
+        float Volume { get; set; }
+        bool Mute { get; set; }
+    }
+
+    public partial class AudioPlayer : AudioStreamPlayer, IAudioPlayer
     {
         private AudioStream sample;
         private AudioStreamGenerator generator;
@@ -12,10 +21,23 @@ namespace Musikspieler.Scripts.Audio
         private int sampleRate = 44100;
 
         private Vector2[] samples;
+        private float volume;
 
         public int SampleLength => samples != null ? samples.Length : -1;
         public int SampleRate => sampleRate;
         public int FramesAvailable => playback.GetFramesAvailable();
+
+        public float Volume
+        {
+            get { return VolumeLinear; }
+            set { volume = VolumeLinear = value; }
+        }
+
+        public bool Mute
+        {
+            get { return VolumeLinear == 0.0f; }
+            set { VolumeLinear = value ? 0.0f : volume; }
+        }
 
         public void SetSample(AudioStreamWav sample)
         {
@@ -70,7 +92,8 @@ namespace Musikspieler.Scripts.Audio
             generator.MixRate = sampleRate;
             generator.BufferLength = 0.1f; // Nur kurzer Buffer da Playback Live verändert
             Stream = generator;
-            VolumeLinear = 1.0f;
+            Volume = 1.0f;
+            Mute = true;
             Play();
 
             playback = (AudioStreamGeneratorPlayback)GetStreamPlayback();
