@@ -1,6 +1,5 @@
 using Godot;
 using System;
-using System.Linq;
 
 namespace Musikspieler.Scripts.RecordView
 {
@@ -12,7 +11,7 @@ namespace Musikspieler.Scripts.RecordView
         GlobalDragPlane = (1 << 3),
     }
 
-    public struct Mask<T> where T : Enum
+    public struct Mask<T> where T : struct, Enum
     {
         uint mask;
 
@@ -31,6 +30,11 @@ namespace Musikspieler.Scripts.RecordView
             mask = Convert.ToUInt32(type1) | Convert.ToUInt32(type2);
         }
 
+        public static Mask<T> All()
+        {
+            return new Mask<T>(uint.MaxValue);
+        }
+
         public Mask(params T[] types)
         {
             if (types == null || types.Length == 0) throw new ArgumentNullException(nameof(types));
@@ -39,7 +43,7 @@ namespace Musikspieler.Scripts.RecordView
             {
                 mask |= Convert.ToUInt32(types[i]);
             }
-            this.mask |= mask;
+            this.mask = mask;
         }
 
         public readonly bool Contains(T type)

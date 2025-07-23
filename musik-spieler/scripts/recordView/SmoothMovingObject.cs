@@ -1,11 +1,10 @@
 using Godot;
-using System;
 
 namespace Musikspieler.Scripts.RecordView
 {
     public partial class SmoothMovingObject : Node3D
     {
-        //ausblenden, damit andere Klassen nicht wissen müssen, das das hier ein bewegungs-modifiziertes Objekt ist
+        //ausblenden, da wir quasi die eigentliche Position verdecken hier ersetzen, und einen zwischenlayer bauen
         public new Vector3 Position
         {
             get => SmoothDamp.PositionParameters is null ? base.Position : MovementState.targetPosition;
@@ -57,7 +56,7 @@ namespace Musikspieler.Scripts.RecordView
         public bool IsCloseToTargetRotation => (Rotation - base.Rotation).LengthSquared() < 0.1f;
         public bool IsCloseToTargetScale => (Scale - base.Scale).LengthSquared() < 0.1f;
 
-        protected SmoothDamp SmoothDamp { get; set; }
+        public SmoothDamp SmoothDamp { get; protected set; }
 
         public override void _Process(double delta)
         {
@@ -101,7 +100,6 @@ namespace Musikspieler.Scripts.RecordView
         public void SmoothReparent(Node3D newParent)
         {
             // Alte Ziel-Transforms in globalen Raum bringen
-            GD.Print(ToGlobal(MovementState.targetPosition));
             Vector3 globalTargetPos = GlobalTransform * MovementState.targetPosition;
             Vector3 globalTargetRot = GlobalTransform.Basis * MovementState.targetRotation;
             Vector3 globalTargetScale = GlobalTransform.Basis.Scale * MovementState.targetScale;
@@ -123,7 +121,6 @@ namespace Musikspieler.Scripts.RecordView
         public override void _Ready()
         {
             base._Ready();
-            RequestReady();
         }
     }
 }
