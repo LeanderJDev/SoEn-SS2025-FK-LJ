@@ -1,14 +1,6 @@
 [gd_scene load_steps=19 format=3 uid="uid://cem353j2urtor"]
 
-
-[ext_resource type="ArrayMesh" uid="uid://bd583cu20bsvy" path="res://assets/3D/RecordOnPlayer.res" id="1_muem4"]
-[ext_resource type="ArrayMesh" uid="uid://b843msk64uoca" path="res://assets/3D/ArmArm.res" id="2_dp3eg"]
-[ext_resource type="Material" uid="uid://bqpxt6ib8ydpc" path="res://graphics/vinylShaded.tres" id="2_muem4"]
-[ext_resource type="ArrayMesh" uid="uid://0v8jwt5bkgos" path="res://assets/3D/ArmArm_001.res" id="3_0ld40"]
-[ext_resource type="ArrayMesh" uid="uid://bkmyqypfsmofg" path="res://assets/3D/PlayerBody.res" id="4_gqmmt"]
-[ext_resource type="ArrayMesh" uid="uid://csv7r343okxuk" path="res://assets/3D/PlayerCable_001.res" id="5_yc10j"]
-[ext_resource type="ArrayMesh" uid="uid://c68otce7k663d" path="res://assets/3D/PlayerPowerPlug.res" id="6_jscy8"]
-[ext_resource type="ArrayMesh" uid="uid://b0awyloq0vwo5" path="res://assets/3D/PlayerVelocityKnob.res" id="7_pm3ni"]
+[ext_resource type="PackedScene" uid="uid://r8anqjhnvlg4" path="res://scenes/turntableView.tscn" id="1_85g3d"]
 [ext_resource type="ArrayMesh" uid="uid://uw121ydmjv48" path="res://assets/3D/Table.res" id="11_vxglm"]
 [ext_resource type="ArrayMesh" uid="uid://wjc6c7vfv3ke" path="res://assets/3D/ExtenisionCordCable_001.res" id="12_2f3dj"]
 [ext_resource type="ArrayMesh" uid="uid://cjj6tepxxw13s" path="res://assets/3D/ExtensionCordBox.res" id="13_yq6so"]
@@ -18,8 +10,9 @@
 [ext_resource type="PackedScene" uid="uid://dmw47iacx017m" path="res://scenes/recordView/drawerView.tscn" id="16_jbj1t"]
 [ext_resource type="ArrayMesh" uid="uid://ce6vyv7jojj3x" path="res://assets/3D/SpeakerCable_001.res" id="16_qkpxi"]
 [ext_resource type="ArrayMesh" uid="uid://bs4xln7o60uli" path="res://assets/3D/SpeakerCablePlug.res" id="17_5q0nq"]
-
+[ext_resource type="Script" uid="uid://bp8p3bvhtt0te" path="res://scripts/recordView/RaycastHandler.cs" id="17_GmbH4"]
 [ext_resource type="Shader" uid="uid://c1b24yfw5h6xl" path="res://graphics/outline.gdshader" id="17_muem4"]
+
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_dp3eg"]
 render_priority = 0
@@ -32,8 +25,6 @@ lightmap_size_hint = Vector2i(12, 12)
 material = SubResource("ShaderMaterial_dp3eg")
 flip_faces = true
 size = Vector2(2, 2)
-
-[ext_resource type="Script" uid="uid://bp8p3bvhtt0te" path="res://scripts/recordView/RaycastHandler.cs" id="17_muem4"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_muem4"]
 size = Vector3(50.26, 0.0562744, 70.2939)
@@ -52,49 +43,11 @@ stretch = true
 stretch_shrink = 2
 
 [node name="SubViewport" type="SubViewport" parent="SubViewportContainer"]
+handle_input_locally = false
 size = Vector2i(576, 324)
+render_target_update_mode = 4
 
-[node name="MusicPlayer" type="Node3D" parent="SubViewportContainer/SubViewport"]
-
-[node name="RecordOnPlayer" type="MeshInstance3D" parent="SubViewportContainer/SubViewport/MusicPlayer"]
-transform = Transform3D(100, 0, 0, 0, -4.37114e-06, 100, 0, -100, -4.37114e-06, 0, 0, 0)
-mesh = ExtResource("1_muem4")
-skeleton = NodePath("")
-surface_material_override/0 = ExtResource("2_muem4")
-
-[node name="ArmBase" type="MeshInstance3D" parent="SubViewportContainer/SubViewport/MusicPlayer"]
-transform = Transform3D(-84.4401, 53.5711, 2.34167e-06, 0, -4.37114e-06, 100, 53.5711, 84.4401, 3.691e-06, 0.845739, 0.155946, -0.86766)
-mesh = ExtResource("2_dp3eg")
-skeleton = NodePath("")
-
-[node name="ArmArm" type="MeshInstance3D" parent="SubViewportContainer/SubViewport/MusicPlayer"]
-transform = Transform3D(-81.1562, 58.3911, -2.03884, -9.20345, -9.33004, 99.1375, 57.6973, 80.6438, 12.9459, 0.845739, 0.0922596, -0.86766)
-mesh = ExtResource("3_0ld40")
-skeleton = NodePath("")
-
-[node name="PlayerBody" type="MeshInstance3D" parent="SubViewportContainer/SubViewport/MusicPlayer"]
-transform = Transform3D(-100, -3.89414e-05, 2.84217e-12, 0, 5.96046e-06, 100, -3.89414e-05, 100, -1.19209e-05, -0.829077, -0.0133225, -0.82886)
-mesh = ExtResource("4_gqmmt")
-skeleton = NodePath("")
-
-[node name="PlayerCable" type="MeshInstance3D" parent="SubViewportContainer/SubViewport/MusicPlayer"]
-transform = Transform3D(-100, -3.89414e-05, 2.84217e-12, 0, 5.96046e-06, 100, -3.89414e-05, 100, -1.19209e-05, 1.88354, 0.910131, 0.200613)
-mesh = ExtResource("5_yc10j")
-skeleton = NodePath("")
-
-[node name="PlayerCableCurve" type="MeshInstance3D" parent="SubViewportContainer/SubViewport/MusicPlayer"]
-transform = Transform3D(-74.119, -67.1295, 0, 0, 0, 100, -67.1295, 74.119, 0, 1.88376, 0, 0.201759)
-skeleton = NodePath("")
-
-[node name="PlayerPowerPlug" type="MeshInstance3D" parent="SubViewportContainer/SubViewport/MusicPlayer"]
-transform = Transform3D(-96.8831, -24.7722, 2.23517e-06, 0, 5.96046e-06, 100, -24.7722, 96.8831, -1.19209e-05, -0.090389, -0.516193, -2.03896)
-mesh = ExtResource("6_jscy8")
-skeleton = NodePath("")
-
-[node name="PlayerVelocityKnob" type="MeshInstance3D" parent="SubViewportContainer/SubViewport/MusicPlayer"]
-transform = Transform3D(71.0641, 70.3555, 0, 0, 0, 100, 70.3555, -71.0641, 0, -0.843667, -0.0133225, -0.866963)
-mesh = ExtResource("7_pm3ni")
-skeleton = NodePath("")
+[node name="TurntableView" parent="SubViewportContainer/SubViewport" instance=ExtResource("1_85g3d")]
 
 [node name="Table" type="MeshInstance3D" parent="SubViewportContainer/SubViewport"]
 transform = Transform3D(159.017, 0, 0, 0, -1.19209e-05, 100, 0, -100, -1.19209e-05, -0.818502, 0, 0)
@@ -160,20 +113,18 @@ light_energy = 2.131
 shadow_enabled = true
 shadow_opacity = 0.61
 
-
 [node name="RecordGrabHandler" type="StaticBody3D" parent="SubViewportContainer/SubViewport"]
 collision_layer = 8
 collision_mask = 8
-
 script = ExtResource("15_jkv2x")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="RecordGrabHandler"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="SubViewportContainer/SubViewport/RecordGrabHandler"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.624481, 0)
 shape = SubResource("BoxShape3D_muem4")
 
-[node name="DrawerView" parent="." instance=ExtResource("16_jbj1t")]
+[node name="DrawerView" parent="SubViewportContainer/SubViewport" instance=ExtResource("16_jbj1t")]
 transform = Transform3D(0.440564, 0, 0, 0, 0.440564, 0, 0, 0, 0.440564, -4.65926, 0.439431, 0.493215)
 
-[node name="RaycastHandler" type="Node3D" parent="."]
+[node name="RaycastHandler" type="Node3D" parent="SubViewportContainer/SubViewport"]
 process_physics_priority = -1
-script = ExtResource("17_muem4")
+script = ExtResource("17_GmbH4")

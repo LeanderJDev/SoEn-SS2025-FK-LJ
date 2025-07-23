@@ -42,7 +42,7 @@ namespace Musikspieler.Scripts.Test
 
             if (turntableAudioManager == null)
             {
-                GD.PrintErr("TurntableAudioManager not found as child!");
+                GD.PrintErr("TurntableAudioManager not set!");
                 return;
             }
             Song song = new Song("Song", "Album", "Artist", "", audioStream: sample);
@@ -53,6 +53,7 @@ namespace Musikspieler.Scripts.Test
                 await ToSignal(GetTree().CreateTimer(1.0), "timeout");
             }
             turntableAudioManager.Turntable.SetMotorState(true);
+            turntableAudioManager.AudioPlayer.Mute = false;
 #if DEBUG
             GD.Print("Test ready");
 #endif
@@ -125,7 +126,7 @@ namespace Musikspieler.Scripts.Test
             var turntableField = turntableAudioManager.GetType().GetField("turntable", BindingFlags.NonPublic | BindingFlags.Instance);
             Turntable turntable = (Turntable)turntableField.GetValue(turntableAudioManager);
 
-            int sampleIndex = (int)(turntable.GetCurrentSongPosition() * samples.Length);
+            int sampleIndex = (int)(turntable.CurrentSongPosition * samples.Length);
 
             // Bereich berechnen, der im letzten Frame gespielt wurde
             float loopsPlayed = turntableAudioManager.Turntable.CurrentSpeed * (float)delta;
