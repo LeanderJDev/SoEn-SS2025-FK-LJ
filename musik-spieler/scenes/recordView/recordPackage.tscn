@@ -1,18 +1,13 @@
-[gd_scene load_steps=4 format=3 uid="uid://bkfw8kblvm3d"]
+[gd_scene load_steps=3 format=3 uid="uid://bkfw8kblvm3d"]
 
 [ext_resource type="Script" uid="uid://bllikfxoas0o1" path="res://scripts/recordView/RecordPackage.cs" id="1_4iwvx"]
-[ext_resource type="ArrayMesh" uid="uid://6gorq0bqgfnq" path="res://assets/3D/musikplayer_RecordPackage.res" id="2_3v5pi"]
-[ext_resource type="ArrayMesh" uid="uid://fraxg3mo8yxh" path="res://assets/3D/musikplayer_Record.res" id="3_4fppy"]
+[ext_resource type="ArrayMesh" uid="uid://csd5obyn068up" path="res://assets/3D/musikplayer_RecordPackage.res" id="2_3v5pi"]
 
 [node name="RecordPackage" type="Node3D" node_paths=PackedStringArray("_meshInstance")]
 script = ExtResource("1_4iwvx")
-_meshInstance = NodePath("")
+_meshInstance = NodePath("RecordPackageMesh")
 
 [node name="RecordPackageMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.19693, 0)
 mesh = ExtResource("2_3v5pi")
-skeleton = NodePath("")
-
-[node name="RecordMesh" type="MeshInstance3D" parent="RecordPackageMesh"]
-transform = Transform3D(-0.999979, 0.00645582, -0.000228339, 0.00207893, 0.288149, -0.957583, -0.00611619, -0.957564, -0.288156, 3.29973, -0.82025, 0.840083)
-mesh = ExtResource("3_4fppy")
 skeleton = NodePath("")
