@@ -4,9 +4,8 @@
 [ext_resource type="ArrayMesh" uid="uid://6gorq0bqgfnq" path="res://assets/3D/musikplayer_RecordPackage.res" id="2_3v5pi"]
 [ext_resource type="ArrayMesh" uid="uid://fraxg3mo8yxh" path="res://assets/3D/musikplayer_Record.res" id="3_4fppy"]
 
-[node name="RecordPackage" type="Node3D" node_paths=PackedStringArray("_meshInstance")]
+[node name="RecordPackage" type="Node3D"]
 script = ExtResource("1_4iwvx")
-_meshInstance = NodePath("")
 
 [node name="RecordPackageMesh" type="MeshInstance3D" parent="."]
 mesh = ExtResource("2_3v5pi")
