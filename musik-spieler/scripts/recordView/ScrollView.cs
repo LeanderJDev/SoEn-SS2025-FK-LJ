@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Musikspieler.Scripts.RecordView
 {
@@ -9,22 +10,27 @@ namespace Musikspieler.Scripts.RecordView
         [Export] protected Node3D _scrollContainer;
         [Export] private CollisionShape3D viewBounds;
         public override CollisionShape3D BoundsShape => viewBounds;
-        public ScrollViewContentContainer ScrollContainer => (ScrollViewContentContainer)_scrollContainer;
+        public override ScrollViewContentContainer Container => (ScrollViewContentContainer)_scrollContainer;
 
         protected readonly List<ViewItemGeneric<T>> itemObjects = [];
 
         public int ItemCount => itemObjects.Count;
+
+        private ShaderMaterial _localMaterial;
+        public override ShaderMaterial LocalMaterial => _localMaterial;
 
         public ViewItemGeneric<T> this[int index]
         {
             get { return itemObjects[index]; }
         }
 
-        public override bool IsItemListAssigned => ItemList != null;
+        public override bool IsInitialized => ItemList != null;
 
         //changes that were made to the list of this view. Also fires when the list object gets changed, and automatically adapts to the new ItemLists events.
         public event Action<ItemsAddedEventArgs> ItemsAdded;
         public event Action<ItemsRemovedEventArgs> ItemsRemoved;
+
+        public override event Action<ItemListChangedEventArgs> ObjectListChanged;
 
         private IItemList<T> _itemList;
         public IItemList<T> ItemList
@@ -63,7 +69,7 @@ namespace Musikspieler.Scripts.RecordView
                     itemObjects.AddRange(newItems);
                     ObjectListChanged?.Invoke(new()
                     {
-                        items = newItems,
+                        items = newItems.Cast<ViewItem>().ToList(),
                         changeToView = this,
                     });
 
@@ -108,19 +114,9 @@ namespace Musikspieler.Scripts.RecordView
         private bool ignoreItemsAddedEvent = false;
         private bool ignoreItemsRemovedEvent = false;
 
-        public event Action<ItemListChangedEventArgs> ObjectListChanged = delegate { };
-
-        public struct ItemListChangedEventArgs
-        {
-            public readonly bool ViewChanged => changeToView != null;
-
-            public List<ViewItemGeneric<T>> items;
-            public ScrollView<T> changeToView;
-        }
-
         public override void _Ready()
         {
-            CutoffMaterialInstance = (ShaderMaterial)ViewItemGeneric<T>.DefaultMaterial.Duplicate();
+            _localMaterial = (ShaderMaterial)ViewItemGeneric<T>.DefaultMaterial.Duplicate();
             base._Ready();
         }
 
@@ -134,7 +130,7 @@ namespace Musikspieler.Scripts.RecordView
             {
                 ViewItemGeneric<T> item = ViewItemGeneric<T>.InstantiateAndAssign(this, i);
                 newItems.Add(item);
-                ScrollContainer.AddChild(item);
+                Container.AddChild(item);
             }
             if (args.startIndex >= ItemCount)
                 itemObjects.AddRange(newItems);
@@ -142,10 +138,10 @@ namespace Musikspieler.Scripts.RecordView
                 itemObjects.InsertRange(args.startIndex, newItems);
             ObjectListChanged?.Invoke(new()
             {
-                items = newItems,
+                items = newItems.Cast<ViewItem>().ToList(),
                 changeToView = null,
             });
-            UpdateAllItemTransforms();
+            //UpdateAllItemTransforms();
         }
 
         private void OnItemsRemoved(ItemsRemovedEventArgs args)
@@ -162,21 +158,22 @@ namespace Musikspieler.Scripts.RecordView
             itemObjects.RemoveRange(args.startIndex, args.count);
             ObjectListChanged?.Invoke(new()
             {
-                items = itemsToDelete,
+                items = itemsToDelete.Cast<ViewItem>().ToList(),
                 //changeToView = GarbageBin<T>.Instance,
             });
-            UpdateAllItemTransforms();
+            //UpdateAllItemTransforms();
         }
 
-        public int IndexOf(ViewItemGeneric<T> item)
+        public override int GetViewIndex(ViewItem item)
         {
-            return itemObjects.IndexOf(item);
+            if (item is ViewItemGeneric<T> genericItem)
+                return itemObjects.IndexOf(genericItem);
+            return -1;
         }
-        public ShaderMaterial CutoffMaterialInstance { get; private set; }
 
         public override bool MoveItem(int index, View targetView)
         {
-            return MoveItems(index, 1, targetView, null);
+            return MoveItem(index, targetView, null);
         }
 
         /// <summary>
@@ -185,141 +182,99 @@ namespace Musikspieler.Scripts.RecordView
         /// <returns>Returns false if the record could not be added to the target playlist.</returns>
         public bool MoveItem(ScrollView<T> targetView)
         {
-            return MoveItems(GapIndex, 1, targetView, null);
+            return MoveItem(GapIndex, targetView, null);
         }
 
-        public bool MoveItems(int index, int count, View targetView, int? targetIndex = null)
-        {
-            GD.Print("targetView type:");
-            GD.Print(targetView.GetType());
-            
-            if (targetView is ScrollView<T> scrollView)
-                return MoveItems(index, count, scrollView, targetIndex);
-
-            GD.Print("targetView.Grab() type:");
-            GD.Print(targetView.GrabItem(false).GetType());
-            if (targetIndex == null && targetView.GrabItem(false) is IItemAndView itemAndView)
-            {
-                GD.Print(itemAndView.ChildView.GetType());
-                return MoveItems(index, count, itemAndView.ChildView);
-            }
-
-            MoveChecks(index, count, targetView, targetIndex);
-
-            //do stuff
-            //TODO
-
-            //hier landet man theoretisch nur, wenn man etwas in den Mülleimer schmeißt,
-            //da es bisher nur dieses Objekt gibt, was tatsächlich mehrere Typen an Items annimmt.
-
-            GD.Print("moving item to view of different item type, currently unsupported, aborting.");
-            return false;
-        }
-
-        private void MoveChecks(int index, int count, View targetView, int? targetIndex = null)
+        public bool MoveItem(int index, View targetView, int? targetIndex = null)
         {
             ArgumentNullException.ThrowIfNull(targetView, nameof(targetView));
 
-            if (ItemList == null)
-                throw new NullReferenceException($"The ScrollView {nameof(ItemList)} is null.");
-
-            if (!targetView.IsItemListAssigned)
-                throw new NullReferenceException($"The targetView has no ItemList assigned.");
-
-            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(count, nameof(count));
-
-            ArgumentOutOfRangeException.ThrowIfNegative(index, nameof(index));
-
-            if (targetIndex.HasValue)
-                ArgumentOutOfRangeException.ThrowIfNegative(targetIndex.Value, nameof(targetIndex));
-        }
-
-        /// <summary>
-        /// Move a set of Records to another ChildView, which also moves them to another underlaying ItemList.
-        /// </summary>
-        /// <param name="targetIndex">Leave null to add it into the open gap.</param>
-        /// <returns>Returns false if the records could not be added to the target playlist.</returns>
-        public bool MoveItems(int index, int count, ScrollView<T> targetView, int? targetIndex = null)
-        {
-            MoveChecks(index, count, targetView, targetIndex);
-
-            if (targetView.ItemList.BufferSizeLeft < count)
+            if (!IsInitialized)
             {
-                GD.Print("Failed to move an Item because the target itemlist does not have enough space.");
+                GD.PrintErr("ScrollView has not been initialized.");
+                return false;
+            }
+                
+            if (ItemCount <= 0)
+            {
+                GD.Print("Nothing to remove");
                 return false;
             }
 
-            List<ViewItemGeneric<T>> itemsToRemove = new(count);
-            for (int i = 0; i < count; i++)
+            index = Math.Clamp(index, 0, ItemCount - 1);
+            var itemToRemove = itemObjects[index];
+            itemObjects[index] = null;
+
+            ignoreItemsRemovedEvent = true;
+
+            if (!targetView.AcceptItem(itemToRemove, targetIndex))
             {
-                itemsToRemove.Add(itemObjects[index + i]);
-                itemObjects[index + i] = null;
+                ignoreItemsRemovedEvent = false;
+                return false;
+            }
+            _itemList.RemoveItem(itemToRemove.displayedItem);
+            itemObjects.Remove(null);
+            ignoreItemsRemovedEvent = false;
+            ObjectListChanged?.Invoke(new()
+            {
+                items = [itemToRemove],
+                changeToView = targetView,
+            });
+            return true;
+        }
+
+        public override bool AcceptItem(ViewItem item, int? index)
+        {
+            if (item is not ViewItemGeneric<T> viewItem)
+            {
+                GD.Print("Item type does not match the target views item type. Aborting.");
+                return false;
             }
 
-            if (targetIndex.HasValue)
-                targetIndex = Math.Clamp(targetIndex.Value, 0, ItemCount);
+            if (index.HasValue)
+                index = Math.Clamp(index.Value, 0, ItemCount);
             else
             {
-                if (targetView.GapIndex <= 0)
+                if (GapIndex <= 0)
                 {
-                    targetIndex = 0;
+                    index = 0;
                 }
-                else if (targetView.GapIndex >= targetView.ItemCount)
+                else if (GapIndex >= ItemCount)
                 {
                     //einfach hinten anfügen
-                    targetIndex = targetView.ItemCount;
+                    index = ItemCount;
                 }
                 //Wenn man auf eine Package im ChildView zeigt, erwartet man, dass sie davor gelegt wird, und nicht ersetzt (was sie dahinter legen würde).
                 //Deshalb wird getestet, ob der aktuelle Slot gerade frei ist. Es wird der davor genommen, falls nicht.
-                else if (targetView.GapIndex >= 0 && targetView.itemObjects[targetView.GapIndex] == null)
+                else if (GapIndex >= 0 && itemObjects[GapIndex] == null)
                 {
-                    targetIndex = targetView.GapIndex;
+                    index = GapIndex;
                 }
                 else
                 {
-                    targetIndex = targetView.GapIndex + 1;
+                    index = GapIndex + 1;
                 }
             }
 
-            ignoreItemsRemovedEvent = true;
-            targetView.ignoreItemsAddedEvent = true;
-            for (int i = 0; i < count; i++)
+            ignoreItemsAddedEvent = true;
+
+            if (index.Value == ItemCount)
             {
-                ViewItemGeneric<T> item = itemsToRemove[i];
-                if (!_itemList.RemoveItem(item.displayedItem))
-                    continue;
-
-                itemObjects[index + i] = null;
-
-                if (targetIndex.Value == targetView.ItemCount)
-                {
-                    targetView._itemList.AddItem(item.displayedItem);
-                    targetView.itemObjects.Add(item);
-                }
-                else
-                {
-                    targetView._itemList.InsertItemAt(item.displayedItem, targetIndex.Value);
-                    targetView.itemObjects.Insert(targetIndex.Value, item);
-                }
+                _itemList.AddItem(viewItem.displayedItem);
+                itemObjects.Add(viewItem);
+            }
+            else
+            {
+                _itemList.InsertItemAt(viewItem.displayedItem, index.Value);
+                itemObjects.Insert(index.Value, viewItem);
             }
 
-            //nicht RemoveRange verwenden, da evtl. in die gleiche Liste schon etwas eingefügt wurde, was alles verschiebt
-            //wenn man vorher alles herauslöscht, geht die Lücke verloren, die ja angibt
-            itemObjects.RemoveAll(x => x == null);
-            ignoreItemsRemovedEvent = false;
-            targetView.ignoreItemsAddedEvent = false;
             ObjectListChanged?.Invoke(new()
             {
-                items = itemsToRemove,
-                changeToView = targetView,      //Remove, so move to target ChildView
+                items = [],
+                changeToView = null,
             });
-            targetView.ObjectListChanged?.Invoke(new()
-            {
-                items = itemsToRemove,
-                changeToView = null,            //Add, so move to none
-            });
-            UpdateAllItemTransforms();
-            targetView.UpdateAllItemTransforms();
+            ignoreItemsAddedEvent = false;
             return true;
         }
 
@@ -348,7 +303,7 @@ namespace Musikspieler.Scripts.RecordView
 
         private void Scroll(float gaps)
         {
-            float newPos = ScrollContainer.Position.Z - (gaps * itemObjectWidth);
+            float newPos = Container.Position.Z - (gaps * itemObjectWidth);
 
             //so viel muss mindestens in beide richtungen gescrollt werden können, sonst erreicht man nicht alles
             float minimumScrollStop = ItemCount * 0.5f * itemObjectWidth - Bounds.Z * 0.5f;
@@ -369,7 +324,7 @@ namespace Musikspieler.Scripts.RecordView
                 newPos = 0;
             else
                 newPos = Mathf.Clamp(newPos, scrollMin, scrollMax);
-            ScrollContainer.Position = new Vector3(ScrollContainer.Position.X, ScrollContainer.Position.Y, newPos);
+            Container.Position = new Vector3(Container.Position.X, Container.Position.Y, newPos);
         }
 
         private void OnScrollInput(float lines)
@@ -377,7 +332,7 @@ namespace Musikspieler.Scripts.RecordView
             Scroll(lines * scrollSensitivity);
         }
 
-        public override void _Input(InputEvent @event)
+        public override void _UnhandledInput(InputEvent @event)
         {
             if (@event is InputEventMouseButton mouseEvent)
             {
@@ -387,6 +342,7 @@ namespace Musikspieler.Scripts.RecordView
                         return;
                     if (mouseEvent.Pressed)
                         OnScrollInput(-1f);
+                    GetViewport().SetInputAsHandled();
                 }
                 else if (mouseEvent.ButtonIndex == MouseButton.WheelDown)
                 {
@@ -394,6 +350,7 @@ namespace Musikspieler.Scripts.RecordView
                         return;
                     if (mouseEvent.Pressed)
                         OnScrollInput(1f);
+                    GetViewport().SetInputAsHandled();
                 }
             }
         }
@@ -421,8 +378,8 @@ namespace Musikspieler.Scripts.RecordView
 
         public override void _Process(double delta)
         {
-            CutoffMaterialInstance.SetShaderParameter("box_transform", viewBounds.GlobalTransform);
-            CutoffMaterialInstance.SetShaderParameter("box_size", ((BoxShape3D)viewBounds.Shape).Size);
+            LocalMaterial.SetShaderParameter("box_transform", viewBounds.GlobalTransform);
+            LocalMaterial.SetShaderParameter("box_size", ((BoxShape3D)viewBounds.Shape).Size);
 
             base._Process(delta);
             Vector2? boundaryMousePos = GetBoundaryMousePosition();
@@ -430,7 +387,7 @@ namespace Musikspieler.Scripts.RecordView
             if (boundaryMousePos == null)
                 return;
 
-            Transform3D transform = ScrollContainer.GlobalTransform.AffineInverse() * viewBounds.GlobalTransform;
+            Transform3D transform = Container.GlobalTransform.AffineInverse() * viewBounds.GlobalTransform;
             Vector2 containerMousePos;
             if (useAutoScroll)
             {
@@ -465,7 +422,7 @@ namespace Musikspieler.Scripts.RecordView
             }
         }
 
-        public void UpdateItemTransform(int index)
+        public override void UpdateItemTransform(int index)
         {
             var item = itemObjects[index];
 

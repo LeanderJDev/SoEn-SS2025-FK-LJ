@@ -1,0 +1,233 @@
+---
+title: UI
+---
+classDiagram
+    TurntableView --> TurntableAudioManager
+    TurntableView --> Turntable
+    PlaybackView --> TurntableAudioManager
+    PlaybackView --|> RecordView
+
+%% Interfaces
+class IItem
+class ISong {
+    +string Name
+    +float LengthInSeconds
+}
+ISong --> IItem
+
+class IItemList~T~ {
+    +int ItemCount
+    +T this[int]
+    +event ItemsAdded
+    +event ItemsRemoved
+    +AddItem()
+    +AddItems()
+    +InsertItemAt()
+    +InsertItemsAt()
+    +RemoveItem()
+    +RemoveItemAt()
+    +RemoveItemsAt()
+    +GetAllItems()
+    +GetEnumerable()
+    +int BufferSizeLeft
+}
+
+class IPlaylist
+IPlaylist --> IItem
+IPlaylist --> IItemList~ISong~
+
+class IPlaylistDirectory
+IPlaylistDirectory --> IItemList~IPlaylist~
+
+class IItemAndView {
+    +View ChildView
+}
+
+%% SmoothMovingObject
+class SmoothDamp {
+    +SmoothMovementParameters PositionParameters
+    +SmoothMovementParameters RotationParameters
+    +SmoothMovementParameters ScaleParameters
+}
+
+class SmoothMovementParameters {
+    +float smoothTime
+    +float maxSpeed
+}
+class SmoothMovementState {
+    +Vector3 targetRotation
+    +Vector3 targetPosition
+    +Vector3 targetScale
+    +Vector3 rotationVelocity
+    +Vector3 positionVelocity
+    +Vector3 scaleVelocity
+    +bool disableSmoothing
+}
+class SmoothMovingObject {
+    +Vector3 Position
+    +Vector3 Rotation
+    +Vector3 Scale
+    +bool IsCloseToTargetPosition
+    +bool IsCloseToTargetRotation
+    +bool IsCloseToTargetScale
+    +Teleport()
+    +SmoothReparent()
+    +SmoothDamp smoothDamp
+}
+SmoothMovingObject --> SmoothMovementState
+SmoothDamp --> SmoothMovementParameters
+SmoothMovingObject --> SmoothDamp
+SmoothMovingObject --|> Node3D
+
+%% View and ViewItem
+class View {
+    <<abstract>>
+    +ViewItem Grab()
+    +bool MoveItem()
+    +bool IsItemListAssigned
+    +CollisionShape3D BoundsShape
+}
+View --|> Node3D
+
+class ViewItem {
+    +int ViewIndex
+    +bool IsPending
+    +bool IsGettingDragged
+    +bool Move(View targetView)
+}
+ViewItem --|> SmoothMovingObject
+
+%% ViewItemGeneric and ScrollView
+class ViewItemGeneric~T~ {
+    +T displayedItem
+    +ScrollView~T~ View
+    +static InstantiateAndAssign()
+    +IsGettingDragged
+}
+ViewItemGeneric~T~ --|> ViewItem
+
+class ScrollViewContentContainer {
+    
+}
+ScrollViewContentContainer --|> SmoothMovingObject
+
+class ScrollView~T~ {
+    +Node3D _scrollContainer
+    +CollisionShape3D viewBounds
+    +CollisionShape3D BoundsShape
+    +ScrollViewContentContainer ScrollContainer
+    +List~ViewItemGeneric<T>~ itemObjects
+    +int ItemCount
+    +ViewItemGeneric<T> this[int]
+    +bool IsItemListAssigned
+    +IItemList<T> ItemList
+    +float itemObjectWidth
+    +float scrollAreaSize
+    +float flipThresholdOffset
+    +float flipThreshold
+    +bool useAutoScroll
+    +float autoScrollSensitivity
+    +float scrollSensitivity
+    +int GapIndex
+    +Vector3 Bounds
+    +Animations Animation
+    +event ItemListChanged
+    +CutoffMaterialInstance
+    +_Ready()
+    +_Input()
+    +_Process()
+    +MoveItem()
+    +MoveItems()
+    +Scroll()
+    +UpdateAllItemTransforms()
+}
+ScrollView~T~ --|> View
+ScrollView~T~ --> ScrollViewContentContainer
+ScrollView~T~ --> ViewItemGeneric~T~
+ScrollView~T~ --> IItemList~T~
+
+class Animations {
+    +float ForwardGapToViewBoundryMargin
+    +float BackwardGapToViewBoundryMargin
+    +RunAnimationFrame()
+    +BinaryFlickThroughRotationXAnimationFunction()
+    +LeaningFlickThroughRotationXAnimationFunction()
+    +SubtleRotationYAnimationFunction()
+    +SelectedOffsetXAnimationFunction()
+}
+ScrollView~T~ --> Animations
+
+%% Implementations
+class Playlist {
+    +string Name
+    +ISong this[int]
+    +List<ISong> songs
+}
+Playlist --|> IPlaylist
+
+class MusicCollection {
+    +IPlaylist this[int]
+    +List<IPlaylist> _playlists
+}
+MusicCollection --|> IPlaylistDirectory
+
+class Drawer
+Drawer --|> ViewItemGeneric~IPlaylist~
+Drawer --|> IItemAndView
+
+class RecordPackage
+RecordPackage --|> ViewItemGeneric~ISong~
+
+class DrawerView
+DrawerView --|> ScrollView~IPlaylist~
+
+class RecordView
+RecordView --|> ScrollView~ISong~
+
+class GarbageBin
+GarbageBin --|> View
+
+class RecordGrabHandler {
+    +ViewItem currentlyGrabbed
+    +RecordView GarbageBin
+}
+RecordGrabHandler --> ViewItem
+
+%% Event structs
+class ItemsAddedEventArgs {
+    +int startIndex
+    +int count
+}
+class ItemsRemovedEventArgs {
+    +int startIndex
+    +int count
+}
+class PlaylistChangedEventArgs {
+    +bool ViewChanged
+    +List<ViewItemGeneric<T>> items
+    +ScrollView<T> changeToView
+}
+class DrawerState{
+    <<enumeration>>
+    visible
+    pulledOut
+    missing
+}
+class TurntableView{
+    +TurntableAudioManager turntableAudioManager
+    +Turntable turntable = turntableAudioManager.turntable
+    -OnStopButton(bool state) void
+    -OnLeftMouseDown(Vector2 position) void <Testen ob Tonarm angeklickt wird>
+    -OnLeftMouseDrag(Vector2 newPosition) void <Bewege Tonarm falls angeklickt>
+    -OnRightMouseDown(Vector2 position) void <Testen ob Plattenteller angeklickt wird>
+    -OnRightMouseDrag(Vector2 newPosition) void <Bewege Plattenteller falls angeklickt>
+}
+class TurntableAudioManager {
+    <<Datenstruktur, Audio und Simulation>>
+}
+class Turntable {
+    <<Datenstruktur, Audio und Simulation>>
+}
+class MusicCollection {
+    <<Datenstruktur, Audio und Simulation>>
+}

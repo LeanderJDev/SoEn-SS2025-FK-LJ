@@ -1,4 +1,5 @@
 using Godot;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -31,7 +32,6 @@ namespace Musikspieler.Scripts.RecordView
             autoScrollSensitivity = 20f;
 
             //NUR FÜR TESTZWECKE
-            GD.Print("DrawerView created");
             List<IPlaylist> playlists = new(15);
             for (int i = 0; i < 15; i++)
             {

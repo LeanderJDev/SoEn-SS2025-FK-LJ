@@ -13,7 +13,7 @@ namespace Musikspieler.Scripts.RecordView
             var item = (ViewItemGeneric<T>)ItemPrefab.Instantiate();
             item.displayedItem = displayedItem;
             item.View = scrollView;
-            item._meshInstance.MaterialOverride = scrollView.CutoffMaterialInstance;
+            item._meshInstance.MaterialOverride = scrollView.LocalMaterial;
             return item;
         }
 
@@ -44,7 +44,7 @@ namespace Musikspieler.Scripts.RecordView
                 }
                 else
                 {
-                    SmoothReparent(View.ScrollContainer);
+                    SmoothReparent(View.Container);
 
                     //das hier muss schöner gehen eigentlich: jetzt sagt es einem anderen objekt, dass es bitte geupdated werden soll...
                     //Diese Fkt hier ist ja public, damit andere von außen evtl. refreshen können
@@ -53,8 +53,8 @@ namespace Musikspieler.Scripts.RecordView
             }
         }
 
-        private ScrollView<T> _view;
-        public ScrollView<T> View
+        private View _view;
+        public View View
         {
             get => _view;
             private set
@@ -62,8 +62,8 @@ namespace Musikspieler.Scripts.RecordView
                 ArgumentNullException.ThrowIfNull(value);
                 if (_view != null)
                     _view.ObjectListChanged -= OnPlaylistChanged;
-                if (IsInsideTree() && IsGettingDragged)
-                    SmoothReparent(value.ScrollContainer);
+                if (IsInsideTree() && !IsGettingDragged)
+                    SmoothReparent(value.Container);
                 _view = value;
                 _view.ObjectListChanged += OnPlaylistChanged;
             }
@@ -74,14 +74,18 @@ namespace Musikspieler.Scripts.RecordView
             return View.MoveItem(ViewIndex, targetView);
         }
 
-        private void OnPlaylistChanged(ScrollView<T>.ItemListChangedEventArgs args)
+        private void OnPlaylistChanged(View.ItemListChangedEventArgs args)
         {
             if (args.ViewChanged && args.items.Contains(this))
                 View = args.changeToView;
 
-            ViewIndex = View.IndexOf(this);
+            ViewIndex = View.GetViewIndex(this);
             if (ViewIndex == -1)
+            {
+                GD.PrintErr();
                 throw new Exception($"Einer {this} von Typ {GetType()} ist einem {View.GetType()} ({View}) zugewiesen, der sie nicht enthält.");
+            }
+            View.UpdateItemTransform(ViewIndex);
         }
 
         public static SmoothDamp ObjectTypeSmoothDamp { get; protected set; }
@@ -101,7 +105,7 @@ namespace Musikspieler.Scripts.RecordView
 
             if (IsPending && !IsGettingDragged && IsCloseToTargetPosition)
             {
-                _meshInstance.MaterialOverride = View.CutoffMaterialInstance;
+                _meshInstance.MaterialOverride = View.LocalMaterial;
             }
         }
 

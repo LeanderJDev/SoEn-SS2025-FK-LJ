@@ -14,8 +14,6 @@ namespace Musikspieler.Scripts.RecordView
         
         static RecordPackage()
         {
-            GD.Print("RecordPackage static constructor");
-
             ItemPrefab = GD.Load<PackedScene>("res://scenes/recordView/recordPackage.tscn");
             DefaultMaterial = GD.Load<ShaderMaterial>("res://graphics/defaultRecordPackageMaterial.tres");
 

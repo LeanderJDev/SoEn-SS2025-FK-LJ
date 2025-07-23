@@ -40,14 +40,6 @@ namespace Musikspieler.Scripts.RecordView
         {
             if (@event is InputEventMouseButton mouseEvent)
             {
-                if (mouseEvent.Pressed)
-                {
-                    GD.Print("input");
-                }
-                if (!mouseEvent.Pressed)
-                {
-                    GD.Print("up");
-                }
                 if (mouseEvent.ButtonIndex == MouseButton.Left && mouseEvent.Pressed)
                 {
                     if (RaycastHandler.IsObjectUnderCursor(_handle))

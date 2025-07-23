@@ -31,4 +31,5 @@ shadow_enabled = true
 shadow_opacity = 0.64
 
 [node name="RaycastHandler" type="Node3D" parent="."]
+process_priority = -1
 script = ExtResource("3_htoij")

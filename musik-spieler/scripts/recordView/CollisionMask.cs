@@ -13,15 +13,6 @@ namespace Musikspieler.Scripts.RecordView
 
     public struct Mask<T> where T : struct, Enum
     {
-        static Mask()
-        {
-            GD.Print("mask test");
-            Mask<CollisionMask> mask = Mask<CollisionMask>.All();
-            GD.Print(Convert.ToString((uint)mask, 2));
-            mask.Remove(CollisionMask.GlobalDragPlane);
-            GD.Print(Convert.ToString((uint)mask, 2));
-        }
-
         uint mask;
 
         public Mask(uint mask)
