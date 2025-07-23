@@ -38,7 +38,7 @@ namespace Musikspieler.Scripts.RecordView
                 List<ISong> songs = new(100);
                 for (int s = 0; s < 100; s++)
                 {
-                    songs.Add(new Song(Utility.RandomString(10)));
+                    songs.Add(new Song(Utility.RandomString(10), "Album", "Artist", "Path"));
                 }
                 playlists.Add(new Playlist(songs, $"Playlist {i}"));
             }
