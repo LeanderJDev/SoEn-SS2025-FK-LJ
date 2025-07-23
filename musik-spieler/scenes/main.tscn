@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3 uid="uid://cem353j2urtor"]
+[gd_scene load_steps=19 format=3 uid="uid://cem353j2urtor"]
 
 [ext_resource type="PackedScene" uid="uid://r8anqjhnvlg4" path="res://scenes/turntableView.tscn" id="1_85g3d"]
 [ext_resource type="ArrayMesh" uid="uid://uw121ydmjv48" path="res://assets/3D/Table.res" id="11_vxglm"]
@@ -7,11 +7,12 @@
 [ext_resource type="ArrayMesh" uid="uid://rhdr6ox7h1n3" path="res://assets/3D/ExtensionCordSwitch.res" id="14_fv21b"]
 [ext_resource type="Script" uid="uid://btloxo60hdpxi" path="res://scripts/recordView/RecordGrabHandler.cs" id="15_jkv2x"]
 [ext_resource type="ArrayMesh" uid="uid://bqedbj155v5lv" path="res://assets/3D/Speaker.res" id="15_tel4y"]
-[ext_resource type="PackedScene" path="res://scenes/recordView/drawerView.tscn" id="16_jbj1t"]
+[ext_resource type="PackedScene" uid="uid://dmw47iacx017m" path="res://scenes/recordView/drawerView.tscn" id="16_jbj1t"]
 [ext_resource type="ArrayMesh" uid="uid://ce6vyv7jojj3x" path="res://assets/3D/SpeakerCable_001.res" id="16_qkpxi"]
 [ext_resource type="ArrayMesh" uid="uid://bs4xln7o60uli" path="res://assets/3D/SpeakerCablePlug.res" id="17_5q0nq"]
-[ext_resource type="Script" path="res://scripts/recordView/RaycastHandler.cs" id="17_GmbH4"]
+[ext_resource type="Script" uid="uid://bp8p3bvhtt0te" path="res://scripts/recordView/RaycastHandler.cs" id="17_GmbH4"]
 [ext_resource type="Shader" uid="uid://c1b24yfw5h6xl" path="res://graphics/outline.gdshader" id="17_muem4"]
+
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_dp3eg"]
 render_priority = 0
