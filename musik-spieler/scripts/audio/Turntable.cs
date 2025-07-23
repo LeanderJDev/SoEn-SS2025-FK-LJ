@@ -33,7 +33,7 @@ namespace Musikspieler.Scripts.Audio
         private bool motorRunning;
         private float motorAcceleration = 2.4f; // Kalibrierter Wert
         private float drag = 0.1f; // Kalibrierter Wert
-        private float lerpSpeed = 6f;
+        private float lerpSpeed = 10f; // Kalibrierter Wert
         private bool scratchActive = false;
         private float targetLoop = 0f;
         private float lastLoop = 0f;

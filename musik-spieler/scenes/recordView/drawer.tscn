@@ -1,8 +1,9 @@
-[gd_scene load_steps=5 format=3 uid="uid://8y7b6cmjh35d"]
+[gd_scene load_steps=6 format=3 uid="uid://8y7b6cmjh35d"]
 
 [ext_resource type="Script" uid="uid://dllw8x3r8mjlg" path="res://scripts/recordView/Drawer.cs" id="1_26xk7"]
 [ext_resource type="PackedScene" uid="uid://ew28vqpvjn1g" path="res://scenes/recordView/recordView.tscn" id="1_g2xwe"]
 [ext_resource type="ArrayMesh" uid="uid://b2ggn1e7ytpr5" path="res://assets/3D/Drawer.res" id="1_lvudm"]
+[ext_resource type="ArrayMesh" uid="uid://bi1tpx5j0rq0j" path="res://assets/3D/musikplayer_Drawer.res" id="4_di60a"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_26xk7"]
 size = Vector3(0.553253, 1, 1.53859)
@@ -26,3 +27,10 @@ skeleton = NodePath("")
 [node name="HandleShape" type="CollisionShape3D" parent="Handle"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.97475, -0.599096, 1.54393)
 shape = SubResource("BoxShape3D_26xk7")
+
+[node name="Drawer" type="MeshInstance3D" parent="."]
+mesh = ExtResource("4_di60a")
+skeleton = NodePath("")
+metadata/extras = {
+"ant_landscape": {}
+}
