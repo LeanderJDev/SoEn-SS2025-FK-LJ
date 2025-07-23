@@ -3,13 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://c6pm6ysskpaxl"
-path="res://.godot/imported/musicplayer.fbx-0c30246ee3f3a1705c0f98cdeab07c73.scn"
+uid="uid://bkko63l0bgbak"
+path="res://.godot/imported/musikplayer.blend-09f59b6108e1d92c8dd9e6a8505edec6.scn"
 
 [deps]
 
-source_file="res://assets/3D/musicplayer.fbx"
-dest_files=["res://.godot/imported/musicplayer.fbx-0c30246ee3f3a1705c0f98cdeab07c73.scn"]
+source_file="res://assets/3D/musikplayer.blend"
+dest_files=["res://.godot/imported/musikplayer.blend-09f59b6108e1d92c8dd9e6a8505edec6.scn"]
 
 [params]
 
@@ -28,150 +28,181 @@ meshes/force_disable_compression=false
 skins/use_named_skins=true
 animation/import=true
 animation/fps=30
-animation/trimming=true
+animation/trimming=false
 animation/remove_immutable_tracks=true
 animation/import_rest_as_RESET=false
 import_script/path=""
 _subresources={
 "meshes": {
-"ArmArm": {
+"musikplayer_ArmArm": {
 "generate/lightmap_uv": 0,
 "generate/lods": 0,
 "generate/shadow_meshes": 0,
 "lods/normal_merge_angle": 60.0,
 "save_to_file/enabled": true,
-"save_to_file/path": "res://assets/3D/ArmArm.res"
+"save_to_file/path": "res://assets/3D/musikplayer_ArmArm.res"
 },
-"ArmArm_001": {
+"musikplayer_ArmBase": {
 "generate/lightmap_uv": 0,
 "generate/lods": 0,
 "generate/shadow_meshes": 0,
 "lods/normal_merge_angle": 60.0,
 "save_to_file/enabled": true,
-"save_to_file/path": "res://assets/3D/ArmArm_001.res"
+"save_to_file/path": "res://assets/3D/musikplayer_ArmBase.res"
 },
-"Drawer": {
+"musikplayer_Cube": {
 "generate/lightmap_uv": 0,
 "generate/lods": 0,
 "generate/shadow_meshes": 0,
 "lods/normal_merge_angle": 60.0,
 "save_to_file/enabled": true,
-"save_to_file/path": "res://assets/3D/Drawer.res"
+"save_to_file/path": "res://assets/3D/musikplayer_Cube.res"
 },
-"ExtenisionCordCable_001": {
+"musikplayer_Drawer": {
 "generate/lightmap_uv": 0,
 "generate/lods": 0,
 "generate/shadow_meshes": 0,
 "lods/normal_merge_angle": 60.0,
 "save_to_file/enabled": true,
-"save_to_file/path": "res://assets/3D/ExtenisionCordCable_001.res"
+"save_to_file/path": "res://assets/3D/musikplayer_Drawer.res"
 },
-"ExtensionCordBox": {
+"musikplayer_ExtenisionCordCable": {
 "generate/lightmap_uv": 0,
 "generate/lods": 0,
 "generate/shadow_meshes": 0,
 "lods/normal_merge_angle": 60.0,
 "save_to_file/enabled": true,
-"save_to_file/path": "res://assets/3D/ExtensionCordBox.res"
+"save_to_file/path": "res://assets/3D/musikplayer_ExtenisionCordCable.res"
 },
-"ExtensionCordSwitch": {
+"musikplayer_ExtensionCordBox": {
 "generate/lightmap_uv": 0,
 "generate/lods": 0,
 "generate/shadow_meshes": 0,
 "lods/normal_merge_angle": 60.0,
 "save_to_file/enabled": true,
-"save_to_file/path": "res://assets/3D/ExtensionCordSwitch.res"
+"save_to_file/path": "res://assets/3D/musikplayer_ExtensionCordBox.res"
 },
-"PlayerBody": {
+"musikplayer_ExtensionCordSwitch": {
 "generate/lightmap_uv": 0,
 "generate/lods": 0,
 "generate/shadow_meshes": 0,
 "lods/normal_merge_angle": 60.0,
 "save_to_file/enabled": true,
-"save_to_file/path": "res://assets/3D/PlayerBody.res"
+"save_to_file/path": "res://assets/3D/musikplayer_ExtensionCordSwitch.res"
 },
-"PlayerCable_001": {
+"musikplayer_PlayerBody": {
 "generate/lightmap_uv": 0,
 "generate/lods": 0,
 "generate/shadow_meshes": 0,
 "lods/normal_merge_angle": 60.0,
 "save_to_file/enabled": true,
-"save_to_file/path": "res://assets/3D/PlayerCable_001.res"
+"save_to_file/path": "res://assets/3D/musikplayer_PlayerBody.res"
 },
-"PlayerPowerPlug": {
+"musikplayer_PlayerCable": {
 "generate/lightmap_uv": 0,
 "generate/lods": 0,
 "generate/shadow_meshes": 0,
 "lods/normal_merge_angle": 60.0,
 "save_to_file/enabled": true,
-"save_to_file/path": "res://assets/3D/PlayerPowerPlug.res"
+"save_to_file/path": "res://assets/3D/musikplayer_PlayerCable.res"
 },
-"PlayerVelocityKnob": {
+"musikplayer_PlayerPowerPlug": {
 "generate/lightmap_uv": 0,
 "generate/lods": 0,
 "generate/shadow_meshes": 0,
 "lods/normal_merge_angle": 60.0,
 "save_to_file/enabled": true,
-"save_to_file/path": "res://assets/3D/PlayerVelocityKnob.res"
+"save_to_file/path": "res://assets/3D/musikplayer_PlayerPowerPlug.res"
 },
-"Record": {
+"musikplayer_PlayerVelocityKnob": {
 "generate/lightmap_uv": 0,
 "generate/lods": 0,
 "generate/shadow_meshes": 0,
 "lods/normal_merge_angle": 60.0,
 "save_to_file/enabled": true,
-"save_to_file/path": "res://assets/3D/Record.res"
+"save_to_file/path": "res://assets/3D/musikplayer_PlayerVelocityKnob.res"
 },
-"RecordOnPlayer": {
+"musikplayer_Record": {
 "generate/lightmap_uv": 0,
 "generate/lods": 0,
 "generate/shadow_meshes": 0,
 "lods/normal_merge_angle": 60.0,
 "save_to_file/enabled": true,
-"save_to_file/path": "res://assets/3D/RecordOnPlayer.res"
+"save_to_file/path": "res://assets/3D/musikplayer_Record.res"
 },
-"RecordPackage": {
+"musikplayer_RecordOnPlayer": {
 "generate/lightmap_uv": 0,
 "generate/lods": 0,
 "generate/shadow_meshes": 0,
 "lods/normal_merge_angle": 60.0,
 "save_to_file/enabled": true,
-"save_to_file/path": "res://assets/3D/RecordPackage.res"
+"save_to_file/path": "res://assets/3D/musikplayer_RecordOnPlayer.res"
 },
-"Speaker": {
+"musikplayer_RecordPackage": {
 "generate/lightmap_uv": 0,
 "generate/lods": 0,
 "generate/shadow_meshes": 0,
 "lods/normal_merge_angle": 60.0,
 "save_to_file/enabled": true,
-"save_to_file/path": "res://assets/3D/Speaker.res"
+"save_to_file/path": "res://assets/3D/musikplayer_RecordPackage.res"
 },
-"SpeakerCablePlug": {
+"musikplayer_ScrollWheel": {
 "generate/lightmap_uv": 0,
 "generate/lods": 0,
 "generate/shadow_meshes": 0,
 "lods/normal_merge_angle": 60.0,
 "save_to_file/enabled": true,
-"save_to_file/path": "res://assets/3D/SpeakerCablePlug.res"
+"save_to_file/path": "res://assets/3D/musikplayer_ScrollWheel.res"
 },
-"SpeakerCable_001": {
+"musikplayer_Speaker": {
 "generate/lightmap_uv": 0,
 "generate/lods": 0,
 "generate/shadow_meshes": 0,
 "lods/normal_merge_angle": 60.0,
 "save_to_file/enabled": true,
-"save_to_file/path": "res://assets/3D/SpeakerCable_001.res"
+"save_to_file/path": "res://assets/3D/musikplayer_Speaker.res"
 },
-"Table": {
+"musikplayer_SpeakerCable": {
 "generate/lightmap_uv": 0,
 "generate/lods": 0,
 "generate/shadow_meshes": 0,
 "lods/normal_merge_angle": 60.0,
 "save_to_file/enabled": true,
-"save_to_file/path": "res://assets/3D/Table.res"
+"save_to_file/path": "res://assets/3D/musikplayer_SpeakerCable.res"
+},
+"musikplayer_SpeakerCablePlug": {
+"generate/lightmap_uv": 0,
+"generate/lods": 0,
+"generate/shadow_meshes": 0,
+"lods/normal_merge_angle": 60.0,
+"save_to_file/enabled": true,
+"save_to_file/path": "res://assets/3D/musikplayer_SpeakerCablePlug.res"
+},
+"musikplayer_Table": {
+"generate/lightmap_uv": 0,
+"generate/lods": 0,
+"generate/shadow_meshes": 0,
+"lods/normal_merge_angle": 60.0,
+"save_to_file/enabled": true,
+"save_to_file/path": "res://assets/3D/musikplayer_Table.res"
 }
 }
 }
-fbx/importer=0
-fbx/allow_geometry_helper_nodes=false
-fbx/embedded_image_handling=1
+blender/nodes/visible=0
+blender/nodes/active_collection_only=false
+blender/nodes/punctual_lights=true
+blender/nodes/cameras=true
+blender/nodes/custom_properties=true
+blender/nodes/modifiers=1
+blender/meshes/colors=false
+blender/meshes/uvs=true
+blender/meshes/normals=true
+blender/meshes/export_geometry_nodes_instances=false
+blender/meshes/tangents=true
+blender/meshes/skins=2
+blender/meshes/export_bones_deforming_mesh_only=false
+blender/materials/unpack_enabled=true
+blender/materials/export_materials=1
+blender/animation/limit_playback=true
+blender/animation/always_sample=true
+blender/animation/group_tracks=true

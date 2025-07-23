@@ -1,18 +1,17 @@
-[gd_scene load_steps=19 format=3 uid="uid://cem353j2urtor"]
+[gd_scene load_steps=17 format=3 uid="uid://cem353j2urtor"]
 
-[ext_resource type="PackedScene" uid="uid://r8anqjhnvlg4" path="res://scenes/turntableView.tscn" id="1_85g3d"]
-[ext_resource type="ArrayMesh" uid="uid://uw121ydmjv48" path="res://assets/3D/Table.res" id="11_vxglm"]
-[ext_resource type="ArrayMesh" uid="uid://wjc6c7vfv3ke" path="res://assets/3D/ExtenisionCordCable_001.res" id="12_2f3dj"]
-[ext_resource type="ArrayMesh" uid="uid://cjj6tepxxw13s" path="res://assets/3D/ExtensionCordBox.res" id="13_yq6so"]
-[ext_resource type="ArrayMesh" uid="uid://rhdr6ox7h1n3" path="res://assets/3D/ExtensionCordSwitch.res" id="14_fv21b"]
+[ext_resource type="PackedScene" uid="uid://oqxtofjpw2o0" path="res://scenes/turntableView.tscn" id="1_85g3d"]
+[ext_resource type="ArrayMesh" uid="uid://bveca4bxkj1ng" path="res://assets/3D/musikplayer_Table.res" id="2_eb6dy"]
+[ext_resource type="ArrayMesh" uid="uid://dvg3v1mru4gsk" path="res://assets/3D/musikplayer_ExtenisionCordCable.res" id="3_trceg"]
+[ext_resource type="ArrayMesh" uid="uid://cw4veulou6q2k" path="res://assets/3D/musikplayer_ExtensionCordBox.res" id="4_a8y0u"]
+[ext_resource type="ArrayMesh" uid="uid://d22pgp64ctjr" path="res://assets/3D/musikplayer_ExtensionCordSwitch.res" id="5_jkv2x"]
+[ext_resource type="ArrayMesh" uid="uid://srhv7wuf6il7" path="res://assets/3D/musikplayer_Speaker.res" id="6_jbj1t"]
+[ext_resource type="ArrayMesh" uid="uid://b2b2jp0sg66ed" path="res://assets/3D/musikplayer_SpeakerCable.res" id="7_muem4"]
+[ext_resource type="ArrayMesh" uid="uid://by68ql6qix6mi" path="res://assets/3D/musikplayer_SpeakerCablePlug.res" id="8_dp3eg"]
 [ext_resource type="Script" uid="uid://btloxo60hdpxi" path="res://scripts/recordView/RecordGrabHandler.cs" id="15_jkv2x"]
-[ext_resource type="ArrayMesh" uid="uid://bqedbj155v5lv" path="res://assets/3D/Speaker.res" id="15_tel4y"]
 [ext_resource type="PackedScene" uid="uid://dmw47iacx017m" path="res://scenes/recordView/drawerView.tscn" id="16_jbj1t"]
-[ext_resource type="ArrayMesh" uid="uid://ce6vyv7jojj3x" path="res://assets/3D/SpeakerCable_001.res" id="16_qkpxi"]
-[ext_resource type="ArrayMesh" uid="uid://bs4xln7o60uli" path="res://assets/3D/SpeakerCablePlug.res" id="17_5q0nq"]
 [ext_resource type="Script" uid="uid://bp8p3bvhtt0te" path="res://scripts/recordView/RaycastHandler.cs" id="17_GmbH4"]
 [ext_resource type="Shader" uid="uid://c1b24yfw5h6xl" path="res://graphics/outline.gdshader" id="17_muem4"]
-
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_dp3eg"]
 render_priority = 0
@@ -26,9 +25,12 @@ material = SubResource("ShaderMaterial_dp3eg")
 flip_faces = true
 size = Vector2(2, 2)
 
+[sub_resource type="Environment" id="Environment_choun"]
+glow_enabled = true
+glow_intensity = 2.0
+
 [sub_resource type="BoxShape3D" id="BoxShape3D_muem4"]
 size = Vector3(50.26, 0.0562744, 70.2939)
-
 
 [node name="root" type="Node3D"]
 
@@ -40,66 +42,65 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 stretch = true
-stretch_shrink = 2
 
 [node name="SubViewport" type="SubViewport" parent="SubViewportContainer"]
 handle_input_locally = false
-size = Vector2i(576, 324)
+size = Vector2i(1152, 648)
 render_target_update_mode = 4
 
 [node name="TurntableView" parent="SubViewportContainer/SubViewport" instance=ExtResource("1_85g3d")]
 
 [node name="Table" type="MeshInstance3D" parent="SubViewportContainer/SubViewport"]
-transform = Transform3D(159.017, 0, 0, 0, -1.19209e-05, 100, 0, -100, -1.19209e-05, -0.818502, 0, 0)
-mesh = ExtResource("11_vxglm")
+mesh = ExtResource("2_eb6dy")
 skeleton = NodePath("")
 
 [node name="ExtensionCord" type="Node3D" parent="SubViewportContainer/SubViewport"]
 
 [node name="ExtenisionCordCable" type="MeshInstance3D" parent="SubViewportContainer/SubViewport/ExtensionCord"]
-transform = Transform3D(-96.8831, -24.7722, 2.23517e-06, 0, 5.96046e-06, 100, -24.7722, 96.8831, -1.19209e-05, -3.80197, -0.162112, -1.62426)
-mesh = ExtResource("12_2f3dj")
+transform = Transform3D(-0.968831, 0, 0.247722, 0, 1, 0, -0.247722, 0, -0.968831, -3.80197, -0.162112, -1.62426)
+mesh = ExtResource("3_trceg")
 skeleton = NodePath("")
+metadata/extras = {
+"ant_landscape": {}
+}
 
 [node name="ExtensionCordBox" type="MeshInstance3D" parent="SubViewportContainer/SubViewport/ExtensionCord"]
-transform = Transform3D(-96.8831, -24.7722, 2.23517e-06, 0, 5.96046e-06, 100, -24.7722, 96.8831, -1.19209e-05, -0.258701, -0.560098, -2.60902)
-mesh = ExtResource("13_yq6so")
+transform = Transform3D(-0.968831, 0, 0.247722, 0, 1, 0, -0.247722, 0, -0.968831, -0.258701, -0.560098, -2.60902)
+mesh = ExtResource("4_a8y0u")
 skeleton = NodePath("")
-
-[node name="ExtensionCordCableCurve" type="MeshInstance3D" parent="SubViewportContainer/SubViewport/ExtensionCord"]
-transform = Transform3D(-55.1794, -83.3981, 8.9407e-06, -8.9407e-06, 1.19209e-05, 100, -83.3981, 55.1794, -2.38419e-05, 2.38978, -0.374566, 1.57176)
-skeleton = NodePath("")
+metadata/extras = {
+"ant_landscape": {}
+}
 
 [node name="ExtensionCordSwitch" type="MeshInstance3D" parent="SubViewportContainer/SubViewport/ExtensionCord"]
-transform = Transform3D(-96.8831, -24.7722, 2.23517e-06, 0, 5.96046e-06, 100, -24.7722, 96.8831, -1.19209e-05, -0.726773, -0.431955, -2.20045)
-mesh = ExtResource("14_fv21b")
+transform = Transform3D(-0.968831, 0, 0.247722, 0, 1, 0, -0.247722, 0, -0.968831, -0.726773, -0.431955, -2.20045)
+mesh = ExtResource("5_jkv2x")
 skeleton = NodePath("")
+metadata/extras = {
+"ant_landscape": {}
+}
 
 [node name="Speaker" type="Node3D" parent="SubViewportContainer/SubViewport"]
 
 [node name="Speaker" type="MeshInstance3D" parent="SubViewportContainer/SubViewport/Speaker"]
-transform = Transform3D(100, 0, 0, 0, -1.19209e-05, 100, 0, -100, -1.19209e-05, -0.090389, -0.491517, 2.02095)
-mesh = ExtResource("15_tel4y")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.090389, -0.491517, 2.02095)
+mesh = ExtResource("6_jbj1t")
 skeleton = NodePath("")
 
 [node name="SpeakerCable" type="MeshInstance3D" parent="SubViewportContainer/SubViewport/Speaker"]
-transform = Transform3D(-96.6676, -5.36442e-05, 25.6004, 25.6004, 5.96046e-06, 96.6676, -5.36442e-05, 100, 5.96046e-06, 0, 0, 4.41421)
-mesh = ExtResource("16_qkpxi")
-skeleton = NodePath("")
-
-[node name="SpeakerCableCurve" type="MeshInstance3D" parent="SubViewportContainer/SubViewport/Speaker"]
-transform = Transform3D(100, 0, 0, 0, -1.19209e-05, 100, 0, -100, -1.19209e-05, 0, 0, 0)
+transform = Transform3D(-0.966676, 0.256004, 5.43812e-07, 0.256004, 0.966676, -7.07887e-08, -5.43812e-07, 7.07887e-08, -1, 0, 0, 4.41421)
+mesh = ExtResource("7_muem4")
 skeleton = NodePath("")
 
 [node name="SpeakerCablePlug" type="MeshInstance3D" parent="SubViewportContainer/SubViewport/Speaker"]
-transform = Transform3D(-100, -3.89414e-05, 2.84217e-12, 0, 5.96046e-06, 100, -3.89414e-05, 100, -1.19209e-05, 0, 0, 0)
-mesh = ExtResource("17_5q0nq")
+transform = Transform3D(-1, 0, 3.25841e-07, 0, 1, 0, -3.25841e-07, 0, -1, 0, 0, 0)
+mesh = ExtResource("8_dp3eg")
 skeleton = NodePath("")
 
 [node name="Camera3D" type="Camera3D" parent="SubViewportContainer/SubViewport"]
 transform = Transform3D(1, 4.76837e-07, -2.84217e-14, 0, 5.96046e-08, 1, 4.76837e-07, -1, 5.96046e-08, 0, 5.44456, 0.548864)
 fov = 56.4
-size = 9.0
+size = 6.419
 
 [node name="PostProcessing" type="MeshInstance3D" parent="SubViewportContainer/SubViewport/Camera3D"]
 transform = Transform3D(1, 0, 4.76837e-07, 4.76837e-07, 5.96046e-08, -1, -2.84217e-14, 1, 5.96046e-08, -2.61719e-07, 0.548864, -5.44456)
@@ -107,9 +108,12 @@ extra_cull_margin = 16384.0
 mesh = SubResource("QuadMesh_0ld40")
 skeleton = NodePath("../..")
 
+[node name="WorldEnvironment" type="WorldEnvironment" parent="SubViewportContainer/SubViewport/Camera3D"]
+environment = SubResource("Environment_choun")
+
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="SubViewportContainer/SubViewport"]
 transform = Transform3D(0.36961, 0.773056, -0.515532, 0.458424, 0.330886, 0.824841, 0.80823, -0.541201, -0.232089, 0, -9.03201, 0)
-light_energy = 2.131
+light_energy = 3.0
 shadow_enabled = true
 shadow_opacity = 0.61
 
