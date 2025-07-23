@@ -12,6 +12,7 @@ namespace Musikspieler.Scripts.Audio
         private Thread thread;
         private volatile bool threadRunning;
         public ITurntable Turntable => turntable;
+        public IAudioPlayer AudioPlayer => audioPlayer;
 
         public void SetSong(Song song)
         {
@@ -42,7 +43,7 @@ namespace Musikspieler.Scripts.Audio
                     {
                         turntable.SimulationStep(1.0f / audioPlayer.SampleRate);
                         audioPlayer.PlaySample(
-                            (int)(turntable.GetCurrentSongPosition() * audioPlayer.SampleLength)
+                            (int)(turntable.CurrentSongPosition * audioPlayer.SampleLength)
                         );
                         samplesToWrite--;
                     }
