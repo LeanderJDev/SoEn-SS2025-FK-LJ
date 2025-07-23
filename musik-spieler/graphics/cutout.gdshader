@@ -25,7 +25,7 @@ void fragment()
 	vec3 local_pos = (inverse(box_transform) * world_pos).xyz;
 
 	vec3 dst_to_edge = -(1. / transition_width) * (abs(local_pos) - (0.5 * box_size));
-	float fade = clamp(min(dst_to_edge.x, min(dst_to_edge.y, dst_to_edge.z)), 0., 1.);
+	float fade = clamp(min(dst_to_edge.x, dst_to_edge.z), 0., 1.);
 
 	if (fade == 0.0)
 	{

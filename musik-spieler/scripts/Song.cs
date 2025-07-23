@@ -39,6 +39,9 @@ namespace Musikspieler.Scripts
             _audio = audioStream;
         }
 
+        private readonly float _length;
+        public float LengthInSeconds => _length;
+
         public override string ToString()
         {
             return $"{nameof(Song)}: Name='{_name}', Album='{_album}', Artist='{_artist}', MP3Path='{_mp3Path}'";
@@ -54,15 +57,5 @@ namespace Musikspieler.Scripts
             _audio?.Dispose();
             _audio = null;
         }
-    }
-
-    public interface ISong
-    {
-        string Name { get; }
-        string Album { get; }
-        string Artist { get; }
-        string MP3Path { get; }
-        byte[] CoverData { get; }
-        AudioStreamWav Audio { get; }
     }
 }
