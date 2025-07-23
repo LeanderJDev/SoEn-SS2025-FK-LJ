@@ -29,6 +29,7 @@ size = Vector2(2, 2)
 [sub_resource type="BoxShape3D" id="BoxShape3D_muem4"]
 size = Vector3(50.26, 0.0562744, 70.2939)
 
+
 [node name="root" type="Node3D"]
 
 [node name="SubViewportContainer" type="SubViewportContainer" parent="."]
