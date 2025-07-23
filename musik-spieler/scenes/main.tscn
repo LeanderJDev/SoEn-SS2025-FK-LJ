@@ -41,7 +41,7 @@ mesh = ExtResource("3_0ld40")
 skeleton = NodePath("")
 
 [node name="PlayerBody" type="MeshInstance3D" parent="MusicPlayer"]
-transform = Transform3D(-100, -3.89414e-05, 2.84217e-12, 0, 5.96046e-06, 100, -3.89414e-05, 100, -1.19209e-05, -0.829077, -0.0133225, -0.82886)
+transform = Transform3D(-100, -3.89414e-05, 2.84217e-12, 0, 5.96046e-06, 100, -3.89414e-05, 100, -1.19209e-05, 0.334705, -0.175307, -0.336358)
 mesh = ExtResource("4_gqmmt")
 skeleton = NodePath("")
 

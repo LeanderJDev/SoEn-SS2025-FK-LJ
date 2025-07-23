@@ -54,7 +54,7 @@ namespace Musikspieler.Scripts
 
     public interface IPlaylist : IItem, IItemList<ISong>
     {
-
+        public string Name { get; }
     }
 
     public interface IPlaylistDirectory : IItemList<IPlaylist>
