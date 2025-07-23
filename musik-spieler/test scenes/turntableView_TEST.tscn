@@ -1,6 +1,6 @@
-[gd_scene load_steps=3 format=3 uid="uid://ch35dc6qnsaph"]
+[gd_scene load_steps=3 format=3 uid="uid://xmxq4neuut03"]
 
-[ext_resource type="PackedScene" uid="uid://r8anqjhnvlg4" path="res://scenes/turntableView.tscn" id="1_er2vu"]
+[ext_resource type="PackedScene" uid="uid://oqxtofjpw2o0" path="res://scenes/turntableView.tscn" id="1_er2vu"]
 [ext_resource type="Script" uid="uid://drkcrncekyqcc" path="res://scripts/test/TurntableViewTest.cs" id="1_rppv1"]
 
 [node name="TurntableView_TEST" type="Node3D" node_paths=PackedStringArray("turntableView")]

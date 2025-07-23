@@ -43,7 +43,7 @@ namespace Musikspieler.Scripts.Audio
                     {
                         turntable.SimulationStep(1.0f / audioPlayer.SampleRate);
                         audioPlayer.PlaySample(
-                            (int)(turntable.GetCurrentSongPosition() * audioPlayer.SampleLength)
+                            (int)(turntable.CurrentSongPosition * audioPlayer.SampleLength)
                         );
                         samplesToWrite--;
                     }

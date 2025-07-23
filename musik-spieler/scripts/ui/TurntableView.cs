@@ -61,7 +61,7 @@ namespace Musikspieler.Scripts.UI
 
 		public override void _Process(double delta)
 		{
-			Record.RotateY(turntableAudioManager.Turntable.CurrentLoop % 1 * Mathf.Pi * 2 - Record.Rotation.Y);
+			Record.RotateY(-1* (turntableAudioManager.Turntable.CurrentLoop % 1 * Mathf.Pi * 2 - Record.Rotation.Y));
 			// Don't apply if Tonearm is grabbed or resting
 			if (
 				!controller.IsArmGrabbed &&
@@ -70,7 +70,7 @@ namespace Musikspieler.Scripts.UI
 			)
 			{
 				// trust me bro this works
-				Tonearm.RotateY((1 - (turntableAudioManager.Turntable.CurrentLoop / turntableAudioManager.Turntable.MaxLoops)) * (recordStartYAngle - innerLimitYAngle) - (outerLimitYAngle - recordStartYAngle) - Tonearm.Rotation.Y);
+				Tonearm.RotateY((1 - turntableAudioManager.Turntable.CurrentSongPosition) * (recordStartYAngle - innerLimitYAngle) - (outerLimitYAngle - recordStartYAngle) - Tonearm.Rotation.Y);
 			}
 		}
 

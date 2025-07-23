@@ -37,7 +37,7 @@ namespace Musikspieler.Scripts.Test
 			var turntableField = turntableView.turntableAudioManager.GetType().GetField("turntable", BindingFlags.NonPublic | BindingFlags.Instance);
 			Turntable turntable = (Turntable)turntableField.GetValue(turntableView.turntableAudioManager);
 
-			int sampleIndex = (int)(turntable.GetCurrentSongPosition() * samples.Length);
+			int sampleIndex = (int)(turntable.CurrentSongPosition * samples.Length);
 
 			// Bereich berechnen, der im letzten Frame gespielt wurde
 			float loopsPlayed = turntableView.turntableAudioManager.Turntable.CurrentSpeed * (float)delta;

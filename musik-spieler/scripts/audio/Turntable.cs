@@ -7,6 +7,7 @@ namespace Musikspieler.Scripts.Audio
     {
         float CurrentLoop { get; }
         float CurrentSpeed { get; }
+        float CurrentSongPosition { get; }
         float MaxLoops { get; }
         bool IsMotorRunning { get; }
 
@@ -32,23 +33,19 @@ namespace Musikspieler.Scripts.Audio
         private bool motorRunning;
         private float motorAcceleration = 2.4f; // Kalibrierter Wert
         private float drag = 0.1f; // Kalibrierter Wert
-        private float lerpSpeed = 12f;
+        private float lerpSpeed = 6f;
         private bool scratchActive = false;
         private float targetLoop = 0f;
         private float lastLoop = 0f;
         public float CurrentLoop => currentLoop;
         public float CurrentSpeed => currentSpeed;
+        public float CurrentSongPosition => currentLoop / maxLoops;
         public float MaxLoops => maxLoops;
         public bool IsMotorRunning => motorRunning;
 
         public void SetMaxLoops(float songLength)
         {
             maxLoops = motorSpeed / 60 * songLength;
-        }
-
-        public float GetCurrentSongPosition()
-        {
-            return currentLoop / maxLoops;
         }
 
         public void SimulationStep(double delta)
