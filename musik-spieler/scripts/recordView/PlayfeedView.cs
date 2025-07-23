@@ -34,7 +34,7 @@ namespace Musikspieler.Scripts.RecordView
                 ObjectsChanged?.Invoke(new()
                 {
                     changeToView = targetView,
-                    items = [_drawer]
+                    itemsToChangeView = [_drawer]
                 });
                 _drawer = null;
                 return true;

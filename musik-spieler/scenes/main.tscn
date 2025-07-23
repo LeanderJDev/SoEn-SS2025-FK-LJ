@@ -11,7 +11,7 @@
 [ext_resource type="Script" uid="uid://btloxo60hdpxi" path="res://scripts/recordView/RecordGrabHandler.cs" id="15_jkv2x"]
 [ext_resource type="PackedScene" uid="uid://dmw47iacx017m" path="res://scenes/recordView/drawerView.tscn" id="16_jbj1t"]
 [ext_resource type="Script" uid="uid://bp8p3bvhtt0te" path="res://scripts/recordView/RaycastHandler.cs" id="17_GmbH4"]
-[ext_resource type="Shader" path="res://graphics/outline.gdshader" id="17_muem4"]
+[ext_resource type="Shader" uid="uid://c1b24yfw5h6xl" path="res://graphics/outline.gdshader" id="17_muem4"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_dp3eg"]
 render_priority = 0

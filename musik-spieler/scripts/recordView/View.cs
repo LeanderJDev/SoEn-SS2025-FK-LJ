@@ -20,7 +20,7 @@ namespace Musikspieler.Scripts.RecordView
         {
             public readonly bool ViewChanged => changeToView != null;
 
-            public List<ViewItem> items;
+            public List<ViewItem> itemsToChangeView;
             public View changeToView;
         }
 

@@ -88,7 +88,7 @@ namespace Musikspieler.Scripts.RecordView
 
         private void GrabRecord(View recordView)
         {
-            GD.Print("grab");
+            GD.Print("GrabHandler: Grab");
             currentlyGrabbed = recordView.GrabItem(true);
             if (currentlyGrabbed == null)
                 return;
@@ -98,7 +98,7 @@ namespace Musikspieler.Scripts.RecordView
 
         private void PutRecord(View recordView)
         {
-            GD.Print("put");
+            GD.Print("GrabHandler: Put");
             if (currentlyGrabbed == null)
                 throw new Exception("Cannot put Record \"null\" into a RecordView.");
 
