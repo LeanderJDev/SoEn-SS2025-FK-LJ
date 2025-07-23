@@ -14,7 +14,7 @@ namespace Musikspieler.Scripts.RecordView
         public abstract ShaderMaterial LocalMaterial { get; }
         public abstract int GetViewIndex(ViewItem item);
 
-        public abstract event Action<ItemListChangedEventArgs> ObjectListChanged;
+        public abstract event Action<ItemListChangedEventArgs> ObjectsChanged;
 
         public struct ItemListChangedEventArgs
         {

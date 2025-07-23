@@ -10,7 +10,7 @@ namespace Musikspieler.Scripts.RecordView
 
         [Export] private CollisionShape3D _collisionShape;
 
-        public override event Action<ItemListChangedEventArgs> ObjectListChanged;
+        public override event Action<ItemListChangedEventArgs> ObjectsChanged;
 
         public override CollisionShape3D BoundsShape => _collisionShape;
 
@@ -25,11 +25,13 @@ namespace Musikspieler.Scripts.RecordView
             return _drawer;
         }
 
+        public Vector3 DrawerPos;
+
         public override bool MoveItem(int index, View targetView)
         {
             if(targetView.AcceptItem(_drawer, null))
             {
-                ObjectListChanged?.Invoke(new()
+                ObjectsChanged?.Invoke(new()
                 {
                     changeToView = targetView,
                     items = [_drawer]
@@ -75,12 +77,14 @@ namespace Musikspieler.Scripts.RecordView
 
         public override int GetViewIndex(ViewItem item)
         {
-            throw new NotImplementedException();
+            return 0;
         }
 
         public override void UpdateItemTransform(int index)
         {
-            throw new NotImplementedException();
+            _drawer.Position = DrawerPos;
+            _drawer.Rotation = Vector3.Zero;
+            _drawer.Scale = Vector3.One;
         }
     }
 }

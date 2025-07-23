@@ -61,11 +61,11 @@ namespace Musikspieler.Scripts.RecordView
             {
                 ArgumentNullException.ThrowIfNull(value);
                 if (_view != null)
-                    _view.ObjectListChanged -= OnItemListChanged;
+                    _view.ObjectsChanged -= OnItemsChanged;
                 if (IsInsideTree() && !IsGettingDragged)
                     SmoothReparent(value.Container);
                 _view = value;
-                _view.ObjectListChanged += OnItemListChanged;
+                _view.ObjectsChanged += OnItemsChanged;
             }
         }
 
@@ -74,7 +74,7 @@ namespace Musikspieler.Scripts.RecordView
             return View.MoveItem(ViewIndex, targetView);
         }
 
-        private void OnItemListChanged(View.ItemListChangedEventArgs args)
+        private void OnItemsChanged(View.ItemListChangedEventArgs args)
         {
             if (args.ViewChanged && args.items.Contains(this))
                 View = args.changeToView;

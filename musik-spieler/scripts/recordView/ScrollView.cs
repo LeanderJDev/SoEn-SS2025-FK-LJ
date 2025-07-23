@@ -30,7 +30,7 @@ namespace Musikspieler.Scripts.RecordView
 		public event Action<ItemsAddedEventArgs> ItemsAdded;
 		public event Action<ItemsRemovedEventArgs> ItemsRemoved;
 
-		public override event Action<ItemListChangedEventArgs> ObjectListChanged;
+		public override event Action<ItemListChangedEventArgs> ObjectsChanged;
 
 		private IItemList<T> _itemList;
 		public IItemList<T> ItemList
@@ -67,7 +67,7 @@ namespace Musikspieler.Scripts.RecordView
 						_scrollContainer.AddChild(item);
 					}
 					itemObjects.AddRange(newItems);
-					ObjectListChanged?.Invoke(new()
+					ObjectsChanged?.Invoke(new()
 					{
 						items = newItems.Cast<ViewItem>().ToList(),
 						changeToView = this,
@@ -136,7 +136,7 @@ namespace Musikspieler.Scripts.RecordView
 				itemObjects.AddRange(newItems);
 			else
 				itemObjects.InsertRange(args.startIndex, newItems);
-			ObjectListChanged?.Invoke(new()
+			ObjectsChanged?.Invoke(new()
 			{
 				items = newItems.Cast<ViewItem>().ToList(),
 				changeToView = null,
@@ -156,7 +156,7 @@ namespace Musikspieler.Scripts.RecordView
 				//displayedItem.QueueFree(); //macht jetzt der garbage bin
 			}
 			itemObjects.RemoveRange(args.startIndex, args.count);
-			ObjectListChanged?.Invoke(new()
+			ObjectsChanged?.Invoke(new()
 			{
 				items = itemsToDelete.Cast<ViewItem>().ToList(),
 				//changeToView = GarbageBin<T>.Instance,
@@ -215,7 +215,7 @@ namespace Musikspieler.Scripts.RecordView
 			_itemList.RemoveItem(itemToRemove.displayedItem);
 			itemObjects.Remove(null);
 			ignoreItemsRemovedEvent = false;
-			ObjectListChanged?.Invoke(new()
+			ObjectsChanged?.Invoke(new()
 			{
 				items = [itemToRemove],
 				changeToView = targetView,
@@ -269,7 +269,7 @@ namespace Musikspieler.Scripts.RecordView
 				itemObjects.Insert(index.Value, viewItem);
 			}
 
-			ObjectListChanged?.Invoke(new()
+			ObjectsChanged?.Invoke(new()
 			{
 				items = [],
 				changeToView = null,
