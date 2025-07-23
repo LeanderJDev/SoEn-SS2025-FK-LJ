@@ -341,7 +341,7 @@ namespace Musikspieler.Scripts.RecordView
             List<ISong> songs = new(100);
             for (int i = 0; i < 100; i++)
             {
-                songs.Add(new Song(Utility.RandomString(10)));
+                songs.Add(new Song(Utility.RandomString(10),Utility.RandomString(10),Utility.RandomString(10),""));
             }
             Playlist playlist = new();
             Playlist = playlist;
