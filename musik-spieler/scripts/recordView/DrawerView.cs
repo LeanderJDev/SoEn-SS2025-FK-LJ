@@ -76,7 +76,7 @@ namespace Musikspieler.Scripts.RecordView
         public AnimationOutput SelectedOffsetAnimationFunction(AnimationInput input)
         {
             const float selectedOffset = 2.4f;
-            
+
             return new AnimationOutput()
             {
                 PositionOffset = new(selected[input.index] ? selectedOffset : 0, 0, 0)

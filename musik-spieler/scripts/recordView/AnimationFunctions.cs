@@ -24,7 +24,7 @@ namespace Musikspieler.Scripts.RecordView
 
             public AnimationOutput() { }
         }
-        
+
         public struct AnimationInput
         {
             public Vector2 relativeMousePos;

@@ -194,7 +194,7 @@ namespace Musikspieler.Scripts.RecordView
 				GD.PrintErr("ScrollView has not been initialized.");
 				return false;
 			}
-				
+
 			if (ItemCount <= 0)
 			{
 				GD.Print("Nothing to remove");

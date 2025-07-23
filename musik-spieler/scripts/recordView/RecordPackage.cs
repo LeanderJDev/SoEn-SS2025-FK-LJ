@@ -11,7 +11,7 @@ namespace Musikspieler.Scripts.RecordView
 
             base._Ready();
         }
-        
+
         static RecordPackage()
         {
             ItemPrefab = GD.Load<PackedScene>("res://scenes/recordView/recordPackage.tscn");

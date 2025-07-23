@@ -34,7 +34,7 @@ namespace Musikspieler.Scripts.RecordView
         public override bool AcceptItem(ViewItem item, int? index)
         {
             //destroy item
-            
+
             return true;
         }
 

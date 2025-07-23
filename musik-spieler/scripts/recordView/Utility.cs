@@ -39,7 +39,7 @@ namespace Musikspieler.Scripts.RecordView
                 To = to,
                 CollisionMask = mask
             };
-            
+
             if (objectsToIgnore != null)
             {
                 Rid[] excludes = new Rid[objectsToIgnore.Count];
