@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://cem353j2urtor"]
+[gd_scene load_steps=16 format=3 uid="uid://cem353j2urtor"]
 
 [ext_resource type="PackedScene" uid="uid://r8anqjhnvlg4" path="res://scenes/turntableView.tscn" id="1_85g3d"]
 [ext_resource type="ArrayMesh" uid="uid://uw121ydmjv48" path="res://assets/3D/Table.res" id="11_vxglm"]
@@ -7,8 +7,10 @@
 [ext_resource type="ArrayMesh" uid="uid://rhdr6ox7h1n3" path="res://assets/3D/ExtensionCordSwitch.res" id="14_fv21b"]
 [ext_resource type="Script" uid="uid://btloxo60hdpxi" path="res://scripts/recordView/RecordGrabHandler.cs" id="15_jkv2x"]
 [ext_resource type="ArrayMesh" uid="uid://bqedbj155v5lv" path="res://assets/3D/Speaker.res" id="15_tel4y"]
+[ext_resource type="PackedScene" path="res://scenes/recordView/drawerView.tscn" id="16_jbj1t"]
 [ext_resource type="ArrayMesh" uid="uid://ce6vyv7jojj3x" path="res://assets/3D/SpeakerCable_001.res" id="16_qkpxi"]
 [ext_resource type="ArrayMesh" uid="uid://bs4xln7o60uli" path="res://assets/3D/SpeakerCablePlug.res" id="17_5q0nq"]
+[ext_resource type="Script" path="res://scripts/recordView/RaycastHandler.cs" id="17_GmbH4"]
 [ext_resource type="Shader" uid="uid://c1b24yfw5h6xl" path="res://graphics/outline.gdshader" id="17_muem4"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_dp3eg"]
@@ -22,6 +24,9 @@ lightmap_size_hint = Vector2i(12, 12)
 material = SubResource("ShaderMaterial_dp3eg")
 flip_faces = true
 size = Vector2(2, 2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_muem4"]
+size = Vector3(50.26, 0.0562744, 70.2939)
 
 [node name="root" type="Node3D"]
 
@@ -106,5 +111,18 @@ light_energy = 2.131
 shadow_enabled = true
 shadow_opacity = 0.61
 
-[node name="RecordGrabHandler" type="Node3D" parent="SubViewportContainer/SubViewport"]
+[node name="RecordGrabHandler" type="StaticBody3D" parent="SubViewportContainer/SubViewport"]
+collision_layer = 8
+collision_mask = 8
 script = ExtResource("15_jkv2x")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="SubViewportContainer/SubViewport/RecordGrabHandler"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.624481, 0)
+shape = SubResource("BoxShape3D_muem4")
+
+[node name="DrawerView" parent="SubViewportContainer/SubViewport" instance=ExtResource("16_jbj1t")]
+transform = Transform3D(0.440564, 0, 0, 0, 0.440564, 0, 0, 0, 0.440564, -4.65926, 0.439431, 0.493215)
+
+[node name="RaycastHandler" type="Node3D" parent="SubViewportContainer/SubViewport"]
+process_physics_priority = -1
+script = ExtResource("17_GmbH4")

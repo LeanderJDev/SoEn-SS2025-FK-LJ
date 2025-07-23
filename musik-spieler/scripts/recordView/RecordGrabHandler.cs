@@ -1,15 +1,16 @@
 using Godot;
 using System;
+using System.Collections.Generic;
 
 namespace Musikspieler.Scripts.RecordView
 {
     public partial class RecordGrabHandler : Node
     {
-        private RecordPackage currentlyGrabbed;
+        private ViewItem currentlyGrabbed;
 
         public static RecordGrabHandler Instance { get; private set; }
 
-        //Hier werden alle durch externe Manipulation der Playlist gelöschten Records automatisch hinbewegt.
+        //Hier werden alle durch externe Manipulation der ItemList gelöschten Records automatisch hinbewegt.
         public RecordView GarbageBin { get; private set; }
 
         public override void _Process(double delta)
@@ -44,9 +45,17 @@ namespace Musikspieler.Scripts.RecordView
         {
             //RayCast
             Mask<CollisionMask> mask = new(CollisionMask.RecordViewBoundary, CollisionMask.DrawerViewBoundary);
-            if (Utility.CameraRaycast(GetViewport().GetCamera3D(), mask, out var result))
+
+            List<StaticBody3D> exludedObjects = null;
+            if (currentlyGrabbed is IItemAndView view)
             {
-                if (result != null && result.Count > 0 && (Node3D)result["collider"] is RecordView recordView)
+                //cast geht, da Godot vorschreibt, dass ein CollisionShape3D-Objekt eine StaticBody3D als Parent haben muss.
+                exludedObjects = [view.ChildView];
+            }
+
+            if (Utility.CameraRaycast(GetViewport().GetCamera3D(), mask, out var result, exludedObjects))
+            {
+                if (result != null && result.Count > 0 && (Node3D)result["collider"] is View recordView)
                 {
                     if (isPressed && currentlyGrabbed == null)
                     {
@@ -71,29 +80,32 @@ namespace Musikspieler.Scripts.RecordView
                     return;
 
                 //Es wird versucht etwas abzulegen, wo nichts ist. Die Platte muss zurück, wo sie herkommt.
-                //Da die Platte ihre RecordView und ihren Index noch hat, muss nur das hier wieder gesetzt werden:
+                //Da die Platte ihre ChildView und ihren Index noch hat, muss nur das hier wieder gesetzt werden:
                 currentlyGrabbed.IsGettingDragged = false;
                 currentlyGrabbed = null;
             }
         }
 
-        private void GrabRecord(RecordView recordView)
+        private void GrabRecord(View recordView)
         {
             GD.Print("grab");
-            currentlyGrabbed = recordView.Grab();
+            currentlyGrabbed = recordView.GrabItem(true);
             if (currentlyGrabbed == null)
                 return;
 
             currentlyGrabbed.IsGettingDragged = true;
         }
 
-        private void PutRecord(RecordView recordView)
+        private void PutRecord(View recordView)
         {
             GD.Print("put");
             if (currentlyGrabbed == null)
                 throw new Exception("Cannot put Record \"null\" into a RecordView.");
 
-            currentlyGrabbed.RecordView.MoveRecord(currentlyGrabbed, recordView);
+            if (recordView == null)
+                throw new Exception();
+
+            currentlyGrabbed.Move(recordView);
             currentlyGrabbed.IsGettingDragged = false;
 
             currentlyGrabbed = null;
@@ -122,6 +134,7 @@ namespace Musikspieler.Scripts.RecordView
                     OnRightClick(mouseEvent.Pressed);
                 }
             }
+            base._Input(@event);
         }
     }
 }

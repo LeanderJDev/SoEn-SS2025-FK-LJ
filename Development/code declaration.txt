@@ -1,0 +1,398 @@
+public abstract partial class ScrollView<T> : View where T : IItem
+{
+    [Export] protected Node3D _scrollContainer;
+    [Export] private CollisionShape3D viewBounds;
+    public override CollisionShape3D BoundsShape { get; }
+    public ScrollViewContentContainer ScrollContainer { get; }
+    protected readonly List<ViewItemGeneric<T>> itemObjects;
+    public int ItemCount => itemObjects.Count;
+    public ViewItemGeneric<T> this[int index] { get; }
+    public override bool IsItemListAssigned { get; }
+    protected Mask<CollisionMask> mask;
+    private IItemList<T> _itemList;
+    public IItemList<T> ItemList { get; set; }
+    protected float itemObjectWidth = 0.25f;
+    protected float scrollAreaSize = 0.3f;
+    protected float flipThresholdOffset = -0.2f;
+    protected float flipThreshold = 1.7f;
+    public bool useAutoScroll = true;
+    public float autoScrollSensitivity = 40f;
+    public float scrollSensitivity = 1f;
+    public int GapIndex { get; }
+    private float _centeredGapIndex;
+    public Vector3 Bounds { get; }
+    public Animations Animation { get; set; }
+    private bool ignoreItemsAddedEvent = false;
+    private bool ignoreItemsRemovedEvent = false;
+    public event Action<PlaylistChangedEventArgs> ItemListChanged;
+    public struct PlaylistChangedEventArgs
+    {
+        public readonly bool ViewChanged
+        public List<ViewItemGeneric<T>> items;
+        public ScrollView<T> changeToView;
+    }
+    public override void _Ready();
+
+    private void OnItemsAdded(ItemsAddedEventArgs args);
+
+    private void OnItemsRemoved(ItemsRemovedEventArgs args);
+
+    public int IndexOf(ViewItemGeneric<T> item);
+    public ShaderMaterial CutoffMaterialInstance { get; private set; }
+
+    public override bool MoveItem(int index, View targetView);
+
+    public bool MoveItem(ScrollView<T> targetView);
+
+    public bool MoveItems(int index, int count, View targetView, int? targetIndex = null);
+
+    private void MoveChecks(int index, int count, View targetView, int? targetIndex = null);
+
+    public bool MoveItems(int index, int count, ScrollView<T> targetView, int? targetIndex = null);
+
+    private Vector2? GetBoundaryMousePosition();
+
+    private void Scroll(float gaps);
+
+    private void OnScrollInput(float lines);
+
+    public override void _Input(InputEvent @event);
+
+    public override ViewItem Grab();
+
+    private Vector2 lastMousePos;
+    private float currentFlipOffset;
+
+    public override void _Process(double delta);
+
+    public void UpdateAllItemTransforms();
+
+    public void UpdateItemTransform(int index);
+
+    public struct AnimationOutput
+    {
+        public Vector3 PositionOffset;
+        public Vector3 RotationOffset;
+        public Vector3 ScaleOffset;
+    }
+    
+    public struct AnimationInput
+    {
+        public Vector2 relativeMousePos;
+        public float PackagePos;
+        public bool isSelected;
+    }
+
+    public readonly struct Animations(float forwardMargin, float backwardMargin, params Animations.AnimationFunction[] functions)
+    {
+        public delegate AnimationOutput AnimationFunction(AnimationInput output);
+        private readonly AnimationFunction[] functions = functions;
+        public readonly float ForwardGapToViewBoundryMargin = forwardMargin;
+        public readonly float BackwardGapToViewBoundryMargin = backwardMargin;
+        public readonly AnimationOutput RunAnimationFrame(AnimationInput input)
+        public static AnimationOutput BinaryFlickThroughRotationXAnimationFunction(AnimationInput input)
+        public static AnimationOutput LeaningFlickThroughRotationXAnimationFunction(AnimationInput input)
+        public static AnimationOutput SubtleRotationYAnimationFunction(AnimationInput input)
+        public static AnimationOutput SelectedOffsetXAnimationFucntion(AnimationInput input)
+    }
+}
+
+public partial class ScrollViewContentContainer : SmoothMovingObject
+{
+    public static readonly new SmoothDamp SmoothDamp;
+    public override void _Ready()
+}
+
+public abstract partial class ViewItemGeneric<T> : ViewItem where T : IItem
+{
+    public static ViewItemGeneric<T> InstantiateAndAssign(ScrollView<T> scrollView, int playlistIndex)
+
+    protected static PackedScene ItemPrefab { get; set; }
+
+    public T displayedItem;
+
+    public override bool IsGettingDragged { get; set; }
+
+    public ScrollView<T> View { get; set; }
+
+    public override bool Move(View targetView)
+
+    private void OnPlaylistChanged(ScrollView<T>.PlaylistChangedEventArgs args)
+
+    public static SmoothDamp ObjectTypeSmoothDamp { get; protected set; }
+
+    public static ShaderMaterial DefaultMaterial { get; protected set; }
+
+    public override void _Process(double delta);
+}
+
+public partial class GarbageBin : View
+{
+    public static GarbageBin Instance { get; private set; }
+
+    public override CollisionShape3D BoundsShape
+
+    public override void _Ready()
+
+    public override bool IsItemListAssigned
+
+    public override ViewItem Grab()
+
+    public override bool MoveItem(int index, View targetView)
+}
+
+public abstract partial class View : StaticBody3D
+{
+    public abstract ViewItem Grab();
+    public abstract bool MoveItem(int index, View targetView);
+    public abstract bool IsItemListAssigned { get; }
+    public abstract CollisionShape3D BoundsShape { get; }
+}
+
+public abstract partial class ViewItem : SmoothMovingObject
+{
+    public int ViewIndex { get; protected set; }
+    public bool IsPending { get; protected set; }
+    public abstract bool IsGettingDragged { get; set; }
+    public abstract bool Move(View targetView);
+}
+
+public class Song : ISong
+{
+    public string Name
+    public float LengthInSeconds
+}
+
+public interface IItem
+{
+
+}
+
+public struct ItemsAddedEventArgs
+{
+    public int startIndex;
+    public int count;
+}
+
+public struct ItemsRemovedEventArgs
+{
+    public int startIndex;
+    public int count;
+}
+
+public interface IItemList<T> where T : IItem
+{
+    public int ItemCount { get; }
+    public T this[int index] { get; }
+    public event Action<ItemsAddedEventArgs> ItemsAdded;
+    public event Action<ItemsRemovedEventArgs> ItemsRemoved;
+    public ImmutableArray<T> GetAllItems();
+    public IEnumerable<T> GetEnumerable();
+    public bool AddItem(T item);
+    public bool AddItems(List<T> items);
+    public bool InsertItemAt(T item, int index);
+    public bool InsertItemsAt(List<T> items, int index);
+    public bool RemoveItem(T item);
+    public bool RemoveItemAt(int index);
+    public bool RemoveItemsAt(int startIndex, int count);
+
+    //how many itemObjects could be added
+    public int BufferSizeLeft { get; }
+}
+
+public interface ISong : IItem
+{
+    public string Name { get; }
+    public float LengthInSeconds { get; }
+}
+
+public interface IPlaylist : IItem, IItemList<ISong>
+{
+
+}
+
+public interface IPlaylistDirectory : IItemList<IPlaylist>
+{
+
+}
+
+public class Playlist : IPlaylist
+{
+    private readonly List<ISong> songs;
+
+    public string Name { get; set; }
+
+    public int ItemCount
+
+    public int BufferSizeLeft
+
+    public ImmutableArray<ISong> GetAllItems()
+
+    public IEnumerable<ISong> GetEnumerable()
+
+    public event Action<ItemsAddedEventArgs> ItemsAdded
+    public event Action<ItemsRemovedEventArgs> ItemsRemoved
+
+    public ISong this[int index] => songs[index];
+
+    public bool AddItem(ISong song)
+
+    public bool AddItems(List<ISong> songList)
+
+    public bool InsertItemAt(ISong song, int index)
+
+    public bool InsertItemsAt(List<ISong> songs, int index)
+
+    public bool RemoveItem(ISong song)
+
+    public bool RemoveItemAt(int index)
+
+    public bool RemoveItemsAt(int startIndex, int count)
+}
+
+public class MusicCollection : IPlaylistDirectory
+{
+    private readonly List<IPlaylist> _playlists;
+
+    public IPlaylist this[int index]
+
+    public int ItemCount
+
+    public int BufferSizeLeft
+
+    public event Action<ItemsAddedEventArgs> ItemsAdded;
+    public event Action<ItemsRemovedEventArgs> ItemsRemoved;
+
+    public ImmutableArray<IPlaylist> GetAllItems() => [.. _playlists];
+
+    public IEnumerable<IPlaylist> GetEnumerable()
+
+    public bool AddItem(IPlaylist song)
+
+    public bool AddItems(List<IPlaylist> songList)
+
+    public bool InsertItemAt(IPlaylist song, int index)
+
+    public bool InsertItemsAt(List<IPlaylist> _playlist, int index)
+
+    public bool RemoveItem(IPlaylist song)
+
+    public bool RemoveItemAt(int index)
+
+    public bool RemoveItemsAt(int startIndex, int count)
+}
+
+public interface IItemAndView
+{
+    public View ChildView { get; }
+}
+
+public partial class Drawer : ViewItemGeneric<IPlaylist>, IItemAndView
+{
+    public RecordView RecordView
+
+    View IItemAndView.ChildView
+
+    public static void Init()
+
+    public override void _Ready()
+}
+
+public partial class RecordGrabHandler : Node
+{
+    private ViewItem currentlyGrabbed;
+
+    public static RecordGrabHandler Instance { get; private set; }
+
+    public RecordView GarbageBin { get; private set; }
+
+    public override void _Process(double delta)
+    public override void _Ready()
+
+    private void OnLeftClick(bool isPressed)
+
+    private void GrabRecord(View recordView)
+
+    private void PutRecord(View recordView)
+
+    private void OnRightClick(bool isPressed)
+
+    public override void _Input(InputEvent @event)
+}
+
+public class SmoothDamp
+{
+    public SmoothMovementParameters PositionParameters;
+    public SmoothMovementParameters RotationParameters;
+    public SmoothMovementParameters ScaleParameters;
+
+    public class SmoothMovementParameters
+    {
+        public float smoothTime = 0.1f;
+        public float maxSpeed = 10f;
+    }
+
+    public class SmoothMovementState
+    {
+        public Vector3 targetRotation;
+        public Vector3 targetPosition;
+        public Vector3 targetScale;
+        public Vector3 rotationVelocity;
+        public Vector3 positionVelocity;
+        public Vector3 scaleVelocity;
+        public bool disableSmoothing;
+    }
+
+    public void Step(Node3D node, SmoothMovementState state, float deltaTime)
+
+    public static float Step(float current, float target, ref float currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
+
+    public static Vector2 Step(Vector2 current, Vector2 target, ref Vector2 currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
+
+    public static Vector3 Step(Vector3 current, Vector3 target, ref Vector3 currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
+}
+
+public partial class SmoothMovingObject : Node3D
+{
+    public new Vector3 Position { get; set; }
+
+    public new Vector3 Rotation { get; set; }
+
+    public new Vector3 Scale { get; set; }
+
+    protected SmoothDamp.SmoothMovementState MovementState
+
+    public bool IsCloseToTargetPosition { get; }
+    public bool IsCloseToTargetRotation { get; }
+    public bool IsCloseToTargetScale { get; }
+
+    public SmoothDamp SmoothDamp { get; protected set; }
+
+    public override void _Process(double delta)
+
+    public void Teleport(Vector3? pos, Vector3? rot, Vector3? scale)
+
+    public void Teleport()
+
+    public void SmoothReparent(Node3D newParent)
+}
+
+public partial class RecordPackage : ViewItemGeneric<ISong>
+{
+    public static void Init()
+}
+
+public partial class RecordView : ScrollView<ISong>
+{
+    public override void _Ready()
+}
+
+public partial class DrawerView : ScrollView<IPlaylist>
+{
+    public override void _Ready()
+}
+
+
+
+
+

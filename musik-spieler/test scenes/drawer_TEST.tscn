@@ -1,0 +1,35 @@
+[gd_scene load_steps=5 format=3 uid="uid://csfur5qn5shnt"]
+
+[ext_resource type="PackedScene" uid="uid://dmw47iacx017m" path="res://scenes/recordView/drawerView.tscn" id="1_4ndqm"]
+[ext_resource type="Script" uid="uid://btloxo60hdpxi" path="res://scripts/recordView/RecordGrabHandler.cs" id="2_htoij"]
+[ext_resource type="Script" uid="uid://bp8p3bvhtt0te" path="res://scripts/recordView/RaycastHandler.cs" id="3_htoij"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_tfysl"]
+size = Vector3(93.9678, 0.187256, 78.6123)
+
+[node name="DrawerTest" type="Node3D"]
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(-4.37114e-08, -0.978867, 0.204496, 0, 0.204496, 0.978867, -1, 4.27877e-08, -8.93881e-09, 10.8247, 47.0391, -0.0122404)
+fov = 10.6
+
+[node name="DrawerView" parent="." instance=ExtResource("1_4ndqm")]
+
+[node name="RecordGrabHandler" type="StaticBody3D" parent="."]
+collision_layer = 8
+collision_mask = 8
+script = ExtResource("2_htoij")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="RecordGrabHandler"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.29777, 0)
+shape = SubResource("BoxShape3D_tfysl")
+
+[node name="Light" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.141083, 0.914936, 0.378137, 0.408327, -0.401733, 0.819683, 0.901867, 0.0387606, -0.430271, 0, 15.7683, -0.561996)
+light_energy = 0.747
+shadow_enabled = true
+shadow_opacity = 0.64
+
+[node name="RaycastHandler" type="Node3D" parent="."]
+process_priority = -1
+script = ExtResource("3_htoij")
