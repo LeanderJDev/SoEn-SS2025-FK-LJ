@@ -61,7 +61,7 @@ namespace Musikspieler.Scripts.UI
 
 		public override void _Process(double delta)
 		{
-			Record.RotateY(-1* (turntableAudioManager.Turntable.CurrentLoop % 1 * Mathf.Pi * 2 - Record.Rotation.Y));
+			Record.RotateY(-1*turntableAudioManager.Turntable.CurrentLoop % 1 * Mathf.Pi * 2 - Record.Rotation.Y);
 			// Don't apply if Tonearm is grabbed or resting
 			if (
 				!controller.IsArmGrabbed &&
