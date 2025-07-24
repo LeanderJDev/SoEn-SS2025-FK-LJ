@@ -5,7 +5,7 @@ namespace Musikspieler.Scripts.RecordView
 {
     public abstract partial class ViewItemGeneric<T> : ViewItem where T : IItem
     {
-        [Export] private MeshInstance3D _meshInstance;
+        [Export] protected MeshInstance3D _meshInstance;
 
         public static ViewItemGeneric<T> InstantiateAndAssign(ScrollView<T> scrollView, int playlistIndex)
         {
@@ -13,7 +13,6 @@ namespace Musikspieler.Scripts.RecordView
             var item = (ViewItemGeneric<T>)ItemPrefab.Instantiate();
             item.displayedItem = displayedItem;
             item.View = scrollView;
-            item._meshInstance.MaterialOverride = scrollView.LocalMaterial;
             return item;
         }
 
@@ -37,9 +36,10 @@ namespace Musikspieler.Scripts.RecordView
                 if (_isGettingDragged)
                 {
                     IsPending = true;
-                    _meshInstance.MaterialOverride = DefaultMaterial;
                     if (GetViewport() == null)
                         GD.Print(GetType());
+                    SetCutoffShaderParameters(Transform, new Vector3(100, 100, 100));
+                    GD.Print("Set to whole View");
                     SmoothReparent((Node3D)GetViewport().GetChild(0));
                 }
                 else
@@ -79,7 +79,7 @@ namespace Musikspieler.Scripts.RecordView
         {
             if (args.ViewChanged && args.itemsToChangeView.Contains(this))
             {
-                GD.Print("ViewItemGeneric: ViewChanged");
+                //GD.Print("ViewItemGeneric: ViewChanged");
                 View = args.changeToView;
             }
 
@@ -94,7 +94,6 @@ namespace Musikspieler.Scripts.RecordView
 
         public static SmoothDamp ObjectTypeSmoothDamp { get; protected set; }
 
-        public static ShaderMaterial DefaultMaterial { get; protected set; }
 
         ///Im Gegensatz zu Unity kann in Godot mit Konstruktoren gearbeitet werden. Argumente sind dennoch nicht möglich, da der Konstruktor außerhalb unseres Codes aufgerufen wird.
         ///Deshalb wird hier mit dem Factory-Prinzip gearbeitet.
@@ -106,11 +105,6 @@ namespace Musikspieler.Scripts.RecordView
         public override void _Process(double delta)
         {
             base._Process(delta);
-
-            if (IsPending && !IsGettingDragged && IsCloseToTargetPosition)
-            {
-                _meshInstance.MaterialOverride = View.LocalMaterial;
-            }
         }
 
         static ViewItemGeneric()
@@ -120,6 +114,22 @@ namespace Musikspieler.Scripts.RecordView
             //Und dann müsste man wieder neue Checks einbauen usw...
             RecordPackage.Init();
             Drawer.Init();
+        }
+
+        public void SetCutoffShaderParameters(Transform3D boxTransform, Vector3 boxSize)
+        {
+            // Das ist hier alles nicht mehr wirklich effizient, aber es sieht wenigstens nach was aus
+            int surfaceCount = _meshInstance.Mesh.GetSurfaceCount();
+            for (int i = 0; i < surfaceCount; i++)
+            {
+                ShaderMaterial mat = (ShaderMaterial)_meshInstance.GetSurfaceOverrideMaterial(i);
+                if (mat != null)
+                {
+                    mat.SetShaderParameter("box_transform", boxTransform);
+                    mat.SetShaderParameter("box_size", boxSize);
+                    _meshInstance.SetSurfaceOverrideMaterial(i, mat);
+                }
+            }
         }
     }
 }

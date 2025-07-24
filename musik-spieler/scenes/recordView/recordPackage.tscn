@@ -1,10 +1,12 @@
-[gd_scene load_steps=3 format=3 uid="uid://bkfw8kblvm3d"]
+[gd_scene load_steps=4 format=3 uid="uid://bkfw8kblvm3d"]
 
 [ext_resource type="Script" uid="uid://bllikfxoas0o1" path="res://scripts/recordView/RecordPackage.cs" id="1_4iwvx"]
-[ext_resource type="ArrayMesh" uid="uid://csd5obyn068up" path="res://assets/3D/musikplayer_RecordPackage.res" id="2_3v5pi"]
+[ext_resource type="ArrayMesh" uid="uid://6gorq0bqgfnq" path="res://assets/3D/musikplayer_RecordPackage.res" id="2_3v5pi"]
+[ext_resource type="Material" uid="uid://bpk68jqx6k0dg" path="res://graphics/coverImage.tres" id="2_4fppy"]
 
-[node name="RecordPackage" type="Node3D"]
+[node name="RecordPackage" type="Node3D" node_paths=PackedStringArray("_meshInstance")]
 script = ExtResource("1_4iwvx")
+coverImageMaterial = ExtResource("2_4fppy")
 _meshInstance = NodePath("RecordPackageMesh")
 
 [node name="RecordPackageMesh" type="MeshInstance3D" parent="."]

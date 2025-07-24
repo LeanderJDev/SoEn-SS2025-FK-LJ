@@ -36,11 +36,17 @@ namespace Musikspieler.Scripts.RecordView
             base._Ready();
         }
 
+        public override bool Move(View targetView)
+        {
+            GD.Print("Drawer: Move");
+            return base.Move(targetView);
+        }
+
         public override void _Input(InputEvent @event)
         {
             if (@event is InputEventMouseButton mouseEvent)
             {
-                if (mouseEvent.ButtonIndex == MouseButton.Left && mouseEvent.Pressed)
+                if (mouseEvent.ButtonIndex == MouseButton.Left && !mouseEvent.Pressed)
                 {
                     if (RaycastHandler.IsObjectUnderCursor(_handle))
                         Selected = !Selected;
@@ -52,7 +58,6 @@ namespace Musikspieler.Scripts.RecordView
         static Drawer()
         {
             ItemPrefab = GD.Load<PackedScene>("res://scenes/recordView/drawer.tscn");
-            DefaultMaterial = GD.Load<ShaderMaterial>("res://graphics/defaultRecordPackageMaterial.tres");
 
             const float PositionSmoothTime = 0.10f;
             const float PositionMaxSpeed = 50f;

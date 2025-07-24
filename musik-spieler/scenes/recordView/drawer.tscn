@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://dllw8x3r8mjlg" path="res://scripts/recordView/Drawer.cs" id="1_26xk7"]
 [ext_resource type="PackedScene" uid="uid://ew28vqpvjn1g" path="res://scenes/recordView/recordView.tscn" id="1_g2xwe"]
-[ext_resource type="ArrayMesh" uid="uid://b353h7eraa07n" path="res://assets/3D/musikplayer_Drawer.res" id="4_di60a"]
+[ext_resource type="ArrayMesh" uid="uid://bi1tpx5j0rq0j" path="res://assets/3D/musikplayer_Drawer.res" id="4_di60a"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_26xk7"]
 size = Vector3(0.553253, 1, 1.53859)

@@ -25,7 +25,6 @@ namespace Musikspieler.Scripts.RecordView
 
         public override ScrollViewContentContainer Container => throw new NotImplementedException();
 
-        public override ShaderMaterial LocalMaterial => throw new NotImplementedException();
 
         public override bool MoveItem(int index, View targetView) => false;     //man kann nichts rausnehmen
 

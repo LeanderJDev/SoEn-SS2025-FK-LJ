@@ -24,21 +24,21 @@ void vertex() {
 void fragment() {
 	float depth = get_depth(SCREEN_UV, INV_PROJECTION_MATRIX);
 	vec2 texel_size = 1.0 / VIEWPORT_SIZE.xy;
-	
+
 	vec2 uvs[4];
 	uvs[0] = vec2(SCREEN_UV.x, SCREEN_UV.y + texel_size.y);
 	uvs[1] = vec2(SCREEN_UV.x, SCREEN_UV.y - texel_size.y);
 	uvs[2] = vec2(SCREEN_UV.x  + texel_size.x, SCREEN_UV.y);
 	uvs[3] = vec2(SCREEN_UV.x  - texel_size.x, SCREEN_UV.y);
-	
+
 	float depth_diff = 0.0;
 	float nearest_depth = depth;
 	vec2 nearest_uv = SCREEN_UV;
-	
+
 	for (int i = 0; i < 4; i++){
 		float d = get_depth(uvs[i], INV_PROJECTION_MATRIX);
 		depth_diff += depth -d;
-		
+
 		if(d<nearest_depth){
 			nearest_depth = d;
 			nearest_uv = uvs[i];

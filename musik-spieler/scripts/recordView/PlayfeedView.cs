@@ -14,9 +14,9 @@ namespace Musikspieler.Scripts.RecordView
 
         public override CollisionShape3D BoundsShape => _collisionShape;
 
-        public override ScrollViewContentContainer Container => throw new NotImplementedException();
+        [Export] private Node3D _container;
 
-        public override ShaderMaterial LocalMaterial => ViewItemGeneric<IPlaylist>.DefaultMaterial;
+        public override ScrollViewContentContainer Container => (ScrollViewContentContainer)_container;
 
         public Drawer _drawer;
 
@@ -60,8 +60,9 @@ namespace Musikspieler.Scripts.RecordView
             }
             if (item is Drawer drawer)
             {
+                GD.Print("set drawer in playfeedview");
                 _drawer = drawer;
-                return false;
+                return true;
             }
             if (item is RecordPackage recordPackage)
             {

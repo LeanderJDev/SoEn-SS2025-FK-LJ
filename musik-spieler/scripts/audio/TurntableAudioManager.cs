@@ -9,7 +9,7 @@ namespace Musikspieler.Scripts.Audio
         [Export]
         public MeshInstance3D RecordOnPlayer;
         [Export]
-        public StandardMaterial3D coverImageMaterial;
+        public ShaderMaterial coverImageMaterial;
         private AudioPlayer audioPlayer;
         private Turntable turntable;
         private ISong currentSong;
@@ -31,7 +31,10 @@ namespace Musikspieler.Scripts.Audio
                     Image image = new Image();
                     image.LoadJpgFromBuffer(song.CoverData);
                     ImageTexture texture = ImageTexture.CreateFromImage(image);
-                    coverImageMaterial.AlbedoTexture = texture;
+                    coverImageMaterial = (ShaderMaterial)coverImageMaterial.Duplicate();
+                    coverImageMaterial.SetShaderParameter("albedo_texture", texture);
+                    coverImageMaterial.SetShaderParameter("box_transform", Transform3D.Identity);
+                    coverImageMaterial.SetShaderParameter("box_size", Vector3.One * 10000000000);
                     RecordOnPlayer.SetSurfaceOverrideMaterial(0, coverImageMaterial);
                 }
             }

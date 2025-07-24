@@ -19,7 +19,8 @@ namespace Musikspieler.Scripts.RecordView
         {
             if (camera == null)
             {
-                GD.Print("no cam");
+                GD.Print("no cam1");
+                throw new Exception();
                 result = null;
                 return false;
             }

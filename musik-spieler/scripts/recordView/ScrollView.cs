@@ -16,9 +16,6 @@ namespace Musikspieler.Scripts.RecordView
 
 		public int ItemCount => itemObjects.Count;
 
-		private ShaderMaterial _localMaterial;
-		public override ShaderMaterial LocalMaterial => _localMaterial;
-
 		public ViewItemGeneric<T> this[int index]
 		{
 			get { return itemObjects[index]; }
@@ -38,7 +35,6 @@ namespace Musikspieler.Scripts.RecordView
 			get => _itemList;
 			set
 			{
-				GD.Print("ScrollView: Setter ItemList");
 				if (_itemList != null)
 				{
 					_itemList.ItemsAdded -= ItemsAdded;
@@ -117,7 +113,6 @@ namespace Musikspieler.Scripts.RecordView
 
 		public override void _Ready()
 		{
-			_localMaterial = (ShaderMaterial)ViewItemGeneric<T>.DefaultMaterial.Duplicate();
 			base._Ready();
 		}
 
@@ -175,8 +170,9 @@ namespace Musikspieler.Scripts.RecordView
 		}
 
 		public override bool MoveItem(int index, View targetView)
-		{
-			return MoveItem(index, targetView, null);
+        {
+            GD.Print("as.kdjalskdfhakds");
+            return MoveItem(index, targetView, null);
 		}
 
 		/// <summary>
@@ -185,6 +181,7 @@ namespace Musikspieler.Scripts.RecordView
 		/// <returns>Returns false if the record could not be added to the target playlist.</returns>
 		public bool MoveItem(ScrollView<T> targetView)
 		{
+			GD.Print("as.kdjalskdfhakds");
 			return MoveItem(GapIndex, targetView, null);
 		}
 
@@ -348,7 +345,7 @@ namespace Musikspieler.Scripts.RecordView
 			{
 				if (mouseEvent.ButtonIndex == MouseButton.WheelUp)
 				{
-					if (!CheckIfViewUnderCursor(mask, out View view) || view != this)
+					if (!IsUnderCursor)
 						return;
 					if (mouseEvent.Pressed)
 						OnScrollInput(-1f);
@@ -356,8 +353,8 @@ namespace Musikspieler.Scripts.RecordView
 				}
 				else if (mouseEvent.ButtonIndex == MouseButton.WheelDown)
 				{
-					if (!CheckIfViewUnderCursor(mask, out View view) || view != this)
-						return;
+                    if (!IsUnderCursor)
+                        return;
 					if (mouseEvent.Pressed)
 						OnScrollInput(1f);
 					GetViewport().SetInputAsHandled();
@@ -390,8 +387,11 @@ namespace Musikspieler.Scripts.RecordView
 
 		public override void _Process(double delta)
 		{
-			LocalMaterial.SetShaderParameter("box_transform", viewBounds.GlobalTransform);
-			LocalMaterial.SetShaderParameter("box_size", ((BoxShape3D)viewBounds.Shape).Size);
+			// Das ist brutal, aber es war nur noch wenig Zeit
+			foreach (var item in itemObjects)
+			{
+				if(!item.IsGettingDragged) item.SetCutoffShaderParameters(viewBounds.GlobalTransform, ((BoxShape3D)viewBounds.Shape).Size);
+			}
 
 			base._Process(delta);
 			Vector2? boundaryMousePos = GetBoundaryMousePosition();
