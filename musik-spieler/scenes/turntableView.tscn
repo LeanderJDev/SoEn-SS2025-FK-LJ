@@ -1,10 +1,10 @@
-[gd_scene load_steps=16 format=3 uid="uid://oqxtofjpw2o0"]
+[gd_scene load_steps=20 format=3 uid="uid://oqxtofjpw2o0"]
 
 [ext_resource type="Script" uid="uid://ltvtgitbihw5" path="res://scripts/ui/TurntableView.cs" id="1_3plv3"]
 [ext_resource type="AudioStream" uid="uid://4ajuf5e7w4ph" path="res://assets/Audio/song.wav" id="2_j686s"]
 [ext_resource type="ArrayMesh" uid="uid://buep2wvg1n2x5" path="res://assets/3D/musikplayer_RecordOnPlayer.res" id="3_b3s4p"]
 [ext_resource type="ArrayMesh" uid="uid://cnwh7mgnrf0md" path="res://assets/3D/musikplayer_ArmBase.res" id="4_bdbov"]
-[ext_resource type="Material" uid="uid://cq35gwcgge41f" path="res://graphics/vinylShaded.tres" id="4_j686s"]
+[ext_resource type="Material" uid="uid://cq35gwcgge41f" path="res://graphics/vinylShaded.tres" id="4_bvq3t"]
 [ext_resource type="ArrayMesh" uid="uid://r1kryp4xtxsi" path="res://assets/3D/musikplayer_ArmArm.res" id="5_bvq3t"]
 [ext_resource type="ArrayMesh" uid="uid://bopwv1layvi1i" path="res://assets/3D/musikplayer_PlayerBody.res" id="6_7qcyi"]
 [ext_resource type="ArrayMesh" uid="uid://rywkoihmeqam" path="res://assets/3D/musikplayer_PlayerCable.res" id="7_g7h5g"]
@@ -12,7 +12,10 @@
 [ext_resource type="Script" uid="uid://c8b0fj26s2nje" path="res://scripts/audio/TurntableAudioManager.cs" id="9_nhk5o"]
 [ext_resource type="ArrayMesh" uid="uid://dlvk2i535dguh" path="res://assets/3D/musikplayer_PlayerVelocityKnob.res" id="9_oc1dy"]
 [ext_resource type="ArrayMesh" uid="uid://rwusbyika3r2" path="res://assets/3D/musikplayer_Cube.res" id="10_7f87t"]
+[ext_resource type="Script" uid="uid://0hs4oqv4gkjb" path="res://scripts/ui/StartStopButton.cs" id="11_bvq3t"]
 [ext_resource type="ArrayMesh" uid="uid://cem5wec86bkfd" path="res://assets/3D/musikplayer_ScrollWheel.res" id="11_la1ep"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_7qcyi"]
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_3plv3"]
 height = 0.05
@@ -21,6 +24,11 @@ radius = 1.0
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_gh1eq"]
 radius = 0.15
 height = 0.6
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_bdbov"]
+size = Vector3(0.3, 0.3, 0.25)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bdbov"]
 
 [node name="TurntableView" type="Node3D" node_paths=PackedStringArray("turntableAudioManager", "Tonearm", "Record")]
 script = ExtResource("1_3plv3")
@@ -43,7 +51,8 @@ collision_mask = 32
 [node name="RecordOnPlayer" type="MeshInstance3D" parent="Turntable/Record"]
 mesh = ExtResource("3_b3s4p")
 skeleton = NodePath("")
-surface_material_override/1 = ExtResource("4_j686s")
+surface_material_override/0 = SubResource("StandardMaterial3D_7qcyi")
+surface_material_override/1 = ExtResource("4_bvq3t")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Turntable/Record"]
 shape = SubResource("CylinderShape3D_3plv3")
@@ -88,26 +97,48 @@ metadata/extras = {
 "ant_landscape": {}
 }
 
-[node name="PlayerVolumeKnob" type="MeshInstance3D" parent="Turntable"]
+[node name="VolumeKnob" type="StaticBody3D" parent="Turntable"]
 transform = Transform3D(0.710641, 0, -0.703555, 0, 1, 0, 0.703555, 0, 0.710641, -0.844207, 0.0067377, -0.844911)
+
+[node name="PlayerVolumeKnob" type="MeshInstance3D" parent="Turntable/VolumeKnob"]
 mesh = ExtResource("9_oc1dy")
 skeleton = NodePath("")
 metadata/extras = {
 "ant_landscape": {}
 }
 
-[node name="StartButton" type="MeshInstance3D" parent="Turntable"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Turntable/VolumeKnob"]
+
+[node name="StartStopButton" type="StaticBody3D" parent="Turntable" node_paths=PackedStringArray("turntableAudioManager")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.23637, 0.00120276, 0.816736)
+script = ExtResource("11_bvq3t")
+turntableAudioManager = NodePath("../../TurntableAudioManager")
+
+[node name="StartButton" type="MeshInstance3D" parent="Turntable/StartStopButton"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 mesh = ExtResource("10_7f87t")
 skeleton = NodePath("")
 
-[node name="ScrollWheel" type="MeshInstance3D" parent="Turntable"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Turntable/StartStopButton"]
+shape = SubResource("BoxShape3D_bdbov")
+
+[node name="SpeedDial" type="StaticBody3D" parent="Turntable"]
 transform = Transform3D(-1, 0, 3.25841e-07, 0, 1, 0, -3.25841e-07, 0, -1, -0.844167, -0.0959919, 0.843883)
+
+[node name="ScrollWheel" type="MeshInstance3D" parent="Turntable/SpeedDial"]
+transform = Transform3D(1, 0, -2.84217e-14, 0, 1, 0, 2.84217e-14, 0, 1, 0, 0, 0)
 mesh = ExtResource("11_la1ep")
 skeleton = NodePath("")
 metadata/extras = {
 "ant_landscape": {}
 }
 
-[node name="TurntableAudioManager" type="Node2D" parent="."]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Turntable/SpeedDial"]
+
+[node name="TurntableAudioManager" type="Node2D" parent="." node_paths=PackedStringArray("RecordOnPlayer")]
 script = ExtResource("9_nhk5o")
+RecordOnPlayer = NodePath("../Turntable/Record/RecordOnPlayer")
+coverImageMaterial = SubResource("StandardMaterial3D_bdbov")
+
+[connection signal="MotorOff" from="Turntable/StartStopButton" to="." method="OnMotorOff"]
+[connection signal="MotorOn" from="Turntable/StartStopButton" to="." method="OnMotorOn"]

@@ -1,17 +1,22 @@
-[gd_scene load_steps=17 format=3 uid="uid://cem353j2urtor"]
+[gd_scene load_steps=20 format=3 uid="uid://cem353j2urtor"]
 
 [ext_resource type="PackedScene" uid="uid://oqxtofjpw2o0" path="res://scenes/turntableView.tscn" id="1_85g3d"]
 [ext_resource type="ArrayMesh" uid="uid://bveca4bxkj1ng" path="res://assets/3D/musikplayer_Table.res" id="2_eb6dy"]
 [ext_resource type="ArrayMesh" uid="uid://dvg3v1mru4gsk" path="res://assets/3D/musikplayer_ExtenisionCordCable.res" id="3_trceg"]
 [ext_resource type="ArrayMesh" uid="uid://cw4veulou6q2k" path="res://assets/3D/musikplayer_ExtensionCordBox.res" id="4_a8y0u"]
 [ext_resource type="ArrayMesh" uid="uid://d22pgp64ctjr" path="res://assets/3D/musikplayer_ExtensionCordSwitch.res" id="5_jkv2x"]
+[ext_resource type="Script" uid="uid://cy121sqki2p8k" path="res://scripts/ui/ExtensionCordSwitch.cs" id="6_a8y0u"]
 [ext_resource type="ArrayMesh" uid="uid://srhv7wuf6il7" path="res://assets/3D/musikplayer_Speaker.res" id="6_jbj1t"]
 [ext_resource type="ArrayMesh" uid="uid://b2b2jp0sg66ed" path="res://assets/3D/musikplayer_SpeakerCable.res" id="7_muem4"]
 [ext_resource type="ArrayMesh" uid="uid://by68ql6qix6mi" path="res://assets/3D/musikplayer_SpeakerCablePlug.res" id="8_dp3eg"]
+[ext_resource type="Script" uid="uid://bw0qyhhfkykoy" path="res://scripts/audio/MusicCollection.cs" id="13_trceg"]
 [ext_resource type="Script" uid="uid://btloxo60hdpxi" path="res://scripts/recordView/RecordGrabHandler.cs" id="15_jkv2x"]
 [ext_resource type="PackedScene" uid="uid://dmw47iacx017m" path="res://scenes/recordView/drawerView.tscn" id="16_jbj1t"]
 [ext_resource type="Script" uid="uid://bp8p3bvhtt0te" path="res://scripts/recordView/RaycastHandler.cs" id="17_GmbH4"]
 [ext_resource type="Shader" uid="uid://c1b24yfw5h6xl" path="res://graphics/outline.gdshader" id="17_muem4"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_jkv2x"]
+radius = 0.1
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_dp3eg"]
 render_priority = 0
@@ -46,7 +51,7 @@ stretch_shrink = 2
 
 [node name="SubViewport" type="SubViewport" parent="SubViewportContainer"]
 handle_input_locally = false
-size = Vector2i(400, 300)
+size = Vector2i(600, 450)
 render_target_update_mode = 4
 
 [node name="TurntableView" parent="SubViewportContainer/SubViewport" instance=ExtResource("1_85g3d")]
@@ -73,13 +78,22 @@ metadata/extras = {
 "ant_landscape": {}
 }
 
-[node name="ExtensionCordSwitch" type="MeshInstance3D" parent="SubViewportContainer/SubViewport/ExtensionCord"]
-transform = Transform3D(-0.968831, 0, 0.247722, 0, 1, 0, -0.247722, 0, -0.968831, -0.726773, -0.431955, -2.20045)
+[node name="ExtensionCordSwitch" type="StaticBody3D" parent="SubViewportContainer/SubViewport/ExtensionCord" node_paths=PackedStringArray("light")]
+transform = Transform3D(-0.969016, -0.104386, 0.223857, 0, 0.906308, 0.422618, -0.246999, 0.409524, -0.878226, -0.726773, -0.431955, -2.20045)
+script = ExtResource("6_a8y0u")
+light = NodePath("../../DirectionalLight3D")
+
+[node name="ExtensionCordSwitch" type="MeshInstance3D" parent="SubViewportContainer/SubViewport/ExtensionCord/ExtensionCordSwitch"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 mesh = ExtResource("5_jkv2x")
 skeleton = NodePath("")
 metadata/extras = {
 "ant_landscape": {}
 }
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="SubViewportContainer/SubViewport/ExtensionCord/ExtensionCordSwitch"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.032581, 0)
+shape = SubResource("SphereShape3D_jkv2x")
 
 [node name="Speaker" type="Node3D" parent="SubViewportContainer/SubViewport"]
 
@@ -133,3 +147,8 @@ transform = Transform3D(0.440564, 0, 0, 0, 0.440564, 0, 0, 0, 0.440564, -4.65926
 [node name="RaycastHandler" type="Node3D" parent="SubViewportContainer/SubViewport"]
 process_physics_priority = -1
 script = ExtResource("17_GmbH4")
+
+[node name="MusicCollection" type="Node" parent="SubViewportContainer/SubViewport"]
+script = ExtResource("13_trceg")
+
+[connection signal="MotorOff" from="SubViewportContainer/SubViewport/ExtensionCord/ExtensionCordSwitch" to="SubViewportContainer/SubViewport/TurntableView" method="OnMotorOff"]
