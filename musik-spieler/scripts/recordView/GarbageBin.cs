@@ -9,7 +9,7 @@ namespace Musikspieler.Scripts.RecordView
 
         [Export] private CollisionShape3D viewBounds;
 
-        public override event Action<ItemListChangedEventArgs> ObjectListChanged;
+        public override event Action<ItemListChangedEventArgs> ObjectsChanged;
 
         public override CollisionShape3D BoundsShape => viewBounds;
 
@@ -27,7 +27,7 @@ namespace Musikspieler.Scripts.RecordView
 
         public override ShaderMaterial LocalMaterial => throw new NotImplementedException();
 
-        public override bool MoveItem(int index, View targetView) => false;  //man kann nichts rausnehmen
+        public override bool MoveItem(int index, View targetView) => false;     //man kann nichts rausnehmen
 
         public override ViewItem GrabItem(bool allowGrabChildren) => null;     //der Muelleimer gibt nie etwas her
 

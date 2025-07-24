@@ -61,29 +61,33 @@ namespace Musikspieler.Scripts.RecordView
             {
                 ArgumentNullException.ThrowIfNull(value);
                 if (_view != null)
-                    _view.ObjectListChanged -= OnPlaylistChanged;
+                    _view.ObjectsChanged -= OnItemsChanged;
                 if (IsInsideTree() && !IsGettingDragged)
                     SmoothReparent(value.Container);
                 _view = value;
-                _view.ObjectListChanged += OnPlaylistChanged;
+                _view.ObjectsChanged += OnItemsChanged;
             }
         }
 
         public override bool Move(View targetView)
         {
+            GD.Print("ViewItemGeneric: Moving to targetView: ", targetView.GetType());
             return View.MoveItem(ViewIndex, targetView);
         }
 
-        private void OnPlaylistChanged(View.ItemListChangedEventArgs args)
+        private void OnItemsChanged(View.ItemListChangedEventArgs args)
         {
-            if (args.ViewChanged && args.items.Contains(this))
+            if (args.ViewChanged && args.itemsToChangeView.Contains(this))
+            {
+                GD.Print("ViewItemGeneric: ViewChanged");
                 View = args.changeToView;
+            }
 
             ViewIndex = View.GetViewIndex(this);
             if (ViewIndex == -1)
             {
                 GD.PrintErr();
-                throw new Exception($"Einer {this} von Typ {GetType()} ist einem {View.GetType()} ({View}) zugewiesen, der sie nicht enthält.");
+                throw new Exception($"\nEine {this} von Typ {GetType()} \nist einem {View.GetType()} ({View}) zugewiesen, der sie nicht enthält.");
             }
             View.UpdateItemTransform(ViewIndex);
         }
