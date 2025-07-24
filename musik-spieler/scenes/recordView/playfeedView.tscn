@@ -1,0 +1,22 @@
+[gd_scene load_steps=4 format=3 uid="uid://d1klao6ac2vav"]
+
+[ext_resource type="Script" uid="uid://tw61drtdseti" path="res://scripts/recordView/PlayfeedView.cs" id="1_5ebia"]
+[ext_resource type="Script" uid="uid://b6qecccj5is4g" path="res://scripts/recordView/ScrollViewContentContainer.cs" id="2_1akcc"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_1akcc"]
+size = Vector3(2.33228, 0.791016, 4.00488)
+
+[node name="PlayfeedView" type="StaticBody3D" node_paths=PackedStringArray("_collisionShape", "_container")]
+collision_layer = 4
+collision_mask = 4
+script = ExtResource("1_5ebia")
+_collisionShape = NodePath("Bounds")
+_container = NodePath("Container")
+
+[node name="Bounds" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.591797, 0)
+shape = SubResource("BoxShape3D_1akcc")
+
+[node name="Container" type="Node3D" parent="."]
+transform = Transform3D(-2.84384e-08, 0, -0.650596, 0, 0.650596, 0, 0.650596, 0, -2.84384e-08, 1.00195, 0.207653, 0.667139)
+script = ExtResource("2_1akcc")

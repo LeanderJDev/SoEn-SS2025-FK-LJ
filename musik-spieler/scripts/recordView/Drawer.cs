@@ -36,11 +36,17 @@ namespace Musikspieler.Scripts.RecordView
             base._Ready();
         }
 
+        public override bool Move(View targetView)
+        {
+            GD.Print("Drawer: Move");
+            return base.Move(targetView);
+        }
+
         public override void _Input(InputEvent @event)
         {
             if (@event is InputEventMouseButton mouseEvent)
             {
-                if (mouseEvent.ButtonIndex == MouseButton.Left && mouseEvent.Pressed)
+                if (mouseEvent.ButtonIndex == MouseButton.Left && !mouseEvent.Pressed)
                 {
                     if (RaycastHandler.IsObjectUnderCursor(_handle))
                         Selected = !Selected;

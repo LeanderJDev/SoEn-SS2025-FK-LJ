@@ -34,22 +34,7 @@ namespace Musikspieler.Scripts.RecordView
 
         public bool IsUnderCursor
         {
-            get => CheckIfViewUnderCursor(mask, out View view) && view == this;
-        }
-
-        protected bool CheckIfViewUnderCursor(Mask<CollisionMask> mask, out View view)
-        {
-            view = null;
-            if (!Utility.CameraRaycast(GetViewport().GetCamera3D(), mask, out var result))
-                return false;
-            if (result == null || result.Count < 0)
-                return false;
-            if ((Node)result["collider"] is View hit)
-            {
-                view = hit;
-                return true;
-            }
-            return false;
+            get => RaycastHandler.IsObjectUnderCursor(this);
         }
     }
 }

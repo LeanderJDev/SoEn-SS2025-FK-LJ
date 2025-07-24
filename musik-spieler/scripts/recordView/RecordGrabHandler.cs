@@ -105,7 +105,8 @@ namespace Musikspieler.Scripts.RecordView
             if (recordView == null)
                 throw new Exception();
 
-            currentlyGrabbed.Move(recordView);
+            bool success = currentlyGrabbed.Move(recordView);
+            GD.Print($"sucess? {success}");
             currentlyGrabbed.IsGettingDragged = false;
 
             currentlyGrabbed = null;

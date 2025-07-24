@@ -175,8 +175,9 @@ namespace Musikspieler.Scripts.RecordView
 		}
 
 		public override bool MoveItem(int index, View targetView)
-		{
-			return MoveItem(index, targetView, null);
+        {
+            GD.Print("as.kdjalskdfhakds");
+            return MoveItem(index, targetView, null);
 		}
 
 		/// <summary>
@@ -185,6 +186,7 @@ namespace Musikspieler.Scripts.RecordView
 		/// <returns>Returns false if the record could not be added to the target playlist.</returns>
 		public bool MoveItem(ScrollView<T> targetView)
 		{
+			GD.Print("as.kdjalskdfhakds");
 			return MoveItem(GapIndex, targetView, null);
 		}
 
@@ -348,7 +350,7 @@ namespace Musikspieler.Scripts.RecordView
 			{
 				if (mouseEvent.ButtonIndex == MouseButton.WheelUp)
 				{
-					if (!CheckIfViewUnderCursor(mask, out View view) || view != this)
+					if (!IsUnderCursor)
 						return;
 					if (mouseEvent.Pressed)
 						OnScrollInput(-1f);
@@ -356,8 +358,8 @@ namespace Musikspieler.Scripts.RecordView
 				}
 				else if (mouseEvent.ButtonIndex == MouseButton.WheelDown)
 				{
-					if (!CheckIfViewUnderCursor(mask, out View view) || view != this)
-						return;
+                    if (!IsUnderCursor)
+                        return;
 					if (mouseEvent.Pressed)
 						OnScrollInput(1f);
 					GetViewport().SetInputAsHandled();

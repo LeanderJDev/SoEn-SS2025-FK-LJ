@@ -79,7 +79,7 @@ namespace Musikspieler.Scripts.RecordView
         {
             if (args.ViewChanged && args.itemsToChangeView.Contains(this))
             {
-                GD.Print("ViewItemGeneric: ViewChanged");
+                //GD.Print("ViewItemGeneric: ViewChanged");
                 View = args.changeToView;
             }
 

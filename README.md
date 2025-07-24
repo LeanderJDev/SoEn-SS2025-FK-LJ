@@ -21,6 +21,22 @@ sudo apt install ffmpeg
 Es gibt im Development Ordner einen `pre-commit` Hook, der automatisch den Code formatiert. Das sollte die Commits übersichtlicher machen. Lokal muss diese Datei in `.git/hooks/pre-commit` kopiert werden.
 Gegebenenfalls muss der `pre-commit` Hook noch mit `chmod +x pre-commit` ausführbar gemacht werden oder dotnet-format installiert werden (Steht dann aber auch im Hook Fehler).
 
+## Dokumentation
+Da unsere Implementierung nicht wirklich final ist hat es sich nicht gelohnt eine große Dokumentation dafür aufzusetzen. Um den Ist-Stand trotzdem zu erklären ist eine Seite im Wiki angelegt
+[UML Erklärungen](https://github.com/LeanderJDev/SoEn-SS2025-FK-LJ/wiki/UML-Erkl%C3%A4rungen)
+
+Diese bezieht sich auf das aktuelle recht unübersichtliche UML. Um den Entwicklungsprozess nachvollziehen zu können ist es auch durchaus spannend die unterschiedlichen Versionen der Wikiseiten anzusehen, wobei diese meist keine Änderungsnachrichten haben. Meist beziehen sich die Änderungen aber auf irgendwelche Commits die um die selber Zeit herum getätigt wurden.
+
+## Tutorial
+Da das Projekt nicht fertig implementiert ist gibt es noch nicht den in der Idee mit geplanten Ingame-Klebezettel, der die Steuerung erklärt. Außerdem gibt es noch keinen Build des Projekts und man braucht Godot 4.4 um die main.tscn Szene auszuführen
+In Godot kann man auch direkt die unterschiedlichen Testszenen mit betrachten.
+Steuerung:
+Die Schubfächer und deren Inhalt können mit dem Scrollrad bewegt werden. Mit der Linken Maustaste können einzelne Items bewegt werden.
+Am Turntable kann man den Tonarm mit Linksklick auf die Platte auflegen. Mit Rechtsklick kann die Platte direkt bewegt werden (Scratchen).
+Der Lautstärke-Regler, das Geschwindigkeitsrädchen und der Stopp Knopf werden ebenfalls mit Linksklick betätigt.
+An der Verteilersteckdose kann das Programm mit Linksklick geschlossen werden.
+
+
 ## Vorgaben
 
 Die Tabelle zur Verwendung von LLMs ist unter [Nutzung von LLMs](https://github.com/LeanderJDev/SoEn-SS2025-FK-LJ/wiki/Nutzung-von-LLMs) zu finden.
