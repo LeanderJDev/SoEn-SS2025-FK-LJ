@@ -1,15 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.ComponentModel;
+using System.Linq;
 
 namespace Musikspieler.Scripts
 {
     //Eine Klasse, die alle Playlists enthält.
-    public class MusicCollection : IPlaylistDirectory
+    public class PlaylistDirectory : IPlaylistDirectory
     {
         private readonly List<IPlaylist> _playlists;
 
         public IPlaylist this[int index] => _playlists[index];
+        public IPlaylist this[string name] => _playlists.FirstOrDefault(x => x.Name == name);
 
         public int ItemCount => _playlists.Count;
 
@@ -18,12 +21,12 @@ namespace Musikspieler.Scripts
         public event Action<ItemsAddedEventArgs> ItemsAdded;
         public event Action<ItemsRemovedEventArgs> ItemsRemoved;
 
-        public MusicCollection()
+        public PlaylistDirectory()
         {
             _playlists = [];
         }
 
-        public MusicCollection(List<IPlaylist> playlists)
+        public PlaylistDirectory(List<IPlaylist> playlists)
         {
             playlists ??= [];
             _playlists = playlists;

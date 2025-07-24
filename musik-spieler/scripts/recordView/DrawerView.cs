@@ -1,4 +1,5 @@
 using Godot;
+using Musikspieler.Scripts.Audio;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -38,11 +39,12 @@ namespace Musikspieler.Scripts.RecordView
                 List<ISong> songs = new(100);
                 for (int s = 0; s < 100; s++)
                 {
-                    songs.Add(new Song(Utility.RandomString(10), "Album", "Artist", "Path"));
+                    songs.Add(new Song(Utility.RandomString(10), "Album", "Artist", 0, "Path"));
                 }
                 playlists.Add(new Playlist(songs, $"Playlist {i}"));
             }
-            MusicCollection dir = new();
+            // PlaylistDirectory dir = new();
+            IPlaylistDirectory dir = MusicCollection.Instance.PlaylistDirectory;
             ItemList = dir;
             dir.AddItems(playlists);
         }

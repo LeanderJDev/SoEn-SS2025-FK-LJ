@@ -6,19 +6,35 @@ namespace Musikspieler.Scripts.Audio
 {
     public partial class TurntableAudioManager : Node2D
     {
+        [Export]
+        public MeshInstance3D RecordOnPlayer;
+        [Export]
+        public StandardMaterial3D coverImageMaterial;
         private AudioPlayer audioPlayer;
         private Turntable turntable;
-        private Song currentSong;
+        private ISong currentSong;
         private Thread thread;
         private volatile bool threadRunning;
         public ITurntable Turntable => turntable;
         public IAudioPlayer AudioPlayer => audioPlayer;
 
-        public void SetSong(Song song)
+        public void SetSong(ISong song)
         {
-            currentSong = song;
-            audioPlayer.SetSample(currentSong.Audio);
-            turntable.SetMaxLoops(audioPlayer.SampleLength / audioPlayer.SampleRate);
+            if (currentSong != song) {
+                if(currentSong != null) currentSong.DisposeAudio();
+                currentSong = song;
+                // Dieser null Check hilft bei Debugging Hotloads und ist ansonsten nicht nötig
+                if (song.Audio == null) currentSong.LoadAudio();
+                audioPlayer.SetSample(currentSong.Audio);
+                turntable.SetMaxLoops(audioPlayer.SampleLength / audioPlayer.SampleRate);
+                if (song.CoverData != null) {
+                    Image image = new Image();
+                    image.LoadJpgFromBuffer(song.CoverData);
+                    ImageTexture texture = ImageTexture.CreateFromImage(image);
+                    coverImageMaterial.AlbedoTexture = texture;
+                    RecordOnPlayer.SetSurfaceOverrideMaterial(0, coverImageMaterial);
+                }
+            }
         }
 
         private void ThreadLoop()

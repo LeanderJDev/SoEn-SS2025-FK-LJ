@@ -12,12 +12,13 @@ namespace Musikspieler.Scripts.Audio
 			string title = file.Tag.Title ?? "Unbekannt";
             string album = file.Tag.Album ?? "Unbekannt";
             string artist = file.Tag.FirstPerformer ?? "Unbekannt";
-            byte[] coverData = null;
+			float length = (float)file.Properties.Duration.TotalSeconds;
+			byte[] coverData = null;
             if (file.Tag.Pictures.Length > 0)
-            {
-                coverData = file.Tag.Pictures[0].Data.Data;
-            }
-            return new Song(title, album, artist, path, coverData);
+			{
+				coverData = file.Tag.Pictures[0].Data.Data;
+			}
+            return new Song(title, album, artist, length, path, coverData);
 		}
 	}
 }

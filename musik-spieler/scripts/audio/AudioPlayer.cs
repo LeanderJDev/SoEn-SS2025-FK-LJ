@@ -43,7 +43,7 @@ namespace Musikspieler.Scripts.Audio
         {
             if (sample == null || sample.Format != AudioStreamWav.FormatEnum.Format16Bits)
             {
-                GD.PrintErr("AudioPlayer: Etwas ist schief gelaufen. Sample ist keine PCM16-WAV-Datei.");
+                GD.PrintErr("AudioPlayer: Etwas ist schief gelaufen. Sample ist null oder keine PCM16-WAV-Datei.", sample);
                 return;
             }
             if (sample.MixRate != sampleRate)

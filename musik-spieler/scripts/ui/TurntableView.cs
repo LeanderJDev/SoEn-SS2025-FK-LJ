@@ -43,10 +43,10 @@ namespace Musikspieler.Scripts.UI
 				return;
 			}
 
-			#if DEBUG
-			Song song = new Song("Song", "Album", "Artist", "", audioStream: testAudio);
+#if DEBUG
+			Song song = new Song("Song", "Album", "Artist", 0, "", audioStream: testAudio);
 			turntableAudioManager.SetSong(song);
-			#endif
+#endif
 
 			controller = new TurntableController(turntableAudioManager.Turntable, turntableAudioManager.AudioPlayer);
 
@@ -61,7 +61,7 @@ namespace Musikspieler.Scripts.UI
 
 		public override void _Process(double delta)
 		{
-			Record.RotateY(-1*turntableAudioManager.Turntable.CurrentLoop % 1 * Mathf.Pi * 2 - Record.Rotation.Y);
+			Record.RotateY(-1 * turntableAudioManager.Turntable.CurrentLoop % 1 * Mathf.Pi * 2 - Record.Rotation.Y);
 			// Don't apply if Tonearm is grabbed or resting
 			if (
 				!controller.IsArmGrabbed &&
@@ -121,23 +121,30 @@ namespace Musikspieler.Scripts.UI
 #endif
 				Tonearm.RotateObjectLocal(new Vector3(1, 0, 0), liftXAngle);
 
-				tonearmYAngleOffset = MouseAngleCameraRaycast(Tonearm, mousePos) - Tonearm.Rotation.Y;
+				tonearmYAngleOffset = RaycastHandler.MouseToTargetAngle(Tonearm, mousePos) - Tonearm.Rotation.Y;
 				controller.DragArmBegin();
 			}
 		}
+
+		public float TonarmMousePos(Vector2 mousePos)
+		{
+			float angle = RaycastHandler.MouseToTargetAngle(Tonearm, mousePos);
+			angle = angle - tonearmYAngleOffset;
+			angle = Mathf.Wrap(angle + Mathf.Pi, -Mathf.Pi, Mathf.Pi);
+
+			angle = Mathf.Clamp(angle, innerLimitYAngle, outerLimitYAngle);
+
+			// Map angle between recordStartYAngle and innerLimitYAngle to 0..1
+			float pos = Mathf.InverseLerp(recordStartYAngle, innerLimitYAngle, angle);
+			return pos;
+		}
 		public void OnLeftMouseUp(Vector2 mousePos)
 		{
-			if (controller.IsArmGrabbed) {
-				float angle = MouseAngleCameraRaycast(Tonearm, mousePos);
-				angle = angle - tonearmYAngleOffset;
-				angle = Mathf.Wrap(angle + Mathf.Pi, -Mathf.Pi, Mathf.Pi);
-
-				angle = Mathf.Clamp(angle, innerLimitYAngle, outerLimitYAngle);
-
-				// Map angle between recordStartYAngle and innerLimitYAngle to 0..1
-				float pos = Mathf.InverseLerp(recordStartYAngle, innerLimitYAngle, angle);
+			if (controller.IsArmGrabbed)
+			{
+				float pos = TonarmMousePos(mousePos);
 				pos = controller.DragArmEnd(pos);
-				angle = Mathf.Lerp(recordStartYAngle, innerLimitYAngle, pos);
+				float angle = Mathf.Lerp(recordStartYAngle, innerLimitYAngle, pos);
 				if (pos == -1)
 				{
 					angle = restAngleY;
@@ -151,16 +158,10 @@ namespace Musikspieler.Scripts.UI
 		{
 			if (controller.IsArmGrabbed)
 			{
-				float angle = MouseAngleCameraRaycast(Tonearm, mousePos);
-				angle = angle - tonearmYAngleOffset;
-				angle = Mathf.Wrap(angle + Mathf.Pi, -Mathf.Pi, Mathf.Pi);
-
-				angle = Mathf.Clamp(angle, innerLimitYAngle, outerLimitYAngle);
-
 				// Map angle between recordStartYAngle and innerLimitYAngle to 0..1
-				float pos = Mathf.InverseLerp(recordStartYAngle, innerLimitYAngle, angle);
+				float pos = TonarmMousePos(mousePos);
+				float angle = Mathf.Lerp(recordStartYAngle, innerLimitYAngle, pos);
 				controller.DragArm(pos);
-				// TODO Verstehen was hier los ist und Magische Variablen entfernen
 				Tonearm.RotateY(angle - Tonearm.Rotation.Y + Mathf.Pi);
 			}
 		}
@@ -169,16 +170,17 @@ namespace Musikspieler.Scripts.UI
 		{
 			if (Utility.CameraRaycast(GetViewport().GetCamera3D(), new Mask<CollisionMask>(CollisionMask.RecordPlatter), out var result))
 			{
-				#if DEBUG
+#if DEBUG
 				GD.Print("Platter hit", result["position"]);
 #endif
 				controller.DragPlatterBegin();
-				lastRightDragAngle = MouseAngleCameraRaycast(Record, mousePos);
+				lastRightDragAngle = RaycastHandler.MouseToTargetAngle(Record, mousePos);
 			}
 		}
 		public void OnRightMouseUp()
 		{
-			if (controller.IsPlatterGrabbed) {
+			if (controller.IsPlatterGrabbed)
+			{
 				controller.DragPlatterEnd();
 			}
 		}
@@ -186,7 +188,7 @@ namespace Musikspieler.Scripts.UI
 		{
 			if (controller.IsPlatterGrabbed)
 			{
-				float angle = MouseAngleCameraRaycast(Record, mousePos);
+				float angle = RaycastHandler.MouseToTargetAngle(Record, mousePos);
 				float angleDelta = -1 * Mathf.Wrap(angle - lastRightDragAngle, -Mathf.Pi, Mathf.Pi) / (2 * Mathf.Pi);
 				lastRightDragAngle = angle;
 
@@ -194,29 +196,29 @@ namespace Musikspieler.Scripts.UI
 			}
 		}
 
-		private void OnStopButton()
+		public void OnMotorOff()
 		{
-			controller.StopButton();
+			controller.StopMotor();
 		}
 
-		private float MouseAngleCameraRaycast(Node3D target, Vector2 mousePos)
+		public void OnMotorOn()
 		{
-			// 1. Ray von Kamera durch Maus
-			float targetY = target.GlobalPosition.Y;
-			Camera3D cam = GetViewport().GetCamera3D();
-			Vector3 rayOrigin = cam.ProjectRayOrigin(mousePos);
-			Vector3 rayDir = cam.ProjectRayNormal(mousePos);
+			controller.StartMotor();
+		}
 
-			// 2. Schnittpunkt mit Platten-Ebene (z.B. y = Plattenhöhe)
-			float t = (targetY - rayOrigin.Y) / rayDir.Y;
-			Vector3 hit = rayOrigin + rayDir * t;
+		public void OnVolumeChange(float volume)
+		{
+			controller.SetVolume(volume);
+		}
 
-			// 3. Berechne Winkel zum Zentrum des target
-			Vector3 center = target.GlobalTransform.Origin;
-			Vector3 dir = (hit - center).Normalized();
-			float angle = Mathf.Atan2(dir.X, dir.Z); // Winkel zur Z-Achse
+		public void OnSpeedChange(float speed)
+		{
+			controller.ChangeSpeed(speed);
+		}
 
-			return angle;
+		public void OnSpeedReset()
+		{
+			controller.ResetSpeed();
 		}
 	}
 }

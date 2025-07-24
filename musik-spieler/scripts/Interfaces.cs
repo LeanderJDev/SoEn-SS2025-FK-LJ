@@ -50,6 +50,10 @@ namespace Musikspieler.Scripts
         string MP3Path { get; }
         byte[] CoverData { get; }
         AudioStreamWav Audio { get; }
+
+        public void LoadAudio();
+
+        public void DisposeAudio();
     }
 
     public interface IPlaylist : IItem, IItemList<ISong>
@@ -59,6 +63,6 @@ namespace Musikspieler.Scripts
 
     public interface IPlaylistDirectory : IItemList<IPlaylist>
     {
-
+        public IPlaylist this[string name] { get; }
     }
 }

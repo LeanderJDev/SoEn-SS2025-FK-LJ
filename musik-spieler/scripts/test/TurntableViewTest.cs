@@ -18,9 +18,11 @@ namespace Musikspieler.Scripts.Test
 		public override void _Ready()
 		{
 			samplePlot = new Plot("Samples", 50, 100, scaleY: 400f, length: 1000);
-            AddChild(samplePlot);
-            speedPlot = new Plot("TurntableSpeed", 50, 300, scaleY: 50f, length: 500, color: new Color(0,0,1,0.4f));
-            AddChild(speedPlot);
+			AddChild(samplePlot);
+			speedPlot = new Plot("TurntableSpeed", 50, 300, scaleY: 50f, length: 500, color: new Color(0, 0, 1, 0.4f));
+			AddChild(speedPlot);
+
+			turntableView.turntableAudioManager.SetSong(MusicCollection.Instance.PlaylistDirectory["Whole Collection"][2]);
 		}
 
 		public override void _PhysicsProcess(double delta)
@@ -34,10 +36,7 @@ namespace Musikspieler.Scripts.Test
 			var samplesField = audioPlayer.GetType().GetField("samples", BindingFlags.NonPublic | BindingFlags.Instance);
 			var samples = (Vector2[])samplesField.GetValue(audioPlayer);
 
-			var turntableField = turntableView.turntableAudioManager.GetType().GetField("turntable", BindingFlags.NonPublic | BindingFlags.Instance);
-			Turntable turntable = (Turntable)turntableField.GetValue(turntableView.turntableAudioManager);
-
-			int sampleIndex = (int)(turntable.CurrentSongPosition * samples.Length);
+			int sampleIndex = (int)(turntableView.turntableAudioManager.Turntable.CurrentSongPosition * samples.Length);
 
 			// Bereich berechnen, der im letzten Frame gespielt wurde
 			float loopsPlayed = turntableView.turntableAudioManager.Turntable.CurrentSpeed * (float)delta;

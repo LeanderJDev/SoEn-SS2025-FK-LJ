@@ -16,6 +16,7 @@ namespace Musikspieler.Scripts.Audio
         void ToggleMotor();
         void SetMotorState(bool enabled);
         void ChangeMotorSpeed(float speed);
+        void SetMotorSpeed(float speed);
         void Rotate(float loops);
         void MoveArm(float pos);
         void ScratchTarget(float deltaLoops);
@@ -137,6 +138,13 @@ namespace Musikspieler.Scripts.Audio
         public void ChangeMotorSpeed(float speed)
         {
             motorSpeed += speed;
+            StartMotor();
+        }
+
+        public void SetMotorSpeed(float speed)
+        {
+            motorSpeed = speed;
+            StartMotor();
         }
 
         public void Rotate(float loops)
