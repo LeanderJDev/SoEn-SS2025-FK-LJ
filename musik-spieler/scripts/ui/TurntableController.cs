@@ -84,9 +84,14 @@ namespace Musikspieler.Scripts.UI
 			turntable.EndScratch();
 		}
 
-		public void StopButton()
+		public void StopMotor()
 		{
 			turntable.SetMotorState(false);
+		}
+
+		public void StartMotor()
+		{
+			turntable.SetMotorState(true);
 		}
 
 		public void SpeedDial(float angle)

@@ -43,10 +43,10 @@ namespace Musikspieler.Scripts.UI
 				return;
 			}
 
-			#if DEBUG
-			Song song = new Song("Song", "Album", "Artist", "", audioStream: testAudio);
+#if DEBUG
+			Song song = new Song("Song", "Album", "Artist", 0, "", audioStream: testAudio);
 			turntableAudioManager.SetSong(song);
-			#endif
+#endif
 
 			controller = new TurntableController(turntableAudioManager.Turntable, turntableAudioManager.AudioPlayer);
 
@@ -194,9 +194,14 @@ namespace Musikspieler.Scripts.UI
 			}
 		}
 
-		private void OnStopButton()
+		public void OnMotorOff()
 		{
-			controller.StopButton();
+			controller.StopMotor();
+		}
+
+		public void OnMotorOn()
+		{
+			controller.StartMotor();
 		}
 
 		private float MouseAngleCameraRaycast(Node3D target, Vector2 mousePos)

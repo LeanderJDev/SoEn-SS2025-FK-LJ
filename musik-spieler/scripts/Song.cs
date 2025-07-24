@@ -10,9 +10,11 @@ namespace Musikspieler.Scripts
         private readonly string _name;
         private readonly string _album;
         private readonly string _artist;
+        private readonly float _length;
         private readonly string _mp3Path;
         private readonly byte[] _coverData;
         private AudioStreamWav _audio;
+
 
         // Properties
         public string Name => _name;
@@ -21,11 +23,13 @@ namespace Musikspieler.Scripts
         public string MP3Path => _mp3Path;
         public AudioStreamWav Audio => _audio;
         public byte[] CoverData => _coverData;
+        public float LengthInSeconds => _length;
 
         public Song(
             string name,
             string album,
             string artist,
+            float length,
             string mp3Path,
             byte[] coverData = null,
             AudioStreamWav audioStream = null
@@ -34,25 +38,24 @@ namespace Musikspieler.Scripts
             _name = name;
             _album = album;
             _artist = artist;
+            _length = length;
             _mp3Path = mp3Path;
             _coverData = coverData;
             _audio = audioStream;
         }
 
-        private readonly float _length;
-        public float LengthInSeconds => _length;
 
         public override string ToString()
         {
             return $"{nameof(Song)}: Name='{_name}', Album='{_album}', Artist='{_artist}', MP3Path='{_mp3Path}'";
         }
 
-        private void LoadAudio()
+        public void LoadAudio()
         {
             _audio = MP3Loader.Load(_mp3Path);
         }
 
-        private void DisposeAudio()
+        public void DisposeAudio()
         {
             _audio?.Dispose();
             _audio = null;
