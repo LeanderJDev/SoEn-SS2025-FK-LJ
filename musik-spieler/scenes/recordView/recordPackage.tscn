@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://bllikfxoas0o1" path="res://scripts/recordView/RecordPackage.cs" id="1_4iwvx"]
 [ext_resource type="ArrayMesh" uid="uid://csd5obyn068up" path="res://assets/3D/musikplayer_RecordPackage.res" id="2_3v5pi"]
 
-[node name="RecordPackage" type="Node3D" node_paths=PackedStringArray("_meshInstance")]
+[node name="RecordPackage" type="Node3D"]
 script = ExtResource("1_4iwvx")
 _meshInstance = NodePath("RecordPackageMesh")
 
