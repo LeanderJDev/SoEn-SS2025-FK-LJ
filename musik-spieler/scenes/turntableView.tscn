@@ -62,7 +62,6 @@ collision_mask = 32
 [node name="RecordOnPlayer" type="MeshInstance3D" parent="Turntable/Record"]
 mesh = ExtResource("3_b3s4p")
 skeleton = NodePath("")
-surface_material_override/0 = ExtResource("17_nhk5o")
 surface_material_override/1 = ExtResource("4_bvq3t")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Turntable/Record"]
