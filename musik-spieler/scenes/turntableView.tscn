@@ -1,18 +1,17 @@
-[gd_scene load_steps=16 format=3 uid="uid://oqxtofjpw2o0"]
+[gd_scene load_steps=15 format=3 uid="uid://oqxtofjpw2o0"]
 
 [ext_resource type="Script" uid="uid://ltvtgitbihw5" path="res://scripts/ui/TurntableView.cs" id="1_3plv3"]
 [ext_resource type="AudioStream" uid="uid://4ajuf5e7w4ph" path="res://assets/Audio/song.wav" id="2_j686s"]
-[ext_resource type="ArrayMesh" uid="uid://buep2wvg1n2x5" path="res://assets/3D/musikplayer_RecordOnPlayer.res" id="3_b3s4p"]
-[ext_resource type="ArrayMesh" uid="uid://cnwh7mgnrf0md" path="res://assets/3D/musikplayer_ArmBase.res" id="4_bdbov"]
-[ext_resource type="Material" uid="uid://cq35gwcgge41f" path="res://graphics/vinylShaded.tres" id="4_j686s"]
-[ext_resource type="ArrayMesh" uid="uid://r1kryp4xtxsi" path="res://assets/3D/musikplayer_ArmArm.res" id="5_bvq3t"]
-[ext_resource type="ArrayMesh" uid="uid://bopwv1layvi1i" path="res://assets/3D/musikplayer_PlayerBody.res" id="6_7qcyi"]
-[ext_resource type="ArrayMesh" uid="uid://rywkoihmeqam" path="res://assets/3D/musikplayer_PlayerCable.res" id="7_g7h5g"]
-[ext_resource type="ArrayMesh" uid="uid://bsoiym1yxjwel" path="res://assets/3D/musikplayer_PlayerPowerPlug.res" id="8_nhk5o"]
+[ext_resource type="ArrayMesh" uid="uid://r6rbu3lbegw1" path="res://assets/3D/musikplayer_RecordOnPlayer.res" id="3_b3s4p"]
+[ext_resource type="ArrayMesh" uid="uid://c7wx27kf1yeqy" path="res://assets/3D/musikplayer_ArmBase.res" id="4_bdbov"]
+[ext_resource type="ArrayMesh" uid="uid://djhhplwj6t64q" path="res://assets/3D/musikplayer_ArmArm.res" id="5_bvq3t"]
+[ext_resource type="ArrayMesh" uid="uid://coua63fkbh64q" path="res://assets/3D/musikplayer_PlayerBody.res" id="6_7qcyi"]
+[ext_resource type="ArrayMesh" uid="uid://b567k7ve825cr" path="res://assets/3D/musikplayer_PlayerCable.res" id="7_g7h5g"]
+[ext_resource type="ArrayMesh" uid="uid://bkm8j3an2dmun" path="res://assets/3D/musikplayer_PlayerPowerPlug.res" id="8_nhk5o"]
 [ext_resource type="Script" uid="uid://c8b0fj26s2nje" path="res://scripts/audio/TurntableAudioManager.cs" id="9_nhk5o"]
-[ext_resource type="ArrayMesh" uid="uid://dlvk2i535dguh" path="res://assets/3D/musikplayer_PlayerVelocityKnob.res" id="9_oc1dy"]
-[ext_resource type="ArrayMesh" uid="uid://rwusbyika3r2" path="res://assets/3D/musikplayer_Cube.res" id="10_7f87t"]
-[ext_resource type="ArrayMesh" uid="uid://cem5wec86bkfd" path="res://assets/3D/musikplayer_ScrollWheel.res" id="11_la1ep"]
+[ext_resource type="ArrayMesh" uid="uid://dklct6mhfn2ji" path="res://assets/3D/musikplayer_PlayerVelocityKnob.res" id="9_oc1dy"]
+[ext_resource type="ArrayMesh" uid="uid://dfd7l5iflen04" path="res://assets/3D/musikplayer_Cube.res" id="10_7f87t"]
+[ext_resource type="ArrayMesh" uid="uid://do2kwhx33kswv" path="res://assets/3D/musikplayer_ScrollWheel.res" id="11_la1ep"]
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_3plv3"]
 height = 0.05
@@ -43,7 +42,6 @@ collision_mask = 32
 [node name="RecordOnPlayer" type="MeshInstance3D" parent="Turntable/Record"]
 mesh = ExtResource("3_b3s4p")
 skeleton = NodePath("")
-surface_material_override/1 = ExtResource("4_j686s")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Turntable/Record"]
 shape = SubResource("CylinderShape3D_3plv3")

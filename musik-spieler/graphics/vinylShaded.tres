@@ -1,14 +1,6 @@
-[gd_resource type="ShaderMaterial" load_steps=4 format=3 uid="uid://cq35gwcgge41f"]
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://cq35gwcgge41f"]
 
-[ext_resource type="Shader" uid="uid://cysdwm8woyu3q" path="res://graphics/vinyl.gdshader" id="1_6a75a"]
-
-[sub_resource type="FastNoiseLite" id="FastNoiseLite_6a75a"]
-frequency = 0.03
-
-[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_6a75a"]
-width = 1024
-height = 1024
-noise = SubResource("FastNoiseLite_6a75a")
+[ext_resource type="Shader" path="res://graphics/vinyl.gdshader" id="1_6a75a"]
 
 [resource]
 render_priority = 0

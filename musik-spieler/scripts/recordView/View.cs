@@ -14,13 +14,13 @@ namespace Musikspieler.Scripts.RecordView
         public abstract ShaderMaterial LocalMaterial { get; }
         public abstract int GetViewIndex(ViewItem item);
 
-        public abstract event Action<ItemListChangedEventArgs> ObjectListChanged;
+        public abstract event Action<ItemListChangedEventArgs> ObjectsChanged;
 
         public struct ItemListChangedEventArgs
         {
             public readonly bool ViewChanged => changeToView != null;
 
-            public List<ViewItem> items;
+            public List<ViewItem> itemsToChangeView;
             public View changeToView;
         }
 
