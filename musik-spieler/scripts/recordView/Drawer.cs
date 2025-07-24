@@ -58,7 +58,6 @@ namespace Musikspieler.Scripts.RecordView
         static Drawer()
         {
             ItemPrefab = GD.Load<PackedScene>("res://scenes/recordView/drawer.tscn");
-            DefaultMaterial = GD.Load<ShaderMaterial>("res://graphics/defaultRecordPackageMaterial.tres");
 
             const float PositionSmoothTime = 0.10f;
             const float PositionMaxSpeed = 50f;

@@ -1,4 +1,4 @@
-[gd_scene load_steps=23 format=3 uid="uid://oqxtofjpw2o0"]
+[gd_scene load_steps=25 format=3 uid="uid://oqxtofjpw2o0"]
 
 [ext_resource type="Script" uid="uid://ltvtgitbihw5" path="res://scripts/ui/TurntableView.cs" id="1_3plv3"]
 [ext_resource type="AudioStream" uid="uid://4ajuf5e7w4ph" path="res://assets/Audio/song.wav" id="2_j686s"]
@@ -16,6 +16,8 @@
 [ext_resource type="Script" uid="uid://0hs4oqv4gkjb" path="res://scripts/ui/StartStopButton.cs" id="11_bvq3t"]
 [ext_resource type="ArrayMesh" uid="uid://cem5wec86bkfd" path="res://assets/3D/musikplayer_ScrollWheel.res" id="11_la1ep"]
 [ext_resource type="Script" uid="uid://do6tm277ja16p" path="res://scripts/ui/SpeedDial.cs" id="14_nhk5o"]
+[ext_resource type="Material" uid="uid://bpk68jqx6k0dg" path="res://graphics/coverImage.tres" id="17_nhk5o"]
+[ext_resource type="Script" uid="uid://b8r7e3qc2fn8g" path="res://scripts/ui/RecordAccepter.cs" id="18_oc1dy"]
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_3plv3"]
 height = 0.05
@@ -36,7 +38,8 @@ size = Vector3(0.3, 0.3, 0.25)
 height = 0.17
 radius = 0.17
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bdbov"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_oc1dy"]
+size = Vector3(2.82936, 1, 2.4)
 
 [node name="TurntableView" type="Node3D" node_paths=PackedStringArray("turntableAudioManager", "Tonearm", "Record")]
 script = ExtResource("1_3plv3")
@@ -59,6 +62,7 @@ collision_mask = 32
 [node name="RecordOnPlayer" type="MeshInstance3D" parent="Turntable/Record"]
 mesh = ExtResource("3_b3s4p")
 skeleton = NodePath("")
+surface_material_override/0 = ExtResource("17_nhk5o")
 surface_material_override/1 = ExtResource("4_bvq3t")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Turntable/Record"]
@@ -149,7 +153,18 @@ shape = SubResource("CylinderShape3D_7qcyi")
 [node name="TurntableAudioManager" type="Node2D" parent="." node_paths=PackedStringArray("RecordOnPlayer")]
 script = ExtResource("9_nhk5o")
 RecordOnPlayer = NodePath("../Turntable/Record/RecordOnPlayer")
-coverImageMaterial = SubResource("StandardMaterial3D_bdbov")
+coverImageMaterial = ExtResource("17_nhk5o")
+
+[node name="RecordAccepter" type="StaticBody3D" parent="." node_paths=PackedStringArray("viewBounds", "turntableAudioManager")]
+collision_layer = 2
+collision_mask = 2
+script = ExtResource("18_oc1dy")
+viewBounds = NodePath("CollisionShape3D")
+turntableAudioManager = NodePath("../TurntableAudioManager")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="RecordAccepter"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.187006, 0, 0)
+shape = SubResource("BoxShape3D_oc1dy")
 
 [connection signal="VolumeChange" from="Turntable/VolumeKnob" to="." method="OnVolumeChange"]
 [connection signal="MotorOff" from="Turntable/StartStopButton" to="." method="OnMotorOff"]

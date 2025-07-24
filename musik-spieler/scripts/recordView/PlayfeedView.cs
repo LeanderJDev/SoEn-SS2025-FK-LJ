@@ -18,8 +18,6 @@ namespace Musikspieler.Scripts.RecordView
 
         public override ScrollViewContentContainer Container => (ScrollViewContentContainer)_container;
 
-        public override ShaderMaterial LocalMaterial => ViewItemGeneric<IPlaylist>.DefaultMaterial;
-
         public Drawer _drawer;
 
         public override ViewItem GrabItem(bool allowGrabChildren)

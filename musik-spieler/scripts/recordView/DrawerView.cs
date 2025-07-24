@@ -32,32 +32,26 @@ namespace Musikspieler.Scripts.RecordView
             mask = Scripts.RecordView.CollisionMask.DrawerViewBoundary;
             autoScrollSensitivity = 20f;
 
-            //NUR FÜR TESTZWECKE
-            List<IPlaylist> playlists = new(15);
-            for (int i = 0; i < 15; i++)
-            {
-                List<ISong> songs = new(100);
-                for (int s = 0; s < 100; s++)
-                {
-                    songs.Add(new Song(Utility.RandomString(10), "Album", "Artist", 0, "Path"));
-                }
-                playlists.Add(new Playlist(songs, $"Playlist {i}"));
-            }
+            // NUR FÜR TESTZWECKE
+            // List<IPlaylist> playlists = new(15);
+            // for (int i = 0; i < 15; i++)
+            // {
+            //     List<ISong> songs = new(100);
+            //     for (int s = 0; s < 100; s++)
+            //     {
+            //         songs.Add(new Song(Utility.RandomString(10), "Album", "Artist", 0, "Path"));
+            //     }
+            //     playlists.Add(new Playlist(songs, $"Playlist {i}"));
+            // }
             // PlaylistDirectory dir = new();
             IPlaylistDirectory dir = MusicCollection.Instance.PlaylistDirectory;
             ItemList = dir;
-            dir.AddItems(playlists);
+            // dir.AddItems(playlists);
         }
 
         public override ViewItem GrabItem(bool allowGrabChildren)
         {
-            if (selected == null || selected.Count <= 0)
-                return null;
-
-            if (selected[GapIndexClamped])
-                return base.GrabItem(allowGrabChildren);
-
-            return null;
+            return base.GrabItem(allowGrabChildren);
         }
 
         private void OnItemsAdded(ItemsAddedEventArgs args)
@@ -77,7 +71,7 @@ namespace Musikspieler.Scripts.RecordView
 
         public AnimationOutput SelectedOffsetAnimationFunction(AnimationInput input)
         {
-            const float selectedOffset = 2.4f;
+            const float selectedOffset = 4.0f;
 
             return new AnimationOutput()
             {

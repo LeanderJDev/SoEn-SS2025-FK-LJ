@@ -16,9 +16,6 @@ namespace Musikspieler.Scripts.RecordView
 
 		public int ItemCount => itemObjects.Count;
 
-		private ShaderMaterial _localMaterial;
-		public override ShaderMaterial LocalMaterial => _localMaterial;
-
 		public ViewItemGeneric<T> this[int index]
 		{
 			get { return itemObjects[index]; }
@@ -38,7 +35,6 @@ namespace Musikspieler.Scripts.RecordView
 			get => _itemList;
 			set
 			{
-				GD.Print("ScrollView: Setter ItemList");
 				if (_itemList != null)
 				{
 					_itemList.ItemsAdded -= ItemsAdded;
@@ -117,7 +113,6 @@ namespace Musikspieler.Scripts.RecordView
 
 		public override void _Ready()
 		{
-			_localMaterial = (ShaderMaterial)ViewItemGeneric<T>.DefaultMaterial.Duplicate();
 			base._Ready();
 		}
 
@@ -392,8 +387,11 @@ namespace Musikspieler.Scripts.RecordView
 
 		public override void _Process(double delta)
 		{
-			LocalMaterial.SetShaderParameter("box_transform", viewBounds.GlobalTransform);
-			LocalMaterial.SetShaderParameter("box_size", ((BoxShape3D)viewBounds.Shape).Size);
+			// Das ist brutal, aber es war nur noch wenig Zeit
+			foreach (var item in itemObjects)
+			{
+				if(!item.IsGettingDragged) item.SetCutoffShaderParameters(viewBounds.GlobalTransform, ((BoxShape3D)viewBounds.Shape).Size);
+			}
 
 			base._Process(delta);
 			Vector2? boundaryMousePos = GetBoundaryMousePosition();

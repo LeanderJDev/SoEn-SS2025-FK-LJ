@@ -3,6 +3,7 @@
 [ext_resource type="Shader" uid="uid://cysdwm8woyu3q" path="res://graphics/vinyl.gdshader" id="1_6a75a"]
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_6a75a"]
+frequency = 0.1
 
 [sub_resource type="NoiseTexture2D" id="NoiseTexture2D_snvhd"]
 noise = SubResource("FastNoiseLite_6a75a")
