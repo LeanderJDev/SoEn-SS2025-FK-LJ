@@ -79,12 +79,14 @@ metadata/extras = {
 }
 
 [node name="ExtensionCordSwitch" type="StaticBody3D" parent="SubViewportContainer/SubViewport/ExtensionCord" node_paths=PackedStringArray("light")]
-transform = Transform3D(-0.969016, -0.104386, 0.223857, 0, 0.906308, 0.422618, -0.246999, 0.409524, -0.878226, -0.726773, -0.431955, -2.20045)
+transform = Transform3D(0.969016, -0.1235, 0.213907, -7.57104e-08, -0.866026, -0.5, 0.246999, 0.484508, -0.839192, -0.726773, -0.431955, -2.20045)
 script = ExtResource("6_a8y0u")
 light = NodePath("../../DirectionalLight3D")
+onAngle = -5.0
+offAngle = 35.0
 
 [node name="ExtensionCordSwitch" type="MeshInstance3D" parent="SubViewportContainer/SubViewport/ExtensionCord/ExtensionCordSwitch"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+transform = Transform3D(1, 0, 0, 0, -1, 8.74228e-08, 0, -8.74228e-08, -1, 0, 0, 0)
 mesh = ExtResource("5_jkv2x")
 skeleton = NodePath("")
 metadata/extras = {

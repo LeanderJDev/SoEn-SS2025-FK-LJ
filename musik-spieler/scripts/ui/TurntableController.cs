@@ -94,14 +94,18 @@ namespace Musikspieler.Scripts.UI
 			turntable.SetMotorState(true);
 		}
 
-		public void SpeedDial(float angle)
+		public void ChangeSpeed(float speed)
 		{
-			turntable.ChangeMotorSpeed(10 * angle / (Mathf.Pi * 2));
+			turntable.ChangeMotorSpeed(speed);
+		}
+		public void ResetSpeed()
+		{
+			turntable.SetMotorSpeed(45.0f);
 		}
 
-		public void VolumeDial(float angle)
+		public void SetVolume(float volume)
 		{
-			audioPlayer.Volume = 10 * angle / (Mathf.Pi * 2);
+			audioPlayer.Volume = volume;
 		}
 	}
 }

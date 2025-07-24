@@ -9,9 +9,9 @@ namespace Musikspieler.Scripts.UI{
 		[Export]
 		public Light3D light;
 		[Export]
-		public float onAngle = -25.0f;
+		public float onAngle = -10.0f;
 		[Export]
-		public float offAngle = 5.0f;
+		public float offAngle = 30.0f;
 
 		[Signal]
 		public delegate void MotorOffEventHandler();
@@ -24,6 +24,7 @@ namespace Musikspieler.Scripts.UI{
 		public override void _Ready()
 		{
 			lightEnergy = light.LightEnergy;
+			On();
 		}
 		public override void _Input(InputEvent @event)
 		{
@@ -53,7 +54,7 @@ namespace Musikspieler.Scripts.UI{
 		private void Off()
 		{
 			animationTween = CreateTween();
-			animationTween.TweenProperty(this, "rotation_degrees:x", RotationDegrees.X + (offAngle - onAngle), 0.1);
+			animationTween.TweenProperty(this, "rotation_degrees:x", offAngle, 0.1);
 
 			// Dim the light over 0.5 seconds
 			if (light != null)
@@ -68,7 +69,7 @@ namespace Musikspieler.Scripts.UI{
 		private void On()
 		{
 			animationTween = CreateTween();
-			animationTween.TweenProperty(this, "rotation_degrees:x", RotationDegrees.X + (onAngle - offAngle), 0.1);
+			animationTween.TweenProperty(this, "rotation_degrees:x",  onAngle, 0.1);
 
 			// Dim the light over 0.5 seconds
 			if (light != null)

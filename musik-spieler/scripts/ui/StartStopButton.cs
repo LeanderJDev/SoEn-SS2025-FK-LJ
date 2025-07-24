@@ -8,9 +8,9 @@ namespace Musikspieler.Scripts.UI
 	public partial class StartStopButton : StaticBody3D
 	{
 		[Export]
-		public float offHeight = -0.02f;
+		public float downHeight = -0.02f;
 		[Export]
-		public float onHeight = 0;
+		public float upHeight = 0;
 		[Export]
 		public TurntableAudioManager turntableAudioManager;
 
@@ -54,14 +54,14 @@ namespace Musikspieler.Scripts.UI
 		{
 			if (animationTween != null) animationTween.Kill();
 			animationTween = CreateTween();
-			animationTween.TweenProperty(this, "position:y", Position.Y + (offHeight - onHeight), 0.1);
+			animationTween.TweenProperty(this, "position:y", downHeight, 0.1);
 		}
 
 		private void AnimateUp()
 		{
 			if (animationTween != null) animationTween.Kill();
 			animationTween = CreateTween();
-			animationTween.TweenProperty(this, "position:y", Position.Y + (onHeight - offHeight), 0.1);
+			animationTween.TweenProperty(this, "position:y", upHeight, 0.1);
 		}
 	}
 }
