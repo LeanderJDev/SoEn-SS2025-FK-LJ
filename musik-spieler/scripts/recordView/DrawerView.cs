@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Musikspieler.Scripts.RecordView
 {
-    public partial class DrawerView : ScrollView<IPlaylist>
+    public partial class DrawerView : ScrollView
     {
         private readonly List<bool> selected = [];
 
@@ -43,7 +43,7 @@ namespace Musikspieler.Scripts.RecordView
                 playlists.Add(new Playlist(songs, $"Playlist {i}"));
             }
             MusicCollection dir = new();
-            ItemList = dir;
+            ItemList = (IItemList)dir;
             dir.AddItems(playlists);
         }
 
@@ -81,6 +81,16 @@ namespace Musikspieler.Scripts.RecordView
             {
                 PositionOffset = new(selected[input.index] ? selectedOffset : 0, 0, 0)
             };
+        }
+
+        public ViewItem InstantiateAndAssign(IPlaylist item)
+        {
+            return Drawer.InstantiateAndAssign(this, 0);
+        }
+
+        protected override ViewItem InstantiateAndAssign(int index)
+        {
+            return Drawer.InstantiateAndAssign(this, index);
         }
     }
 }

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace Musikspieler.Scripts.RecordView
 {
     //Als lokale Objkte deklariert, damit klar ist für was sie gedacht sind.
-    public abstract partial class ScrollView<T> : View where T : IItem
+    public abstract partial class ScrollView : View
     {
         public struct AnimationOutput
         {

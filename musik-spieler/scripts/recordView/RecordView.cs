@@ -3,8 +3,18 @@ using System.Collections.Generic;
 
 namespace Musikspieler.Scripts.RecordView
 {
-    public partial class RecordView : ScrollView<ISong>
+    public partial class RecordView : ScrollView, IAcceptsItemType<ISong>
     {
+        public ViewItem InstantiateAndAssign(ISong item)
+        {
+            return RecordPackage.InstantiateAndAssign(this, 0);
+        }
+
+        protected override ViewItem InstantiateAndAssign(int index)
+        {
+            return RecordPackage.InstantiateAndAssign(this, index);
+        }
+
         public override void _Ready()
         {
             base._Ready();

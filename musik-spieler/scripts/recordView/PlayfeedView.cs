@@ -14,9 +14,19 @@ namespace Musikspieler.Scripts.RecordView
 
         public override CollisionShape3D BoundsShape => _collisionShape;
 
-        public override ScrollViewContentContainer Container => throw new NotImplementedException();
+        public override ScrollViewContentContainer Container => _drawer == null ? null : _drawer.RecordView.Container;
 
-        public override ShaderMaterial LocalMaterial => ViewItemGeneric<IPlaylist>.DefaultMaterial;
+        public override int ItemCount => _drawer == null ? 0 : _drawer.RecordView.ItemCount;
+
+        public override ViewItem this[int index]
+        {
+            get
+            {
+                if (_drawer != null)
+                    return _drawer.RecordView[index];
+                else return _drawer;
+            }
+        }
 
         public Drawer _drawer;
 
@@ -53,9 +63,9 @@ namespace Musikspieler.Scripts.RecordView
         {
             const string tempname = "temp";
 
-            if (_drawer != null && _drawer.displayedItem.Name.Equals(tempname))
+            if (_drawer != null && ((IPlaylist)_drawer.DisplayedItem).Name.Equals(tempname))
             {
-                GD.Print("automatisch den alten Drawer zurÃ¼ckzumoven ist noch nicht implementiert.");
+                GD.Print("automatisch den alten Drawer zurückzumoven ist noch nicht implementiert.");
                 return false;
             }
             if (item is Drawer drawer)
@@ -65,11 +75,8 @@ namespace Musikspieler.Scripts.RecordView
             }
             if (item is RecordPackage recordPackage)
             {
-                _drawer = new()
-                {
-                    displayedItem = new Playlist(tempname)
-                };
-                _drawer.displayedItem.AddItem(recordPackage.displayedItem);
+                _drawer = Drawer.InstantiateAndAssign(this, 0);
+                _drawer.Playlist.AddItem(recordPackage.Song);
                 return false;
             }
             return false;
