@@ -12,6 +12,10 @@ namespace Musikspieler.Scripts.UI
         [Export] private CollisionShape3D viewBounds;
 		public override CollisionShape3D BoundsShape => viewBounds;
 
+        public override int ItemCount => currentItem == null ? 0 : 1;
+
+        public override int MaxItemCount => 1;
+
 		[Export]
 		private TurntableAudioManager turntableAudioManager;
 
@@ -66,7 +70,7 @@ namespace Musikspieler.Scripts.UI
 
 				currentItem = item;
 
-				turntableAudioManager.SetSong(recordPackage.displayedItem);
+				turntableAudioManager.SetSong(recordPackage.DisplayedSong);
 
 				ObjectsChanged?.Invoke(new ItemListChangedEventArgs
 				{

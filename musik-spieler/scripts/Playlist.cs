@@ -4,9 +4,9 @@ using System.Collections.Immutable;
 
 namespace Musikspieler.Scripts
 {
-    public class Playlist : IPlaylist
+    public class Playlist : IContentItem
     {
-        private readonly List<ISong> songs;
+        private readonly List<Song> songs;
 
         public string Name { get; set; }
 
@@ -16,16 +16,16 @@ namespace Musikspieler.Scripts
 
         public Playlist(string name) : this(null, name) { }
 
-        public Playlist(List<ISong> songs, string name)
+        public Playlist(List<Song> songs, string name)
         {
             songs ??= [];
             this.songs = songs;
             Name = name;
         }
 
-        public ImmutableArray<ISong> GetAllItems() => [.. songs];
+        public ImmutableArray<Song> GetAllItems() => [.. songs];
 
-        public IEnumerable<ISong> GetEnumerable()
+        public IEnumerable<Song> GetEnumerable()
         {
             for (int i = 0; i < songs.Count; i++)
             {
@@ -36,9 +36,9 @@ namespace Musikspieler.Scripts
         public event Action<ItemsAddedEventArgs> ItemsAdded = delegate { };
         public event Action<ItemsRemovedEventArgs> ItemsRemoved = delegate { };
 
-        public ISong this[int index] => songs[index];
+        public Song this[int index] => songs[index];
 
-        public bool AddItem(ISong song)
+        public bool AddItem(Song song)
         {
             if (song == null)
                 return false;
@@ -52,7 +52,7 @@ namespace Musikspieler.Scripts
             return true;
         }
 
-        public bool AddItems(List<ISong> songList)
+        public bool AddItems(List<Song> songList)
         {
             if (songs == null)
                 return false;
@@ -66,7 +66,7 @@ namespace Musikspieler.Scripts
             return true;
         }
 
-        public bool InsertItemAt(ISong song, int index)
+        public bool InsertItemAt(Song song, int index)
         {
             if (song == null || index >= ItemCount || index < 0)
                 return false;
@@ -80,7 +80,7 @@ namespace Musikspieler.Scripts
             return true;
         }
 
-        public bool InsertItemsAt(List<ISong> songs, int index)
+        public bool InsertItemsAt(List<Song> songs, int index)
         {
             if (songs == null || index >= ItemCount || index < 0 || songs.Count < 1)
                 return false;
@@ -94,7 +94,7 @@ namespace Musikspieler.Scripts
             return true;
         }
 
-        public bool RemoveItem(ISong song)
+        public bool RemoveItem(Song song)
         {
             int index = songs.IndexOf(song);
             if (index < 0)

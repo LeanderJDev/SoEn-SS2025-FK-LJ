@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Musikspieler.Scripts.RecordView
 {
-    public partial class RecordView : ScrollView<ISong>
+    public partial class RecordView : ScrollView
     {
         public override void _Ready()
         {

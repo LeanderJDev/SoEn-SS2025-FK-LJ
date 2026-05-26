@@ -5,9 +5,9 @@ using System.Collections.Immutable;
 
 namespace Musikspieler.Scripts
 {
-    public interface IItem
+    public interface IContentItem
     {
-
+        
     }
 
     public struct ItemsAddedEventArgs
@@ -22,47 +22,23 @@ namespace Musikspieler.Scripts
         public int count;
     }
 
-    public interface IItemList<T> where T : IItem
+    public interface IItemList
     {
         public int ItemCount { get; }
-        public T this[int index] { get; }
+        public IContentItem this[int index] { get; }
         public event Action<ItemsAddedEventArgs> ItemsAdded;
         public event Action<ItemsRemovedEventArgs> ItemsRemoved;
-        public ImmutableArray<T> GetAllItems();
-        public IEnumerable<T> GetEnumerable();
-        public bool AddItem(T item);
-        public bool AddItems(List<T> items);
-        public bool InsertItemAt(T item, int index);
-        public bool InsertItemsAt(List<T> items, int index);
-        public bool RemoveItem(T item);
+        public ImmutableArray<IContentItem> GetAllItems();
+        public IEnumerable<IContentItem> GetEnumerable();
+        public bool AddItem(IContentItem item);
+        public bool AddItems(List<IContentItem> items);
+        public bool InsertItemAt(IContentItem item, int index);
+        public bool InsertItemsAt(List<IContentItem> items, int index);
+        public bool RemoveItem(IContentItem item);
         public bool RemoveItemAt(int index);
         public bool RemoveItemsAt(int startIndex, int count);
 
         //how many itemObjects could be added
         public int BufferSizeLeft { get; }
-    }
-
-    public interface ISong : IItem
-    {
-        string Name { get; }
-        string Album { get; }
-        string Artist { get; }
-        string MP3Path { get; }
-        byte[] CoverData { get; }
-        AudioStreamWav Audio { get; }
-
-        public void LoadAudio();
-
-        public void DisposeAudio();
-    }
-
-    public interface IPlaylist : IItem, IItemList<ISong>
-    {
-        public string Name { get; }
-    }
-
-    public interface IPlaylistDirectory : IItemList<IPlaylist>
-    {
-        public IPlaylist this[string name] { get; }
     }
 }

@@ -5,21 +5,20 @@ using System.Linq;
 
 namespace Musikspieler.Scripts.RecordView
 {
-	public abstract partial class ScrollView<T> : View where T : IItem
+	public abstract partial class ScrollView : View
 	{
 		[Export] protected Node3D _scrollContainer;
 		[Export] private CollisionShape3D viewBounds;
 		public override CollisionShape3D BoundsShape => viewBounds;
 		public override ScrollViewContentContainer Container => (ScrollViewContentContainer)_scrollContainer;
 
-		protected readonly List<ViewItemGeneric<T>> itemObjects = [];
+		protected readonly List<ViewItem> ViewItems = [];
 
-		public int ItemCount => itemObjects.Count;
+		public override int ItemCount => ViewItems.Count;
 
-		public ViewItemGeneric<T> this[int index]
-		{
-			get { return itemObjects[index]; }
-		}
+        public override int MaxItemCount => -1;
+
+		public ViewItem this[int index] => ViewItems[index];
 
 		public override bool IsInitialized => ItemList != null;
 
@@ -29,8 +28,8 @@ namespace Musikspieler.Scripts.RecordView
 
 		public override event Action<ItemListChangedEventArgs> ObjectsChanged;
 
-		private IItemList<T> _itemList;
-		public IItemList<T> ItemList
+		private IItemList _itemList;
+		public IItemList ItemList
 		{
 			get => _itemList;
 			set
@@ -43,10 +42,10 @@ namespace Musikspieler.Scripts.RecordView
 					_itemList.ItemsRemoved -= OnItemsRemoved;
 					for (int i = 0; i < ItemCount; i++)
 					{
-						itemObjects[i].QueueFree();
+						ViewItems[i].QueueFree();
 					}
 					GD.Print("why are we here just to suffer");
-					itemObjects.Clear();
+					ViewItems.Clear();
 					ItemsRemoved?.Invoke(new()
 					{
 						count = _itemList.ItemCount,
@@ -56,14 +55,14 @@ namespace Musikspieler.Scripts.RecordView
 				_itemList = value;
 				if (_itemList != null)
 				{
-					List<ViewItemGeneric<T>> newItems = new(_itemList.ItemCount);
+					List<ViewItem> newItems = new(_itemList.ItemCount);
 					for (int i = 0; i < _itemList.ItemCount; i++)
 					{
-						var item = ViewItemGeneric<T>.InstantiateAndAssign(this, i);
+						var item = ViewItem.InstantiateAndAssign(this, i);
 						newItems.Add(item);
 						_scrollContainer.AddChild(item);
 					}
-					itemObjects.AddRange(newItems);
+					ViewItems.AddRange(newItems);
 					ObjectsChanged?.Invoke(new()
 					{
 						itemsToChangeView = newItems.Cast<ViewItem>().ToList(),
@@ -100,8 +99,8 @@ namespace Musikspieler.Scripts.RecordView
 
 		//clamped to be usable as an indexer.
 		protected int GapIndexClamped => Math.Clamp((int)(_centeredGapIndex + (ItemCount / 2)), 0, ItemCount - 1);
-		public T ItemAtGapIndex => ItemCount == 0 ? default :_itemList[GapIndexClamped];
-		public ViewItemGeneric<T> ObjectAtGapIndex => ItemCount == 0 ? null : itemObjects[GapIndexClamped];
+		public IContentItem ItemAtGapIndex => ItemCount == 0 ? default :_itemList[GapIndexClamped];
+		public ViewItem ObjectAtGapIndex => ItemCount == 0 ? null : ViewItems[GapIndexClamped];
 		private float _centeredGapIndex;
 
 		public Vector3 Bounds => ((BoxShape3D)viewBounds.Shape).Size;
@@ -122,17 +121,17 @@ namespace Musikspieler.Scripts.RecordView
 			if (ignoreItemsAddedEvent)
 				return;
 
-			List<ViewItemGeneric<T>> newItems = new(args.count);
+			List<ViewItem> newItems = new(args.count);
 			for (int i = 0; i < args.count; i++)
 			{
-				ViewItemGeneric<T> item = ViewItemGeneric<T>.InstantiateAndAssign(this, i);
+				ViewItem item = ViewItem.InstantiateAndAssign(this, i);
 				newItems.Add(item);
 				Container.AddChild(item);
 			}
 			if (args.startIndex >= ItemCount)
-				itemObjects.AddRange(newItems);
+				ViewItems.AddRange(newItems);
 			else
-				itemObjects.InsertRange(args.startIndex, newItems);
+				ViewItems.InsertRange(args.startIndex, newItems);
 			ObjectsChanged?.Invoke(new()
 			{
 				itemsToChangeView = newItems.Cast<ViewItem>().ToList(),
@@ -147,13 +146,13 @@ namespace Musikspieler.Scripts.RecordView
 			if (ignoreItemsRemovedEvent)
 				return;
 
-			List<ViewItemGeneric<T>> itemsToDelete = new(args.count);
+			List<ViewItem> itemsToDelete = new(args.count);
 			for (int i = 0; i < args.count; i++)
 			{
-				itemsToDelete.Add(itemObjects[args.startIndex + i]);
+				itemsToDelete.Add(ViewItems[args.startIndex + i]);
 				//displayedItem.QueueFree(); //macht jetzt der garbage bin
 			}
-			itemObjects.RemoveRange(args.startIndex, args.count);
+			ViewItems.RemoveRange(args.startIndex, args.count);
 			ObjectsChanged?.Invoke(new()
 			{
 				itemsToChangeView = itemsToDelete.Cast<ViewItem>().ToList(),
@@ -164,8 +163,8 @@ namespace Musikspieler.Scripts.RecordView
 
 		public override int GetViewIndex(ViewItem item)
 		{
-			if (item is ViewItemGeneric<T> genericItem)
-				return itemObjects.IndexOf(genericItem);
+			if (item is ViewItem genericItem)
+				return ViewItems.IndexOf(genericItem);
 			return -1;
 		}
 
@@ -179,7 +178,7 @@ namespace Musikspieler.Scripts.RecordView
 		/// Move the open Record to another ChildView, which also moves it to another underlaying ItemList.
 		/// </summary>
 		/// <returns>Returns false if the record could not be added to the target playlist.</returns>
-		public bool MoveItem(ScrollView<T> targetView)
+		public bool MoveItem(ScrollView targetView)
 		{
 			GD.Print("as.kdjalskdfhakds");
 			return MoveItem(GapIndex, targetView, null);
@@ -203,8 +202,8 @@ namespace Musikspieler.Scripts.RecordView
 			}
 
 			index = Math.Clamp(index, 0, ItemCount - 1);
-			var itemToRemove = itemObjects[index];
-			itemObjects[index] = null;
+			var itemToRemove = ViewItems[index];
+			ViewItems[index] = null;
 
 			ignoreItemsRemovedEvent = true;
 
@@ -212,12 +211,12 @@ namespace Musikspieler.Scripts.RecordView
 			{
 				GD.Print("ScrollView: targetView did not AcceptItem");
 				ignoreItemsRemovedEvent = false;
-				itemObjects[index] = itemToRemove;
+				ViewItems[index] = itemToRemove;
 				return false;
 			}
 			GD.Print("ScrollView: targetView accepted Item, removing Item from this");
 			_itemList.RemoveItem(itemToRemove.displayedItem);
-			itemObjects.Remove(null);
+			ViewItems.Remove(null);
 			ObjectsChanged?.Invoke(new()
 			{
 				itemsToChangeView = [itemToRemove],
@@ -227,14 +226,15 @@ namespace Musikspieler.Scripts.RecordView
 			return true;
 		}
 
-		public override bool AcceptItem(ViewItem item, int? index)
+		protected virtual bool AcceptItem(ViewItem item)
 		{
-			GD.Print("ScrollView: AcceptItem");
-			if (item is not ViewItemGeneric<T> viewItem)
-			{
-				GD.Print("ScrollView: Item type does not match the target views item type. Aborting.");
+			return true;
+		}
+
+		public sealed override bool AcceptItem(ViewItem item, int? index)
+		{
+			if (!AcceptItem(item))
 				return false;
-			}
 
 			if (index.HasValue)
 				index = Math.Clamp(index.Value, 0, ItemCount);
@@ -251,7 +251,7 @@ namespace Musikspieler.Scripts.RecordView
 				}
 				//Wenn man auf eine Package im ChildView zeigt, erwartet man, dass sie davor gelegt wird, und nicht ersetzt (was sie dahinter legen würde).
 				//Deshalb wird getestet, ob der aktuelle Slot gerade frei ist. Es wird der davor genommen, falls nicht.
-				else if (GapIndex >= 0 && itemObjects[GapIndex] == null)
+				else if (GapIndex >= 0 && ViewItems[GapIndex] == null)
 				{
 					index = GapIndex;
 				}
@@ -266,14 +266,14 @@ namespace Musikspieler.Scripts.RecordView
 			if (index.Value == ItemCount)
 			{
 				GD.Print("ScrollView: Add");
-				_itemList.AddItem(viewItem.displayedItem);
-				itemObjects.Add(viewItem);
+				_itemList.AddItem(item.displayedItem);
+				ViewItems.Add(item);
 			}
 			else
 			{
 				GD.Print("ScrollView: Insert");
-				_itemList.InsertItemAt(viewItem.displayedItem, index.Value);
-				itemObjects.Insert(index.Value, viewItem);
+				_itemList.InsertItemAt(item.displayedItem, index.Value);
+				ViewItems.Insert(index.Value, item);
 			}
 
 			ObjectsChanged?.Invoke(new()
@@ -373,10 +373,10 @@ namespace Musikspieler.Scripts.RecordView
 
 			var item = ObjectAtGapIndex;
 
-			if (allowGrabChildren && item is IItemAndView itemAndView && itemAndView.ChildView.IsUnderCursor)
+			if (allowGrabChildren && item.ChildView != null && item.ChildView.IsUnderCursor)
 			{
 				GD.Print("ScrollView: Grab Children");
-				return itemAndView.ChildView.GrabItem(true);
+				return item.ChildView.GrabItem(true);
 			}
 			return item;
 		}
@@ -388,7 +388,7 @@ namespace Musikspieler.Scripts.RecordView
 		public override void _Process(double delta)
 		{
 			// Das ist brutal, aber es war nur noch wenig Zeit
-			foreach (var item in itemObjects)
+			foreach (var item in ViewItems)
 			{
 				if(!item.IsGettingDragged) item.SetCutoffShaderParameters(viewBounds.GlobalTransform, ((BoxShape3D)viewBounds.Shape).Size);
 			}
@@ -436,7 +436,7 @@ namespace Musikspieler.Scripts.RecordView
 
 		public override void UpdateItemTransform(int index)
 		{
-			var item = itemObjects[index];
+			var item = ViewItems[index];
 
 			if (item == null)
 				return;

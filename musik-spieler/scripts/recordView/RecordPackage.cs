@@ -2,20 +2,21 @@ using Godot;
 
 namespace Musikspieler.Scripts.RecordView
 {
-    public partial class RecordPackage : ViewItemGeneric<ISong>
+    public partial class RecordPackage : ViewItem
     {
         [Export]
         public ShaderMaterial coverImageMaterial;
+
+        public Song DisplayedSong => (Song)displayedItem;
         public static void Init() { }
 
         public override void _Ready()
         {
             base._Ready();
-            if (displayedItem.CoverData != null)
+            if (displayedItem is Song song && song.CoverData != null)
             {
-                GD.Print(displayedItem.CoverData.Length);
                 Image image = new Image();
-                image.LoadJpgFromBuffer(displayedItem.CoverData);
+                image.LoadJpgFromBuffer(song.CoverData);
                 ImageTexture texture = null;
                 try
                 {
@@ -28,6 +29,10 @@ namespace Musikspieler.Scripts.RecordView
                 coverImageMaterial = (ShaderMaterial)coverImageMaterial.Duplicate();
                 coverImageMaterial.SetShaderParameter("albedo_texture", texture);
                 _meshInstance.SetSurfaceOverrideMaterial(1, coverImageMaterial);
+            }
+            else
+            {
+                GD.PrintErr("A RecordPackage cannot display any other Content other than a Song. A cover image is required.");
             }
         }
 

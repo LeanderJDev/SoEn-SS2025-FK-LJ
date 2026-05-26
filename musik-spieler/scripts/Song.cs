@@ -4,7 +4,7 @@ using Musikspieler.Scripts.Audio;
 
 namespace Musikspieler.Scripts
 {
-    public class Song : ISong
+    public class Song : IContentItem
     {
         // Backing fields
         private readonly string _name;

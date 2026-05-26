@@ -7,9 +7,9 @@ namespace Musikspieler.Scripts.Audio
 {
     public static class SongLoader
     {
-        public static List<ISong> LoadSongs(string path)
+        public static List<Song> LoadSongs(string path)
         {
-			var songs = new List<ISong>();
+			var songs = new List<Song>();
 			if (!Directory.Exists(path))
 				return songs;
 

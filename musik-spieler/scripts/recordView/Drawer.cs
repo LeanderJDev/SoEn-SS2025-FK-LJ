@@ -2,20 +2,14 @@ using Godot;
 
 namespace Musikspieler.Scripts.RecordView
 {
-    public interface IItemAndView
-    {
-        public View ChildView { get; }
-    }
 
-    public partial class Drawer : ViewItemGeneric<IPlaylist>, IItemAndView
+    public partial class Drawer : ViewItem
     {
         [Export] private RecordView _recordView;
 
         [Export] private CollisionObject3D _handle;
 
         public RecordView RecordView => _recordView;
-
-        View IItemAndView.ChildView => _recordView;
 
         private bool _selected;
         public bool Selected
@@ -32,14 +26,8 @@ namespace Musikspieler.Scripts.RecordView
 
         public override void _Ready()
         {
-            RecordView.ItemList = displayedItem;
+            //RecordView.ItemList = displayedItem;
             base._Ready();
-        }
-
-        public override bool Move(View targetView)
-        {
-            GD.Print("Drawer: Move");
-            return base.Move(targetView);
         }
 
         public override void _Input(InputEvent @event)

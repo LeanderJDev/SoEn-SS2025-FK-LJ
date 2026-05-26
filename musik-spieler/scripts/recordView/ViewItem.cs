@@ -1,3 +1,6 @@
+using Godot;
+using System;
+
 namespace Musikspieler.Scripts.RecordView
 {
     //als Zwischenlayer, damit der GrabHandler ViewItems jeglichen Typs anfassen kann
@@ -13,11 +16,134 @@ namespace Musikspieler.Scripts.RecordView
         /// </summary>
         public bool IsPending { get; protected set; }
 
+        public View ChildView {get; private set; }
+
+        [Export] protected MeshInstance3D _meshInstance;
+
+        public static ViewItem InstantiateAndAssign(ScrollView scrollView, int playlistIndex)
+        {
+            IContentItem displayedItem = scrollView.ItemList[playlistIndex];
+            var item = (ViewItem)ItemPrefab.Instantiate();
+            item.displayedItem = displayedItem;
+            item.View = scrollView;
+            return item;
+        }
+
+        protected static PackedScene ItemPrefab { get; set; }
+
+        /// <summary>
+        /// Welches Lied diese Packung repraesentiert.
+        /// </summary>
+        public IContentItem displayedItem;
+
+        private bool _isGettingDragged;
         /// <summary>
         /// Ob die Packung gerade herumgezogen wird. Wird direkt auf false gesetzt, wenn der Nutzer loslässt.
         /// </summary>
-        public abstract bool IsGettingDragged { get; set; }
+        public bool IsGettingDragged
+        {
+            get => _isGettingDragged;
+            set
+            {
+                _isGettingDragged = value;
+                if (_isGettingDragged)
+                {
+                    IsPending = true;
+                    if (GetViewport() == null)
+                        GD.Print(GetType());
+                    SetCutoffShaderParameters(Transform, new Vector3(100, 100, 100));
+                    GD.Print("Set to whole View");
+                    SmoothReparent((Node3D)GetViewport().GetChild(0));
+                }
+                else
+                {
+                    SmoothReparent(View.Container);
 
-        public abstract bool Move(View targetView);
+                    //das hier muss schöner gehen eigentlich: jetzt sagt es einem anderen objekt, dass es bitte geupdated werden soll...
+                    //Diese Fkt hier ist ja public, damit andere von außen evtl. refreshen können
+                    View.UpdateItemTransform(ViewIndex);
+                }
+            }
+        }
+
+        private View _view;
+        public View View
+        {
+            get => _view;
+            private set
+            {
+                ArgumentNullException.ThrowIfNull(value);
+                if (_view != null)
+                    _view.ObjectsChanged -= OnItemsChanged;
+                if (IsInsideTree() && !IsGettingDragged)
+                    SmoothReparent(value.Container);
+                _view = value;
+                _view.ObjectsChanged += OnItemsChanged;
+            }
+        }
+
+        public bool Move(View targetView)
+        {
+            GD.Print("ViewItem: Moving to targetView: ", targetView.GetType());
+            return View.MoveItem(ViewIndex, targetView);
+        }
+
+        private void OnItemsChanged(View.ItemListChangedEventArgs args)
+        {
+            if (args.ViewChanged && args.itemsToChangeView.Contains(this))
+            {
+                //GD.Print("ViewItem: ViewChanged");
+                View = args.changeToView;
+            }
+
+            ViewIndex = View.GetViewIndex(this);
+            if (ViewIndex == -1)
+            {
+                GD.PrintErr();
+                throw new Exception($"\nEine {this} von Typ {GetType()} \nist einem {View.GetType()} ({View}) zugewiesen, der sie nicht enthält.");
+            }
+            View.UpdateItemTransform(ViewIndex);
+        }
+
+        public static SmoothDamp ObjectTypeSmoothDamp { get; protected set; }
+
+
+        ///Im Gegensatz zu Unity kann in Godot mit Konstruktoren gearbeitet werden. Argumente sind dennoch nicht möglich, da der Konstruktor außerhalb unseres Codes aufgerufen wird.
+        ///Deshalb wird hier mit dem Factory-Prinzip gearbeitet.
+        protected ViewItem()
+        {
+            SmoothDamp = ObjectTypeSmoothDamp;
+        }
+
+        public override void _Process(double delta)
+        {
+            base._Process(delta);
+        }
+
+        static ViewItem()
+        {
+            //Muss ausgerufen werden, weil der statische Konstruktor von RecordPackage wortwörtlich zu faul ist.
+            //Aber die Funktionalität direkt in die Init-Funktion zu schreiben würde bedeuten, dass man die Objekte erneut überschreiben kann, was Chaos erzeugen würde.
+            //Und dann müsste man wieder neue Checks einbauen usw...
+            RecordPackage.Init();
+            Drawer.Init();
+        }
+
+        public void SetCutoffShaderParameters(Transform3D boxTransform, Vector3 boxSize)
+        {
+            // Das ist hier alles nicht mehr wirklich effizient, aber es sieht wenigstens nach was aus
+            int surfaceCount = _meshInstance.Mesh.GetSurfaceCount();
+            for (int i = 0; i < surfaceCount; i++)
+            {
+                ShaderMaterial mat = (ShaderMaterial)_meshInstance.GetSurfaceOverrideMaterial(i);
+                if (mat != null)
+                {
+                    mat.SetShaderParameter("box_transform", boxTransform);
+                    mat.SetShaderParameter("box_size", boxSize);
+                    _meshInstance.SetSurfaceOverrideMaterial(i, mat);
+                }
+            }
+        }
+
     }
 }

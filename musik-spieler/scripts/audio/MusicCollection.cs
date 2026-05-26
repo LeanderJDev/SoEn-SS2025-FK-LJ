@@ -7,9 +7,7 @@ namespace Musikspieler.Scripts.Audio
 	{
 		public static MusicCollection Instance { get; private set; }
 
-		private PlaylistDirectory _playlistDirectory = new PlaylistDirectory();
-		public IPlaylistDirectory PlaylistDirectory => _playlistDirectory;
-
+		public PlaylistDirectory PlaylistDirectory { get; private set; } = new PlaylistDirectory();
 
 		private MusicCollection()
 		{
@@ -18,9 +16,12 @@ namespace Musikspieler.Scripts.Audio
 			Instance = this;
 		}
 
+		public Action CollectionChanged = delegate { };
 
 		public override void _Ready()
 		{
+			GD.Print("Start loading Songs...");
+
 			string MusicPath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyMusic);
 
 			if (MusicPath == null)
@@ -29,14 +30,15 @@ namespace Musikspieler.Scripts.Audio
 				return;
 			}
 
-			Playlist wholeCollection = new Playlist("Whole Collection");
+			Playlist wholeCollection = new("Whole Collection");
 
 			wholeCollection.AddItems(SongLoader.LoadSongs(MusicPath));
 
-			GD.Print(wholeCollection.ItemCount);
-			GD.Print(wholeCollection[0].CoverData);
+			GD.Print($"Songs Loaded: {wholeCollection.ItemCount}");
 
-			_playlistDirectory.AddItem(wholeCollection);
+			PlaylistDirectory.AddItem(wholeCollection);
+
+			CollectionChanged?.Invoke();
 		}
 	}
 }

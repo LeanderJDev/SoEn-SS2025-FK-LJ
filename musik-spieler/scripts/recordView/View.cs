@@ -6,12 +6,27 @@ namespace Musikspieler.Scripts.RecordView
 {
     public abstract partial class View : StaticBody3D
     {
+        //Nutzen, um mit Items im View zu interagieren.
         public abstract ViewItem GrabItem(bool allowGrabChildren);
+
+        //Nutzen, um Items in einen anderen View zu verschieben.
         public abstract bool MoveItem(int index, View targetView);
+
+        //Wird aufgerufen, ob ein eingehendes Item akzeptiert wird, z.B. durch MoveItem.
         public abstract bool AcceptItem(ViewItem item, int? index);
         public abstract bool IsInitialized { get; }
         public abstract CollisionShape3D BoundsShape { get; }
         public abstract int GetViewIndex(ViewItem item);
+
+        /// <summary>
+        /// Number of ContentItems in the View. Note that this does not contain Items within Items.
+        /// </summary>
+        public abstract int ItemCount { get; }
+
+        /// <summary>
+        /// Set to  -1 for no limit
+        /// </summary>
+        public abstract int MaxItemCount { get; }
 
         public abstract event Action<ItemListChangedEventArgs> ObjectsChanged;
 

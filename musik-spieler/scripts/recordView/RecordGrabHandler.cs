@@ -48,10 +48,10 @@ namespace Musikspieler.Scripts.RecordView
             Mask<CollisionMask> mask = new(CollisionMask.RecordViewBoundary, CollisionMask.DrawerViewBoundary);
 
             List<StaticBody3D> exludedObjects = null;
-            if (currentlyGrabbed is IItemAndView view)
+            if (currentlyGrabbed.ChildView != null)
             {
                 //cast geht, da Godot vorschreibt, dass ein CollisionShape3D-Objekt eine StaticBody3D als Parent haben muss.
-                exludedObjects = [view.ChildView];
+                exludedObjects = [currentlyGrabbed.ChildView];
             }
 
             if (Utility.CameraRaycast(GetViewport().GetCamera3D(), mask, out var result, exludedObjects))
