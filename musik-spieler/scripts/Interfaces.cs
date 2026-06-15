@@ -25,7 +25,8 @@ namespace Musikspieler.Scripts
     public interface IItemList
     {
         public int ItemCount { get; }
-        public IContentItem this[int index] { get; }
+        public IContentItem GetItem(int index);
+        public IContentItem this[int index] => GetItem(index);
         public event Action<ItemsAddedEventArgs> ItemsAdded;
         public event Action<ItemsRemovedEventArgs> ItemsRemoved;
         public ImmutableArray<IContentItem> GetAllItems();

@@ -21,8 +21,6 @@ namespace Musikspieler.Scripts.RecordView
 			{
 				GD.Print("no cam1");
 				throw new Exception();
-				result = null;
-				return false;
 			}
 
 			Vector2 mousePos = camera.GetViewport().GetMousePosition();

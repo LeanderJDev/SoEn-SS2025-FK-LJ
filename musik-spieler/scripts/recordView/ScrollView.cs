@@ -16,7 +16,7 @@ namespace Musikspieler.Scripts.RecordView
 
 		public override int ItemCount => ViewItems.Count;
 
-        public override int MaxItemCount => -1;
+		public override int MaxItemCount => -1;
 
 		public ViewItem this[int index] => ViewItems[index];
 
@@ -169,9 +169,9 @@ namespace Musikspieler.Scripts.RecordView
 		}
 
 		public override bool MoveItem(int index, View targetView)
-        {
-            GD.Print("as.kdjalskdfhakds");
-            return MoveItem(index, targetView, null);
+		{
+			GD.Print("as.kdjalskdfhakds");
+			return MoveItem(index, targetView, null);
 		}
 
 		/// <summary>
@@ -353,8 +353,8 @@ namespace Musikspieler.Scripts.RecordView
 				}
 				else if (mouseEvent.ButtonIndex == MouseButton.WheelDown)
 				{
-                    if (!IsUnderCursor)
-                        return;
+					if (!IsUnderCursor)
+						return;
 					if (mouseEvent.Pressed)
 						OnScrollInput(1f);
 					GetViewport().SetInputAsHandled();

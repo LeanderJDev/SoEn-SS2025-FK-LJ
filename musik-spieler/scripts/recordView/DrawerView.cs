@@ -1,6 +1,5 @@
 using Godot;
 using Musikspieler.Scripts.Audio;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -97,9 +96,11 @@ namespace Musikspieler.Scripts.RecordView
 		{
 			const float selectedOffset = 4.0f;
 
+			float offset = input.index < 0 || input.index >= selected.Count ? 0 : (selected[input.index] ? selectedOffset : 0);
+
 			return new AnimationOutput()
 			{
-				PositionOffset = new(selected[input.index] ? selectedOffset : 0, 0, 0)
+				PositionOffset = new(offset, 0, 0)
 			};
 		}
 

@@ -14,6 +14,8 @@ namespace Musikspieler.Scripts
         public Playlist this[int index] => _playlists[index];
         public Playlist this[string name] => _playlists.FirstOrDefault(x => x.Name == name);
 
+        public IContentItem GetItem(int index) => _playlists[index];
+
         public int ItemCount => _playlists.Count;
 
         public int BufferSizeLeft => int.MaxValue - ItemCount;
@@ -32,7 +34,8 @@ namespace Musikspieler.Scripts
             _playlists = playlists;
         }
 
-        public ImmutableArray<Playlist> GetAllItems() => [.. _playlists];
+        public ImmutableArray<IContentItem> GetAllItems() => [.. _playlists];
+        public ImmutableArray<Playlist> GetAllPlaylists() => [.. _playlists];
 
         public IEnumerable<IContentItem> GetEnumerable()
         {
@@ -89,6 +92,13 @@ namespace Musikspieler.Scripts
             return true;
         }
 
+        public bool InsertItemAt(IContentItem item, int index)
+        {
+            if (item is Playlist playlist)
+                return InsertItemAt(playlist, index);
+            else return false;
+        }
+
         public bool InsertItemAt(Playlist playlist, int index)
         {
             if (playlist == null || index >= ItemCount || index < 0)
@@ -103,6 +113,18 @@ namespace Musikspieler.Scripts
             return true;
         }
 
+        public bool InsertItemsAt(List<IContentItem> items, int index)
+        {
+            List<Playlist> playlists = [];
+            foreach (IContentItem item in items)
+            {
+                if (item is Playlist playlist)
+                    playlists.Add(playlist);
+                else return false;
+            }
+            return InsertItemsAt(playlists, index);
+        }
+
         public bool InsertItemsAt(List<Playlist> _playlistList, int index)
         {
             if (_playlistList == null || index >= ItemCount || index < 0 || _playlistList.Count < 1)
@@ -115,6 +137,13 @@ namespace Musikspieler.Scripts
             };
             ItemsAdded?.Invoke(args);
             return true;
+        }
+
+        public bool RemoveItem(IContentItem item)
+        {
+            if (item is Playlist playlist)
+                return RemoveItem(playlist);
+            else return false;
         }
 
         public bool RemoveItem(Playlist playlist)
